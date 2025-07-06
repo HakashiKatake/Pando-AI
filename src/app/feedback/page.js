@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { FeedbackForm } from '@/components/FeedbackForm';
 import { useFeedbackStore } from '@/lib/store';
+import { useDataInitialization } from '@/lib/useDataInitialization';
 
 export default function FeedbackPage() {
   const { user } = useUser();

@@ -115,7 +115,7 @@ export async function GET(request) {
     
     // Calculate statistics
     const stats = await ExerciseSession.aggregate([
-      { $match: session?.user?.id ? { userId: session.user.id } : { guestId } },
+      { $match: userId ? { userId } : { guestId } },
       {
         $group: {
           _id: null,
@@ -139,7 +139,7 @@ export async function GET(request) {
     
     // Get exercise type distribution
     const typeDistribution = await ExerciseSession.aggregate([
-      { $match: session?.user?.id ? { userId: session.user.id } : { guestId } },
+      { $match: userId ? { userId } : { guestId } },
       {
         $group: {
           _id: '$exerciseType',
@@ -158,7 +158,7 @@ export async function GET(request) {
     const weeklyProgress = await ExerciseSession.aggregate([
       {
         $match: {
-          ...(session?.user?.id ? { userId: session.user.id } : { guestId }),
+          ...(userId ? { userId } : { guestId }),
           createdAt: { $gte: since }
         }
       },

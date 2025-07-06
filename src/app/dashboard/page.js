@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAppStore, useMoodStore, useChatStore } from '../../lib/store';
+import { useDataInitialization } from '../../lib/useDataInitialization';
 import { 
   Heart, MessageCircle, Activity, Calendar, Target, 
   TrendingUp, Smile, Brain, Moon, Sun, Settings,
@@ -16,6 +17,7 @@ export default function DashboardPage() {
   const { preferences, guestId, isDarkMode } = useAppStore();
   const { moods, todaysMood, addMood, getAverageMood } = useMoodStore();
   const { messages } = useChatStore();
+  const dataInit = useDataInitialization();
   
   const [todaysQuote, setTodaysQuote] = useState('');
   const [showMoodModal, setShowMoodModal] = useState(false);
@@ -27,7 +29,7 @@ export default function DashboardPage() {
   }, []);
 
   // Prevent hydration mismatch by showing loading state until hydrated
-  if (!isHydrated) {
+  if (!isHydrated || !dataInit.isReady) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -39,9 +41,9 @@ export default function DashboardPage() {
   }
 
   const userName = preferences.name || 'Friend';
-  const recentMoods = moods.slice(-7);
+  const recentMoods = Array.isArray(moods) ? moods.slice(-7) : [];
   const averageMood = getAverageMood(7);
-  const hasChatToday = messages.some(msg => isToday(msg.timestamp));
+  const hasChatToday = Array.isArray(messages) ? messages.some(msg => isToday(msg.timestamp)) : false;
   const todaysMoodData = todaysMood ? getMoodData(todaysMood.mood) : null;
 
   const stats = [
@@ -316,10 +318,7 @@ export default function DashboardPage() {
         <MoodModal 
           onClose={() => setShowMoodModal(false)}
           onSave={(moodData) => {
-            addMood({
-              ...moodData,
-              guestId: !session ? guestId : undefined,
-            });
+            addMood(moodData, dataInit.userId, dataInit.guestId);
             setShowMoodModal(false);
           }}
         />

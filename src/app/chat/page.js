@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAppStore, useChatStore } from '../../lib/store';
+import { useDataInitialization } from '../../lib/useDataInitialization';
 import { 
   Send, ArrowLeft, Shield, ShieldOff, Bot, User, 
   AlertTriangle, Heart, RefreshCw, MoreVertical
@@ -13,6 +14,7 @@ export default function ChatPage() {
   const { user } = useUser();
   const { guestId, preferences } = useAppStore();
   const { messages, addMessage, setLoading, isLoading, startNewConversation } = useChatStore();
+  const dataInit = useDataInitialization();
   
   const [input, setInput] = useState('');
   const [privacyMode, setPrivacyMode] = useState(false);
@@ -40,40 +42,50 @@ export default function ChatPage() {
 
     const userMessage = input.trim();
     setInput('');
-    
-    // Add user message to store
-    addMessage({
-      role: 'user',
-      message: userMessage,
-      privacy: privacyMode,
-    });
-
     setLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (dataInit.userId) {
+        // For authenticated users, call addMessage which handles the API call
+        await addMessage({
+          role: 'user',
           message: userMessage,
-          guestId: !session ? guestId : undefined,
-          conversationId,
           privacy: privacyMode,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Add assistant message to store
-        addMessage({
-          role: 'assistant',
-          message: data.data.assistantMessage.message,
-          messageType: data.data.assistantMessage.messageType,
-          triggerAnalysis: data.data.triggerAnalysis,
-        });
+        }, dataInit.userId, dataInit.guestId);
       } else {
-        throw new Error(data.error || 'Failed to send message');
+        // For guests, manually handle the flow
+        // First add user message locally
+        addMessage({
+          role: 'user',
+          message: userMessage,
+          privacy: privacyMode,
+        }, dataInit.userId, dataInit.guestId);
+
+        // Then call API and add assistant response
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMessage,
+            guestId: dataInit.guestId,
+            conversationId,
+            privacy: privacyMode,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Add assistant message to store for guests
+          addMessage({
+            role: 'assistant',
+            message: data.data.assistantMessage.message,
+            messageType: data.data.assistantMessage.messageType,
+            triggerAnalysis: data.data.triggerAnalysis,
+          }, dataInit.userId, dataInit.guestId);
+        } else {
+          throw new Error(data.error || 'Failed to send message');
+        }
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -81,7 +93,7 @@ export default function ChatPage() {
         role: 'assistant',
         message: "I'm sorry, I'm having trouble responding right now. Please try again in a moment, or if you're in crisis, please contact emergency services or call 988.",
         messageType: 'error',
-      });
+      }, dataInit.userId, dataInit.guestId);
     } finally {
       setLoading(false);
     }
@@ -167,7 +179,7 @@ export default function ChatPage() {
             <MessageBubble 
               key={index} 
               message={message} 
-              isUser={message.role === 'user'}
+              isUser={message?.role === 'user'}
             />
           ))}
 

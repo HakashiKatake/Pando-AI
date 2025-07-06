@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '../lib/store';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart, Brain, Shield, Users, ArrowRight, Star, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -77,6 +77,13 @@ export default function LandingPage() {
     }
   ];
 
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push('/dashboard');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -86,8 +93,7 @@ export default function LandingPage() {
   }
 
   if (isSignedIn) {
-    router.push('/dashboard');
-    return null;
+    return null; // Will redirect via useEffect
   }
 
   return (

@@ -19,6 +19,7 @@ import {
   Activity
 } from 'lucide-react';
 import { useExerciseStore } from '@/lib/store';
+import { useDataInitialization } from '@/lib/useDataInitialization';
 
 const exerciseCategories = [
   { id: 'all', name: 'All Exercises', icon: Activity },
@@ -113,7 +114,8 @@ const exercises = [
 
 export default function ExercisesPage() {
   const router = useRouter();
-  const { sessions, getSessions, addExerciseSession } = useExerciseStore();
+  const { sessions, addSession } = useExerciseStore();
+  const dataInit = useDataInitialization();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('all');
@@ -122,8 +124,7 @@ export default function ExercisesPage() {
 
   useEffect(() => {
     setIsHydrated(true);
-    getSessions();
-  }, [getSessions]);
+  }, []);
 
   useEffect(() => {
     // Mark exercises as completed based on sessions

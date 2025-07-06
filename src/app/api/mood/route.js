@@ -54,7 +54,7 @@ export async function POST(request) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     
     const existingMood = await MoodEntry.findOne({
-      ...(session?.user?.id ? { userId: session.user.id } : { guestId }),
+      ...(userId ? { userId } : { guestId }),
       date: { $gte: today, $lt: tomorrow },
     });
     

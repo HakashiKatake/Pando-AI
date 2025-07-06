@@ -1,6 +1,7 @@
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_API_URL = process.env.OPENROUTER_API_URL;
 
+// Updated with better error handling for API response structure
 export async function sendChatMessage(messages, model = 'mistralai/mistral-small-3.2-24b-instruct:free') {
   if (!OPENROUTER_API_KEY) {
     throw new Error('OpenRouter API key is not configured');
@@ -27,11 +28,44 @@ export async function sendChatMessage(messages, model = 'mistralai/mistral-small
     });
 
     if (!response.ok) {
+      const errorData = await response.text();
+      console.error('OpenRouter API error response:', errorData);
       throw new Error(`OpenRouter API error: ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || 'I apologize, but I\'m having trouble responding right now.';
+    
+    // Handle different possible response structures
+    let content = null;
+    
+    // Standard OpenAI-compatible format
+    if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
+      content = data.choices[0]?.message?.content;
+    }
+    // Alternative response format (some APIs return different structures)
+    else if (data.message) {
+      content = data.message;
+    }
+    // Direct content response
+    else if (data.content) {
+      content = data.content;
+    }
+    // Response in data field
+    else if (data.data) {
+      content = data.data.content || data.data.message || data.data;
+    }
+    // Error response
+    else if (data.error) {
+      console.error('OpenRouter API returned error:', data.error);
+      throw new Error(`OpenRouter API error: ${data.error.message || data.error}`);
+    }
+    
+    if (!content) {
+      console.error('Unexpected OpenRouter API response structure:', data);
+      return 'I apologize, but I\'m having trouble responding right now. Please try again in a moment.';
+    }
+    
+    return content;
   } catch (error) {
     console.error('OpenRouter API error:', error);
     throw error;

@@ -34,13 +34,15 @@ import {
   Cell
 } from 'recharts';
 import { useMoodStore, useFeedbackStore, useExerciseStore, useChatStore } from '@/lib/store';
+import { useDataInitialization } from '@/lib/useDataInitialization';
 
 export default function InsightsPage() {
   const { user } = useUser();
   const { moods } = useMoodStore();
-  const { entries: feedbackEntries, getEntries: getFeedbackEntries } = useFeedbackStore();
-  const { sessions: exerciseSessions, getSessions: getExerciseSessions } = useExerciseStore();
-  const { conversations } = useChatStore();
+  const { entries: feedbackEntries, loadEntriesFromAPI: loadFeedbackEntries } = useFeedbackStore();
+  const { sessions: exerciseSessions, loadSessionsFromAPI: loadExerciseSessions } = useExerciseStore();
+  const { messages } = useChatStore();
+  const dataInit = useDataInitialization();
 
   const [timeRange, setTimeRange] = useState('week'); // week, month, quarter, year
   const [selectedMetric, setSelectedMetric] = useState('mood'); // mood, activity, engagement
@@ -48,9 +50,11 @@ export default function InsightsPage() {
 
   useEffect(() => {
     setIsHydrated(true);
-    getFeedbackEntries();
-    getExerciseSessions();
-  }, [getFeedbackEntries, getExerciseSessions]);
+    if (dataInit.userId || dataInit.guestId) {
+      loadFeedbackEntries(dataInit.userId, dataInit.guestId);
+      loadExerciseSessions(dataInit.userId, dataInit.guestId);
+    }
+  }, [dataInit.userId, dataInit.guestId, loadFeedbackEntries, loadExerciseSessions]);
 
   // Prevent hydration errors by not rendering dynamic content until client-side
   if (!isHydrated) {
@@ -112,7 +116,7 @@ export default function InsightsPage() {
           count = exerciseSessions ? exerciseSessions.filter(s => s.type === 'breathing').length : 0;
           break;
         case 'chat':
-          count = conversations ? conversations.length : 0;
+          count = messages ? messages.length : 0;
           break;
         case 'journal':
           count = feedbackEntries ? feedbackEntries.filter(e => e.type === 'journal').length : 0;
@@ -137,17 +141,17 @@ export default function InsightsPage() {
 
   const getEngagementStats = () => {
     const safeExerciseSessions = exerciseSessions || [];
-    const safeConversations = conversations || [];
+    const safeMessages = messages || [];
     const safeFeedbackEntries = feedbackEntries || [];
     const safeMoods = moods || [];
     
-    const totalSessions = safeExerciseSessions.length + safeConversations.length + safeFeedbackEntries.length;
+    const totalSessions = safeExerciseSessions.length + safeMessages.length + safeFeedbackEntries.length;
     const thisWeek = new Date();
     thisWeek.setDate(thisWeek.getDate() - 7);
     
     const weeklyActivity = [
       ...safeExerciseSessions,
-      ...safeConversations.map(c => ({ timestamp: c.updatedAt || c.createdAt })),
+      ...safeMessages.map(c => ({ timestamp: c.timestamp || c.createdAt })),
       ...safeFeedbackEntries
     ].filter(item => item.timestamp && new Date(item.timestamp) > thisWeek).length;
 

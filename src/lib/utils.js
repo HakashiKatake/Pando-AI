@@ -83,3 +83,26 @@ export const wellnessQuotes = [
 export function getRandomQuote() {
   return wellnessQuotes[Math.floor(Math.random() * wellnessQuotes.length)];
 }
+
+// Clear all guest data from localStorage when user signs in
+export function clearGuestData() {
+  if (typeof window === 'undefined') return;
+  
+  const guestDataKeys = [
+    'calm-connect-app',
+    'calm-connect-moods', 
+    'calm-connect-chat',
+    'calm-connect-journal',
+    'calm-connect-exercises',
+    'calm-connect-feedback'
+  ];
+  
+  guestDataKeys.forEach(key => {
+    localStorage.removeItem(key);
+  });
+}
+
+// Check if user should use localStorage (guest) or database (authenticated)
+export function shouldUseLocalStorage(userId, guestId) {
+  return !userId && guestId;
+}

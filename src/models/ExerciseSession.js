@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 
 const ExerciseSessionSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: false,
   },
   guestId: {

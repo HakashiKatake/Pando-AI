@@ -3,6 +3,7 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Providers } from '../components/Providers';
 import { PageLayout } from '../components/Navigation';
+import { AuthDataManager } from '../components/AuthDataManager';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
       <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className} antialiased`}>
           <Providers>
+            <AuthDataManager />
             <PageLayout>
               {children}
             </PageLayout>
