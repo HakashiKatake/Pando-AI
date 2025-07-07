@@ -80,8 +80,8 @@ export default function QuestionnairePage() {
     // Mark as onboarded
     setOnboarded(true);
 
-    // Navigate to dashboard
-    router.push('/dashboard');
+    // Navigate to chat
+    router.push('/chat');
   };
 
   const updateFormData = (field, value) => {

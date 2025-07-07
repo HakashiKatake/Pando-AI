@@ -73,7 +73,55 @@ export async function sendChatMessage(messages, model = 'mistralai/mistral-small
 }
 
 export function buildWellnessPrompt(userMessage, context = {}, conversationHistory = []) {
-  const systemPrompt = `You are Alex, a warm and caring friend who works as a wellness companion. You're having a natural conversation with someone who needs support.
+  const { 
+    userPreferences = {}, 
+    currentMood = null, 
+    userName = '',
+    communicationStyle = 'supportive'
+  } = context;
+
+  // Build personalized system prompt based on user data
+  let systemPrompt = `You are Alex, a warm and caring friend who works as a wellness companion. You're having a natural conversation with someone who needs support.`;
+
+  // Add user's name if available
+  if (userName) {
+    systemPrompt += ` You're talking with ${userName}.`;
+  }
+
+  // Add communication style preference
+  const styleInstructions = {
+    supportive: "Be extra warm, encouraging, and use gentle, supportive language. Focus on validation and comfort.",
+    direct: "Be straightforward and practical in your responses. Give clear, actionable advice without too much emotional cushioning.",
+    empathetic: "Show deep understanding and emotional connection. Reflect their feelings back and validate their emotions strongly.",
+    casual: "Be relaxed and informal. Use casual language like you're talking to a close friend.",
+    professional: "Maintain a caring but slightly more structured tone. Be helpful while remaining professionally supportive."
+  };
+
+  if (communicationStyle && styleInstructions[communicationStyle]) {
+    systemPrompt += ` Communication style: ${styleInstructions[communicationStyle]}`;
+  }
+
+  // Add current mood context
+  if (currentMood !== null) {
+    const moodDescriptions = {
+      1: "They're feeling very low right now - be extra gentle and supportive",
+      2: "They're having a tough time - offer comfort and understanding", 
+      3: "They're feeling okay but could use some support",
+      4: "They're feeling pretty good - maintain their positive energy",
+      5: "They're feeling great - celebrate with them and keep the positive momentum"
+    };
+    
+    if (moodDescriptions[currentMood]) {
+      systemPrompt += ` Current mood context: ${moodDescriptions[currentMood]}.`;
+    }
+  }
+
+  // Add user goals if available
+  if (userPreferences.goals && userPreferences.goals.length > 0) {
+    systemPrompt += ` Their wellness goals include: ${userPreferences.goals.join(', ')}.`;
+  }
+
+  systemPrompt += `
 
 Conversation style:
 - Talk like a close, understanding friend - casual but caring

@@ -19,6 +19,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [privacyMode, setPrivacyMode] = useState(false);
   const [conversationId, setConversationId] = useState(null);
+  const [hasAutoGreeted, setHasAutoGreeted] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -29,12 +30,91 @@ export default function ChatPage() {
     }
   }, [conversationId, startNewConversation]);
 
+  // Auto-greeting effect
+  useEffect(() => {
+    if (dataInit.isReady && (dataInit.userId || dataInit.guestId) && conversationId && !hasAutoGreeted && messages.length === 0) {
+      setHasAutoGreeted(true);
+      sendAutoGreeting();
+    }
+  }, [dataInit.isReady, dataInit.userId, dataInit.guestId, conversationId, hasAutoGreeted, messages.length]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const sendAutoGreeting = async () => {
+    // Create a personalized greeting based on user preferences
+    const userName = preferences?.name || 'friend';
+    const timeOfDay = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening';
+    
+    let greetingMessage = `Good ${timeOfDay}, ${userName}! 👋 How are you feeling today?`;
+    
+    // Customize based on communication style if available
+    if (preferences?.communicationStyle === 'casual') {
+      greetingMessage = `Hey ${userName}! How's it going today?`;
+    } else if (preferences?.communicationStyle === 'professional') {
+      greetingMessage = `Hello ${userName}, I hope you're having a good ${timeOfDay}. How can I support you today?`;
+    } else if (preferences?.communicationStyle === 'empathetic') {
+      greetingMessage = `Hi ${userName}, I'm here for you today. How are you feeling right now?`;
+    }
+
+    try {
+      setLoading(true);
+      
+      if (dataInit.userId) {
+        // For authenticated users
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: greetingMessage,
+            guestId: dataInit.guestId,
+            conversationId,
+            privacy: false,
+            isAutoGreeting: true,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success && data.data.assistantMessage) {
+          addMessage({
+            role: 'assistant',
+            message: data.data.assistantMessage.message,
+            messageType: data.data.assistantMessage.messageType,
+            triggerAnalysis: data.data.triggerAnalysis,
+          }, dataInit.userId, dataInit.guestId);
+        }
+      } else {
+        // For guests - simulate getting a greeting response
+        const greetingResponses = [
+          `Hi there! I'm Alex, your wellness companion. I'm here to listen and support you. What's on your mind today?`,
+          `Hello! Nice to meet you. I'm here if you want to chat about anything - how you're feeling, what's going on, or just need someone to listen. How are you doing?`,
+          `Hey! I'm glad you're here. Whether you want to talk about your day, your feelings, or anything else, I'm here for you. What would you like to chat about?`
+        ];
+        
+        const randomGreeting = greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
+        
+        addMessage({
+          role: 'assistant',
+          message: randomGreeting,
+          messageType: 'greeting',
+        }, dataInit.userId, dataInit.guestId);
+      }
+    } catch (error) {
+      console.error('Auto-greeting error:', error);
+      // Fallback greeting
+      addMessage({
+        role: 'assistant',
+        message: "Hi! I'm Alex, your wellness companion. I'm here to listen and support you. How are you feeling today?",
+        messageType: 'greeting',
+      }, dataInit.userId, dataInit.guestId);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sendMessage = async () => {

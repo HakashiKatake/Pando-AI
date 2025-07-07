@@ -81,16 +81,16 @@ export default function LandingPage() {
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
-        // Authenticated users go to dashboard
-        router.push('/dashboard');
+        // Authenticated users go to chat
+        router.push('/chat');
       } else {
         // Initialize guest if not already initialized
         initializeGuest();
         
         // Check if guest has already completed onboarding
         if (guestId && isOnboarded) {
-          // Returning guest user who has completed onboarding - redirect to dashboard
-          router.push('/dashboard');
+          // Returning guest user who has completed onboarding - redirect to chat
+          router.push('/chat');
         }
       }
     }

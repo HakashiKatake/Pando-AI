@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function BreathingExercisePage() {
   const [isActive, setIsActive] = useState(false);
-  const [phase, setPhase] = useState('inhale'); // 'inhale', 'hold', 'exhale'
+  const [phaseIndex, setPhaseIndex] = useState(0); // Use index instead of string
   const [count, setCount] = useState(0);
   const [cycle, setCycle] = useState(0);
   const [selectedTechnique, setSelectedTechnique] = useState('4-7-8');
@@ -59,7 +59,7 @@ export default function BreathingExercisePage() {
 
   const currentTechnique = techniques[selectedTechnique];
   const phaseNames = Object.keys(currentTechnique.phases);
-  const currentPhaseName = phaseNames[phase] || phaseNames[0];
+  const currentPhaseName = phaseNames[phaseIndex];
   const currentPhaseCount = currentTechnique.phases[currentPhaseName];
 
   useEffect(() => {
@@ -68,8 +68,7 @@ export default function BreathingExercisePage() {
         setCount(prevCount => {
           if (prevCount >= currentPhaseCount - 1) {
             // Move to next phase
-            const currentPhaseIndex = phaseNames.indexOf(currentPhaseName);
-            const nextPhaseIndex = (currentPhaseIndex + 1) % phaseNames.length;
+            const nextPhaseIndex = (phaseIndex + 1) % phaseNames.length;
             
             if (nextPhaseIndex === 0) {
               // Completed a full cycle
@@ -78,14 +77,14 @@ export default function BreathingExercisePage() {
                 if (newCycle >= currentTechnique.cycles) {
                   // Exercise complete
                   setIsActive(false);
-                  setPhase(phaseNames[0]);
+                  setPhaseIndex(0);
                   return 0;
                 }
                 return newCycle;
               });
             }
             
-            setPhase(phaseNames[nextPhaseIndex]);
+            setPhaseIndex(nextPhaseIndex);
             return 0;
           }
           return prevCount + 1;
@@ -96,11 +95,11 @@ export default function BreathingExercisePage() {
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [isActive, currentPhaseName, currentPhaseCount, phaseNames, currentTechnique.cycles]);
+  }, [isActive, currentPhaseCount, phaseIndex, phaseNames.length, currentTechnique.cycles]);
 
   const startExercise = () => {
     setIsActive(true);
-    setPhase(phaseNames[0]);
+    setPhaseIndex(0);
     setCount(0);
     setCycle(0);
   };
@@ -111,7 +110,7 @@ export default function BreathingExercisePage() {
 
   const stopExercise = () => {
     setIsActive(false);
-    setPhase(phaseNames[0]);
+    setPhaseIndex(0);
     setCount(0);
     setCycle(0);
   };
@@ -121,7 +120,7 @@ export default function BreathingExercisePage() {
   };
 
   const progress = ((count + 1) / currentPhaseCount) * 100;
-  const overallProgress = ((cycle * phaseNames.length + phaseNames.indexOf(currentPhaseName)) / (currentTechnique.cycles * phaseNames.length)) * 100;
+  const overallProgress = ((cycle * phaseNames.length + phaseIndex) / (currentTechnique.cycles * phaseNames.length)) * 100;
 
   const getPhaseColor = (phaseName) => {
     switch (phaseName) {

@@ -11,7 +11,7 @@ export async function POST(request) {
     
     const { userId } = await auth();
     const body = await request.json();
-    const { message, guestId, conversationId, privacy = false } = body;
+    const { message, guestId, conversationId, privacy = false, isAutoGreeting = false } = body;
     
     // Validate required fields
     if (!message?.trim()) {
@@ -35,23 +35,26 @@ export async function POST(request) {
     
     const currentConversationId = conversationId || `conv_${Date.now()}`;
     
-    // Detect triggers in the message
-    const triggerAnalysis = detectTriggers(message);
+    // Detect triggers in the message (skip for auto-greetings)
+    const triggerAnalysis = isAutoGreeting ? { level: 'none' } : detectTriggers(message);
     
-    // Save user message
-    const userMessage = await ChatMessage.create({
-      ...userIdentifier,
-      conversationId: currentConversationId,
-      message: message.trim(),
-      role: 'user',
-      privacy,
-      triggerDetection: {
-        level: triggerAnalysis.level,
-        keywords: triggerAnalysis.crisis || triggerAnalysis.concern ? 
-          [...(triggerAnalysis.crisis ? ['crisis'] : []), ...(triggerAnalysis.concern ? ['concern'] : [])] : [],
-        requiresIntervention: triggerAnalysis.crisis,
-      },
-    });
+    // Save user message (skip for auto-greetings)
+    let userMessage = null;
+    if (!isAutoGreeting) {
+      userMessage = await ChatMessage.create({
+        ...userIdentifier,
+        conversationId: currentConversationId,
+        message: message.trim(),
+        role: 'user',
+        privacy,
+        triggerDetection: {
+          level: triggerAnalysis.level,
+          keywords: triggerAnalysis.crisis || triggerAnalysis.concern ? 
+            [...(triggerAnalysis.crisis ? ['crisis'] : []), ...(triggerAnalysis.concern ? ['concern'] : [])] : [],
+          requiresIntervention: triggerAnalysis.crisis,
+        },
+      });
+    }
     
     let assistantResponse;
     let responseType = 'text';
@@ -85,12 +88,44 @@ export async function POST(request) {
           content: msg.message,
         }));
         
-        // Get user context (could include recent mood, preferences, etc.)
-        const userContext = {
-          recentMood: null, // TODO: Get from recent mood entries
+        // Get user context - including preferences and recent mood
+        let userContext = {
           conversationLength: contextMessages.length,
           triggerLevel: triggerAnalysis.level,
         };
+
+        // Get user preferences and recent mood if available
+        if (userId) {
+          // For authenticated users, get from User model
+          try {
+            const User = (await import('../../../models/User')).default;
+            const user = await User.findOne({ clerkId: userId });
+            if (user) {
+              userContext.userPreferences = user.preferences || {};
+              userContext.userName = user.preferences?.name || '';
+              userContext.communicationStyle = user.preferences?.communicationStyle || 'supportive';
+            }
+          } catch (error) {
+            console.error('Error fetching user preferences:', error);
+          }
+
+          // Get recent mood
+          try {
+            const MoodEntry = (await import('../../../models/MoodEntry')).default;
+            const recentMood = await MoodEntry.findOne({ userId })
+              .sort({ createdAt: -1 });
+            if (recentMood) {
+              userContext.currentMood = recentMood.mood;
+            }
+          } catch (error) {
+            console.error('Error fetching recent mood:', error);
+          }
+        } else if (guestId) {
+          // For guests, we could get from localStorage data passed in request
+          // For now, use defaults - in a future update we could pass this from frontend
+          userContext.userPreferences = {};
+          userContext.communicationStyle = 'supportive';
+        }
         
         const messages = buildWellnessPrompt(message, userContext, conversationHistory);
         assistantResponse = await sendChatMessage(messages);
