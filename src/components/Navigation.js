@@ -38,8 +38,11 @@ export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const { isGuest, guestName } = useAppStore();
 
-  // Don't show navigation on landing page or auth pages
-  if (pathname === '/' || pathname.startsWith('/sign-')) {
+  // Don't show navigation on landing page, auth pages, or onboarding
+  if (pathname === '/' || 
+      pathname.startsWith('/sign-') || 
+      pathname.startsWith('/auth/') ||
+      pathname === '/questionnaire') {
     return null;
   }
 
@@ -157,8 +160,11 @@ export function Navigation() {
 export function PageLayout({ children }) {
   const pathname = usePathname();
   
-  // Full width for landing page and auth pages
-  if (pathname === '/' || pathname.startsWith('/sign-')) {
+  // Full width for landing page, auth pages, and onboarding
+  if (pathname === '/' || 
+      pathname.startsWith('/sign-') || 
+      pathname.startsWith('/auth/') ||
+      pathname === '/questionnaire') {
     return children;
   }
 
