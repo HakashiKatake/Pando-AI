@@ -13,19 +13,22 @@ import { useDataInitialization } from '@/lib/useDataInitialization';
 
 export default function FeedbackPage() {
   const { user } = useUser();
-  const { entries, addEntry, getEntries, isLoading } = useFeedbackStore();
+  const { entries, addEntry, loadEntriesFromAPI, isLoading } = useFeedbackStore();
+  const dataInit = useDataInitialization();
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState('all'); // all, journal, feedback, reflection
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
 
   useEffect(() => {
-    getEntries();
-  }, [getEntries]);
+    if (dataInit.userId || dataInit.guestId) {
+      loadEntriesFromAPI(dataInit.userId, dataInit.guestId);
+    }
+  }, [dataInit.userId, dataInit.guestId, loadEntriesFromAPI]);
 
   const handleSubmitEntry = async (entryData) => {
     try {
-      await addEntry(entryData);
+      await addEntry(entryData, dataInit.userId, dataInit.guestId);
       setShowForm(false);
     } catch (error) {
       console.error('Error saving entry:', error);

@@ -10,7 +10,7 @@ import Link from 'next/link';
 export default function LandingPage() {
   const { isSignedIn, user, isLoaded } = useUser();
   const router = useRouter();
-  const { guestId, setOnboarded } = useAppStore();
+  const { guestId, isOnboarded, setOnboarded, initializeGuest } = useAppStore();
   const [isStartingAsGuest, setIsStartingAsGuest] = useState(false);
 
   const handleStartAsGuest = () => {
@@ -77,12 +77,24 @@ export default function LandingPage() {
     }
   ];
 
-  // Redirect authenticated users to dashboard
+  // Handle authentication and guest redirects
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      router.push('/dashboard');
+    if (isLoaded) {
+      if (isSignedIn) {
+        // Authenticated users go to dashboard
+        router.push('/dashboard');
+      } else {
+        // Initialize guest if not already initialized
+        initializeGuest();
+        
+        // Check if guest has already completed onboarding
+        if (guestId && isOnboarded) {
+          // Returning guest user who has completed onboarding - redirect to dashboard
+          router.push('/dashboard');
+        }
+      }
     }
-  }, [isLoaded, isSignedIn, router]);
+  }, [isLoaded, isSignedIn, guestId, isOnboarded, initializeGuest, router]);
 
   if (!isLoaded) {
     return (

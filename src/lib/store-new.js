@@ -148,8 +148,7 @@ export const useMoodStore = create((set, get) => ({
       
       const response = await fetch(`/api/mood?${params}`);
       if (response.ok) {
-        const result = await response.json();
-        const moods = result.success ? result.data : (Array.isArray(result) ? result : []);
+        const moods = await response.json();
         const today = new Date().toDateString();
         const todaysMood = moods.find(mood => 
           new Date(mood.date).toDateString() === today
@@ -237,10 +236,7 @@ export const useMoodStore = create((set, get) => ({
   },
   
   getAverageMood: (days = 7) => {
-    const moods = get().moods;
-    if (!Array.isArray(moods) || moods.length === 0) return 0;
-    
-    const recentMoods = moods.slice(-days);
+    const recentMoods = get().moods.slice(-days);
     if (recentMoods.length === 0) return 0;
     
     const sum = recentMoods.reduce((acc, mood) => acc + mood.mood, 0);
@@ -267,13 +263,7 @@ export const useChatStore = create((set, get) => ({
       
       const response = await fetch(`/api/chat?${params}`);
       if (response.ok) {
-        const result = await response.json();
-        const rawMessages = result.success && result.data ? result.data.messages : (Array.isArray(result) ? result : []);
-        // Ensure all messages have proper ID format
-        const messages = rawMessages.map(msg => ({
-          ...msg,
-          id: msg._id || msg.id || Date.now() + Math.random()
-        }));
+        const messages = await response.json();
         set({ messages, isLoading: false });
       }
     } catch (error) {
@@ -283,8 +273,19 @@ export const useChatStore = create((set, get) => ({
   },
   
   addMessage: async (messageData, userId, guestId) => {
-    // For authenticated users, save to database
+    // Optimistically add message
+    const tempMessage = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      ...messageData,
+    };
+    
+    set(state => ({
+      messages: [...state.messages, tempMessage]
+    }));
+    
     if (userId) {
+      // For authenticated users, save to database
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -294,39 +295,18 @@ export const useChatStore = create((set, get) => ({
         
         if (response.ok) {
           const result = await response.json();
-          if (result.success && result.data) {
-            // Add both user and assistant messages from server response
-            const userMessage = { 
-              ...result.data.userMessage, 
-              id: result.data.userMessage._id || result.data.userMessage.id,
-              role: 'user' // Ensure role is correct
-            };
-            const assistantMessage = result.data.assistantMessage ? {
-              ...result.data.assistantMessage, 
-              id: result.data.assistantMessage._id || result.data.assistantMessage.id,
-              role: 'assistant' // Ensure role is correct
-            } : null;
-            
-            set(state => ({
-              messages: [...state.messages, userMessage, ...(assistantMessage ? [assistantMessage] : [])]
-            }));
-          }
+          // Update with server response
+          set(state => ({
+            messages: state.messages.map(msg => 
+              msg.id === tempMessage.id ? result.userMessage : msg
+            ).concat(result.aiResponse ? [result.aiResponse] : [])
+          }));
         }
       } catch (error) {
         console.error('Failed to save message:', error);
       }
     } else {
       // For guests, save to localStorage
-      const tempMessage = {
-        id: Date.now() + Math.random(),
-        timestamp: new Date().toISOString(),
-        ...messageData,
-      };
-      
-      set(state => ({
-        messages: [...state.messages, tempMessage]
-      }));
-      
       const messages = [...get().messages];
       localStorage.setItem('calm-connect-chat', JSON.stringify(messages));
     }
@@ -360,32 +340,23 @@ export const useFeedbackStore = create((set, get) => ({
   loadEntriesFromAPI: async (userId, guestId) => {
     if (!userId && !guestId) return;
     
-    if (userId) {
-      // For authenticated users, load from database
-      set({ isLoading: true });
-      try {
-        const params = new URLSearchParams();
-        if (guestId) params.append('guestId', guestId);
-        
-        const response = await fetch(`/api/feedback?${params}`);
-        if (response.ok) {
-          const result = await response.json();
-          const entries = result.success ? result.data : (Array.isArray(result) ? result : []);
-          set({ entries, isLoading: false });
-        }
-      } catch (error) {
-        console.error('Failed to load feedback entries:', error);
-        set({ isLoading: false });
+    set({ isLoading: true });
+    try {
+      const params = new URLSearchParams();
+      if (guestId) params.append('guestId', guestId);
+      
+      const response = await fetch(`/api/feedback?${params}`);
+      if (response.ok) {
+        const entries = await response.json();
+        set({ entries, isLoading: false });
       }
-    } else {
-      // For guest users, load from localStorage
-      get().loadFromLocalStorage();
+    } catch (error) {
+      console.error('Failed to load feedback entries:', error);
+      set({ isLoading: false });
     }
   },
   
   addEntry: async (entryData, userId, guestId) => {
-    console.log('addEntry called with:', { entryData, userId, guestId });
-    
     if (userId) {
       // For authenticated users, save to database
       try {
@@ -406,21 +377,16 @@ export const useFeedbackStore = create((set, get) => ({
       // For guests, use local storage
       const newEntry = {
         id: Date.now(),
-        timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         ...entryData,
       };
       
-      console.log('Adding entry for guest:', newEntry);
-      
       set(state => {
         const newEntries = [...state.entries, newEntry];
-        console.log('New entries array:', newEntries);
         
         // Save to localStorage for guests
         if (guestId) {
           localStorage.setItem('calm-connect-feedback', JSON.stringify(newEntries));
-          console.log('Saved to localStorage:', newEntries);
         }
         
         return { entries: newEntries };
@@ -431,10 +397,8 @@ export const useFeedbackStore = create((set, get) => ({
   loadFromLocalStorage: () => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('calm-connect-feedback');
-      console.log('Loading feedback from localStorage:', stored);
       if (stored) {
         const entries = JSON.parse(stored);
-        console.log('Parsed feedback entries:', entries);
         set({ entries });
       }
     }
@@ -467,8 +431,7 @@ export const useExerciseStore = create((set, get) => ({
       
       const response = await fetch(`/api/exercises?${params}`);
       if (response.ok) {
-        const result = await response.json();
-        const sessions = result.success ? result.data : (Array.isArray(result) ? result : []);
+        const sessions = await response.json();
         set({ sessions, isLoading: false });
       }
     } catch (error) {
