@@ -30,7 +30,7 @@ const navigation = [
   { name: 'Chat', href: '/chat', icon: MessageCircle },
   { name: 'Exercises', href: '/exercises', icon: Target },
   { name: 'Games', href: '/games', icon: Gamepad2 },
-  { name: 'Habits', href: '/habits', icon: Gamepad2 },
+  { name: 'Habits', href: '/habits', icon: Calendar },
   { name: 'Mood Music', href: '/mood', icon: Music2 },
   { name: 'Journal', href: '/feedback', icon: BookOpen },
   { name: 'Insights', href: '/insights', icon: BarChart3 },
