@@ -16,7 +16,8 @@ import {
   BookOpen,
   User,
   LogOut,
-  Settings
+  Settings,
+  Music2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Chat', href: '/chat', icon: MessageCircle },
   { name: 'Exercises', href: '/exercises', icon: Target },
   { name: 'Games', href: '/games', icon: Gamepad2 },
+  { name: 'Mood Music', href: '/mood', icon: Music2 },
   { name: 'Journal', href: '/feedback', icon: BookOpen },
   { name: 'Insights', href: '/insights', icon: BarChart3 },
 ];
@@ -109,10 +111,10 @@ export function Navigation() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    'flex items-center gap-3 px-3 py-2 rounded-lg text-base font-semibold transition-all duration-200 shadow-sm',
                     isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      ? 'bg-gradient-to-r from-[#e0c3fc] via-[#8ec5fc] to-[#f9d6e9] text-blue-900 ring-2 ring-blue-300 scale-105 shadow-lg'
+                      : 'text-muted-foreground hover:text-blue-700 hover:bg-blue-100/60'
                   )}
                   onClick={() => setIsOpen(false)}
                 >

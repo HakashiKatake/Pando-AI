@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { useState, useEffect } from 'react';
 import { Heart, Brain, Shield, Users, ArrowRight, Star, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function LandingPage() {
@@ -117,12 +118,14 @@ export default function LandingPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">CalmConnect</span>
+            <span className="text-2xl font-bold text-gray-900">
+              CalmConnect
+            </span>
           </div>
-          
+
           <div className="flex items-center space-x-4">
-            <Link 
-              href="/emergency" 
+            <Link
+              href="/emergency"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Crisis Support
@@ -149,17 +152,21 @@ export default function LandingPage() {
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
             Your AI Mental Wellness
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {" "}Companion
+              {" "}
+              Companion
             </span>
           </h1>
-          
+
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Get personalized support, track your mood, and practice mindfulness with our compassionate AI companion. 
-            Available 24/7, completely private, and designed to support your mental health journey.
+            Get personalized support, track your mood, and practice mindfulness
+            with our compassionate AI companion. Available 24/7, completely
+            private, and designed to support your mental health journey.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "tween", duration: 0.05, ease: "easeInOut" }}
               onClick={handleStartAsGuest}
               disabled={isStartingAsGuest}
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2 disabled:opacity-70"
@@ -172,18 +179,28 @@ export default function LandingPage() {
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
-            </button>
-            
+            </motion.button>
+
             <button
               onClick={handleSignUp}
-              className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
+              className="
+              bg-transparent border-2 border-gray-300 text-gray-700 
+              px-8 py-4 rounded-xl font-semibold text-lg 
+              hover:text-white 
+              hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 
+              hover:border-transparent 
+              transition-colors duration-900 ease-in-out 
+              [transition-property:color] [transition-duration:900ms] 
+              shadow-sm hover:shadow-lg
+            "
             >
               Create Account
             </button>
           </div>
 
           <p className="text-sm text-gray-500 mt-4">
-            ✨ No credit card required • 🔒 Completely anonymous option • 🆓 Free forever
+            ✨ No credit card required • 🔒 Completely anonymous option • 🆓
+            Free forever
           </p>
         </div>
       </section>
@@ -196,15 +213,18 @@ export default function LandingPage() {
               Why Choose CalmConnect?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Our platform combines AI technology with proven mental health practices to provide you with personalized, accessible support.
+              Our platform combines AI technology with proven mental health
+              practices to provide you with personalized, accessible support.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div 
+              <motion.div
                 key={index}
-                className="text-center p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 250 }}
+                className="text-center p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors shadow-sm hover:shadow-md"
               >
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-xl mb-4">
                   {feature.icon}
@@ -212,10 +232,8 @@ export default function LandingPage() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">
-                  {feature.description}
-                </p>
-              </div>
+                <p className="text-gray-600">{feature.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -252,16 +270,25 @@ export default function LandingPage() {
               Real Stories from Real People
             </h2>
             <p className="text-lg text-gray-600">
-              See how CalmConnect has helped others on their mental wellness journey
+              See how CalmConnect has helped others on their mental wellness
+              journey
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gray-50 p-6 rounded-2xl">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 250 }}
+                className="text-center p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors shadow-sm hover:shadow-md"
+                key={index}
+              >
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star
+                      key={i}
+                      className="w-5 h-5 text-yellow-400 fill-current"
+                    />
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4 italic">
@@ -270,7 +297,7 @@ export default function LandingPage() {
                 <p className="text-gray-600 font-medium">
                   — {testimonial.name}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -283,7 +310,8 @@ export default function LandingPage() {
             Ready to Start Your Wellness Journey?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of people who have found support, clarity, and peace of mind with CalmConnect.
+            Join thousands of people who have found support, clarity, and peace
+            of mind with CalmConnect.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -301,7 +329,7 @@ export default function LandingPage() {
                 </>
               )}
             </button>
-            
+
             <button
               onClick={handleSignUp}
               className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all duration-200"
@@ -327,33 +355,77 @@ export default function LandingPage() {
                 Your compassionate AI mental wellness companion, available 24/7.
               </p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/emergency" className="hover:text-white transition-colors">Crisis Support</Link></li>
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+                <li>
+                  <Link
+                    href="/emergency"
+                    className="hover:text-white transition-colors"
+                  >
+                    Crisis Support
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/help"
+                    className="hover:text-white transition-colors"
+                  >
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contact"
+                    className="hover:text-white transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold mb-4">Resources</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li>
+                  <Link
+                    href="/about"
+                    className="hover:text-white transition-colors"
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="hover:text-white transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="hover:text-white transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold mb-4">Connect</h3>
               <p className="text-gray-400 text-sm">
-                If you're in crisis, please contact emergency services immediately or call the National Suicide Prevention Lifeline at 988.
+                If you're in crisis, please contact emergency services
+                immediately or call the National Suicide Prevention Lifeline at
+                988.
               </p>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
             <p>&copy; 2025 CalmConnect. Made with ❤️ for mental wellness.</p>
           </div>
