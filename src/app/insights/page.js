@@ -56,6 +56,11 @@ export default function InsightsPage() {
     }
   }, [dataInit.userId, dataInit.guestId, loadFeedbackEntries, loadExerciseSessions]);
 
+  // Force re-render when exercise sessions change
+  useEffect(() => {
+    // This effect ensures the component re-renders when exercise sessions are updated
+  }, [exerciseSessions]);
+
   // Prevent hydration errors by not rendering dynamic content until client-side
   if (!isHydrated) {
     return (
@@ -107,13 +112,22 @@ export default function InsightsPage() {
   };
 
   const getActivityData = () => {
-    const activities = ['breathing', 'chat', 'journal', 'game'];
+    const activities = ['breathing', 'memory-sequence', 'color-match', 'reaction-timer', 'chat', 'journal'];
     return activities.map(activity => {
       let count = 0;
       
       switch (activity) {
         case 'breathing':
-          count = exerciseSessions ? exerciseSessions.filter(s => s.type === 'breathing').length : 0;
+          count = exerciseSessions ? exerciseSessions.filter(s => s.exerciseType === 'breathing').length : 0;
+          break;
+        case 'memory-sequence':
+          count = exerciseSessions ? exerciseSessions.filter(s => s.exerciseType === 'game' && s.gameType === 'memory-sequence').length : 0;
+          break;
+        case 'color-match':
+          count = exerciseSessions ? exerciseSessions.filter(s => s.exerciseType === 'game' && s.gameType === 'color-match').length : 0;
+          break;
+        case 'reaction-timer':
+          count = exerciseSessions ? exerciseSessions.filter(s => s.exerciseType === 'game' && s.gameType === 'reaction-timer').length : 0;
           break;
         case 'chat':
           count = messages ? messages.length : 0;
@@ -121,19 +135,21 @@ export default function InsightsPage() {
         case 'journal':
           count = feedbackEntries ? feedbackEntries.filter(e => e.type === 'journal').length : 0;
           break;
-        case 'game':
-          count = exerciseSessions ? exerciseSessions.filter(s => s.type === 'game').length : 0;
-          break;
       }
       
       return {
-        name: activity.charAt(0).toUpperCase() + activity.slice(1),
+        name: activity === 'memory-sequence' ? 'Memory' : 
+              activity === 'color-match' ? 'Color Match' : 
+              activity === 'reaction-timer' ? 'Reaction' :
+              activity.charAt(0).toUpperCase() + activity.slice(1),
         value: count,
         color: {
           breathing: '#3b82f6',
+          'memory-sequence': '#8b5cf6',
+          'color-match': '#ef4444',
+          'reaction-timer': '#f59e0b',
           chat: '#10b981',
-          journal: '#f59e0b',
-          game: '#8b5cf6'
+          journal: '#f59e0b'
         }[activity]
       };
     });
@@ -160,13 +176,84 @@ export default function InsightsPage() {
       : 0;
 
     const streakDays = calculateStreakDays();
+    const totalExerciseTime = getTotalExerciseTime();
+    const exerciseStreak = calculateExerciseStreak();
+    const weeklyExerciseTime = getWeeklyExerciseTime();
 
     return {
       totalSessions,
       weeklyActivity,
       avgMood,
-      streakDays
+      streakDays,
+      totalExerciseTime,
+      exerciseStreak,
+      weeklyExerciseTime
     };
+  };
+
+  const getTotalExerciseTime = () => {
+    const safeExerciseSessions = exerciseSessions || [];
+    return safeExerciseSessions.reduce((total, session) => total + (session.duration || 0), 0);
+  };
+
+  const getWeeklyExerciseTime = () => {
+    const safeExerciseSessions = exerciseSessions || [];
+    const thisWeek = new Date();
+    thisWeek.setDate(thisWeek.getDate() - 7);
+    
+    return safeExerciseSessions
+      .filter(session => session.timestamp && new Date(session.timestamp) > thisWeek)
+      .reduce((total, session) => total + (session.duration || 0), 0);
+  };
+
+  const calculateExerciseStreak = () => {
+    const safeExerciseSessions = exerciseSessions || [];
+    if (safeExerciseSessions.length === 0) return 0;
+    
+    const today = new Date().toISOString().split('T')[0];
+    let streak = 0;
+    let currentDate = new Date();
+
+    while (true) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      const hasExercise = safeExerciseSessions.some(session => 
+        session.timestamp && session.timestamp.split('T')[0] === dateStr
+      );
+
+      if (hasExercise) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  };
+
+  const getExerciseTypeStats = () => {
+    const safeExerciseSessions = exerciseSessions || [];
+    const stats = {};
+    
+    safeExerciseSessions.forEach(session => {
+      const type = session.exerciseType || 'other';
+      if (!stats[type]) {
+        stats[type] = {
+          count: 0,
+          totalDuration: 0,
+          averageDuration: 0
+        };
+      }
+      stats[type].count++;
+      stats[type].totalDuration += session.duration || 0;
+    });
+
+    // Calculate averages
+    Object.keys(stats).forEach(type => {
+      stats[type].averageDuration = Math.round(stats[type].totalDuration / stats[type].count);
+    });
+
+    return stats;
   };
 
   const calculateStreakDays = () => {
@@ -201,6 +288,17 @@ export default function InsightsPage() {
   const moodData = getMoodData();
   const activityData = getActivityData();
   const engagementStats = getEngagementStats();
+  const exerciseTypeStats = getExerciseTypeStats();
+
+  const formatTime = (seconds) => {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -292,8 +390,8 @@ export default function InsightsPage() {
                 <Clock className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{engagementStats.totalSessions}</p>
-                <p className="text-sm text-muted-foreground">Total Sessions</p>
+                <p className="text-2xl font-bold">{formatTime(engagementStats.totalExerciseTime)}</p>
+                <p className="text-sm text-muted-foreground">Exercise Time</p>
                 <Badge variant="secondary" className="text-xs mt-1">
                   All Time
                 </Badge>
@@ -302,6 +400,99 @@ export default function InsightsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
+                <Activity className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{engagementStats.exerciseStreak}</p>
+                <p className="text-sm text-muted-foreground">Exercise Streak</p>
+                <p className="text-xs text-muted-foreground mt-1">Consecutive days</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-cyan-100 dark:bg-cyan-900 rounded-lg">
+                <Clock className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{formatTime(engagementStats.weeklyExerciseTime)}</p>
+                <p className="text-sm text-muted-foreground">This Week</p>
+                <p className="text-xs text-muted-foreground mt-1">Exercise time</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+                <Brain className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{(exerciseSessions || []).length}</p>
+                <p className="text-sm text-muted-foreground">Total Sessions</p>
+                <p className="text-xs text-muted-foreground mt-1">Exercises completed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Exercise Type Breakdown */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Exercise Type Breakdown
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {Object.keys(exerciseTypeStats).length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(exerciseTypeStats).map(([type, stats]) => (
+                <div key={type} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 capitalize mb-2">
+                    {type} Exercises
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Sessions:</span>
+                      <span className="font-medium">{stats.count}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Total Time:</span>
+                      <span className="font-medium">{formatTime(stats.totalDuration)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Avg Duration:</span>
+                      <span className="font-medium">{formatTime(stats.averageDuration)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-32 flex items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No exercise data available yet</p>
+                <p className="text-sm">Complete some exercises to see your breakdown</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Mood Trend Chart */}
@@ -465,6 +656,76 @@ export default function InsightsPage() {
             </div>
           )}
 
+          {engagementStats.exerciseStreak >= 7 && (
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-blue-800 dark:text-blue-200">
+                  Exercise Consistency Champion
+                </span>
+              </div>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                You've maintained a {engagementStats.exerciseStreak}-day exercise streak! Your dedication to wellness is paying off.
+              </p>
+            </div>
+          )}
+
+          {exerciseSessions.filter(s => s.exerciseType === 'breathing').length > 10 && (
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="h-4 w-4 text-purple-600" />
+                <span className="font-medium text-purple-800 dark:text-purple-200">
+                  Breathing Expert
+                </span>
+              </div>
+              <p className="text-sm text-purple-700 dark:text-purple-300">
+                You've completed over 10 breathing exercises! This is excellent for stress management and mindfulness.
+              </p>
+            </div>
+          )}
+
+          {exerciseSessions.filter(s => s.exerciseType === 'game').length > 5 && (
+            <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Brain className="h-4 w-4 text-indigo-600" />
+                <span className="font-medium text-indigo-800 dark:text-indigo-200">
+                  Mental Fitness Champion
+                </span>
+              </div>
+              <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                You've completed multiple cognitive training games! This helps improve focus, memory, and reaction time.
+              </p>
+            </div>
+          )}
+
+          {exerciseSessions.filter(s => s.gameType === 'color-match').length > 3 && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-4 w-4 text-red-600" />
+                <span className="font-medium text-red-800 dark:text-red-200">
+                  Focus Master
+                </span>
+              </div>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                Your color matching skills are improving! This exercise enhances attention and visual processing.
+              </p>
+            </div>
+          )}
+
+          {engagementStats.totalExerciseTime > 300 && (
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-emerald-600" />
+                <span className="font-medium text-emerald-800 dark:text-emerald-200">
+                  Time Investment Champion
+                </span>
+              </div>
+              <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                You've invested {formatTime(engagementStats.totalExerciseTime)} in wellness exercises! Time well spent for your mental health.
+              </p>
+            </div>
+          )}
+
           {engagementStats.streakDays >= 7 && (
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-2">
@@ -479,16 +740,16 @@ export default function InsightsPage() {
             </div>
           )}
 
-          {exerciseSessions.filter(s => s.type === 'breathing').length > 10 && (
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+          {engagementStats.weeklyExerciseTime < 180 && (exerciseSessions || []).length > 0 && (
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
               <div className="flex items-center gap-2 mb-2">
-                <Activity className="h-4 w-4 text-purple-600" />
-                <span className="font-medium text-purple-800 dark:text-purple-200">
-                  Breathing Expert
+                <Clock className="h-4 w-4 text-amber-600" />
+                <span className="font-medium text-amber-800 dark:text-amber-200">
+                  Gentle Exercise Reminder
                 </span>
               </div>
-              <p className="text-sm text-purple-700 dark:text-purple-300">
-                You've completed over 10 breathing exercises! This is excellent for stress management and mindfulness.
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                Try to spend at least 3 minutes on exercises this week. Even short sessions can make a big difference!
               </p>
             </div>
           )}

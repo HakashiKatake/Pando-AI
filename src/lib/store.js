@@ -478,6 +478,12 @@ export const useExerciseStore = create((set, get) => ({
   },
   
   addSession: async (sessionData, userId, guestId) => {
+    const newSession = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      ...sessionData,
+    };
+
     if (userId) {
       // For authenticated users, save to database
       try {
@@ -488,20 +494,18 @@ export const useExerciseStore = create((set, get) => ({
         });
         
         if (response.ok) {
-          // Reload from database
+          // Add to local state immediately for UI responsiveness
+          set(state => ({ sessions: [...state.sessions, newSession] }));
+          // Then reload from database to ensure consistency
           get().loadSessionsFromAPI(userId, guestId);
+        } else {
+          console.error('Failed to save exercise session to database');
         }
       } catch (error) {
         console.error('Failed to save exercise session:', error);
       }
     } else {
       // For guests, use local storage
-      const newSession = {
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-        ...sessionData,
-      };
-      
       set(state => {
         const newSessions = [...state.sessions, newSession];
         

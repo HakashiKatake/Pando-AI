@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Play, Pause, Square, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
+import { useExerciseStore } from '../../../lib/store';
+import { useDataInitialization } from '../../../lib/useDataInitialization';
 
 export default function BreathingExercisePage() {
   const [isActive, setIsActive] = useState(false);
@@ -10,9 +12,13 @@ export default function BreathingExercisePage() {
   const [count, setCount] = useState(0);
   const [cycle, setCycle] = useState(0);
   const [selectedTechnique, setSelectedTechnique] = useState('4-7-8');
+  const [startTime, setStartTime] = useState(null);
   
   const intervalRef = useRef(null);
   const audioRef = useRef(null);
+  
+  const { addSession } = useExerciseStore();
+  const dataInit = useDataInitialization();
 
   const techniques = {
     '4-7-8': {
@@ -75,9 +81,10 @@ export default function BreathingExercisePage() {
               setCycle(prevCycle => {
                 const newCycle = prevCycle + 1;
                 if (newCycle >= currentTechnique.cycles) {
-                  // Exercise complete
+                  // Exercise complete - save session
                   setIsActive(false);
                   setPhaseIndex(0);
+                  saveCompletedSession();
                   return 0;
                 }
                 return newCycle;
@@ -102,6 +109,7 @@ export default function BreathingExercisePage() {
     setPhaseIndex(0);
     setCount(0);
     setCycle(0);
+    setStartTime(new Date());
   };
 
   const pauseExercise = () => {
@@ -139,6 +147,26 @@ export default function BreathingExercisePage() {
       case 'exhale': return 'Exhale slowly through your mouth';
       case 'pause': return 'Pause and relax';
       default: return 'Follow the breathing pattern';
+    }
+  };
+
+  const saveCompletedSession = async () => {
+    const endTime = new Date();
+    const duration = startTime ? Math.round((endTime - startTime) / 1000) : 0;
+    
+    const sessionData = {
+      exerciseType: 'breathing',
+      technique: selectedTechnique,
+      duration: duration,
+      completedCycles: currentTechnique.cycles,
+      timestamp: endTime.toISOString(),
+    };
+
+    try {
+      await addSession(sessionData, dataInit.userId, dataInit.guestId);
+      console.log('Breathing session saved successfully');
+    } catch (error) {
+      console.error('Failed to save breathing session:', error);
     }
   };
 
