@@ -2,7 +2,7 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_API_URL = process.env.OPENROUTER_API_URL;
 
 // Updated with better error handling for API response structure
-export async function sendChatMessage(messages, model = 'deepseek/deepseek-r1-0528-qwen3-8b:free') {
+export async function sendChatMessage(messages, model = 'mistralai/mistral-small-3.2-24b-instruct:free') {
   if (!OPENROUTER_API_KEY) {
     throw new Error('OpenRouter API key is not configured');
   }

@@ -17,7 +17,8 @@ import {
   User,
   LogOut,
   Settings,
-  Music2
+  Music2,
+  Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -29,6 +30,7 @@ const navigation = [
   { name: 'Chat', href: '/chat', icon: MessageCircle },
   { name: 'Exercises', href: '/exercises', icon: Target },
   { name: 'Games', href: '/games', icon: Gamepad2 },
+  { name: 'Habits', href: '/habits', icon: Gamepad2 },
   { name: 'Mood Music', href: '/mood', icon: Music2 },
   { name: 'Journal', href: '/feedback', icon: BookOpen },
   { name: 'Insights', href: '/insights', icon: BarChart3 },

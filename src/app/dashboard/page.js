@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { getRandomQuote, getMoodData, isToday } from '../../lib/utils';
+import { HabitTracker } from '../../components/HabitTracker';
+import { DailyQuests } from '../../components/DailyQuests';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -269,6 +271,12 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* Habit Tracker */}
+            <HabitTracker isWidget={true} />
+
+            {/* Daily Quests */}
+            <DailyQuests compact={true} showHeader={false} />
 
             {/* Wellness Resources */}
             <div className="bg-white rounded-xl p-6 shadow-sm border">

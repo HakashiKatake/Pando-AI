@@ -2,22 +2,18 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { storage, generateGuestId, shouldUseLocalStorage } from './utils';
 
-// Custom persistence for authenticated vs guest users
-const createConditionalPersist = (name) => (config) => {
-  // For authenticated users, we'll manually sync with the database
-  // For guests, we'll use localStorage persistence
+// Simple persistence for habit store
+const createHabitPersist = (name) => (config) => {
   return persist(config, {
     name,
     storage: createJSONStorage(() => localStorage),
-    // Only persist for guests - authenticated users will use DB
-    partialize: (state) => {
-      // Only persist if we're in guest mode
-      if (typeof window !== 'undefined') {
-        const appStore = JSON.parse(localStorage.getItem('calm-connect-app') || '{}');
-        return appStore.state?.isGuest !== false ? state : {};
-      }
-      return state;
-    }
+    // Always persist to localStorage for now (can be enhanced later for authenticated users)
+    partialize: (state) => ({
+      habits: state.habits,
+      completions: state.completions,
+      quests: state.quests,
+      questCompletions: state.questCompletions,
+    })
   });
 };
 
@@ -539,3 +535,493 @@ export const useExerciseStore = create((set, get) => ({
   
   clearData: () => set({ sessions: [] }),
 }));
+
+// Habit tracking store
+export const useHabitStore = create(
+  createHabitPersist('calm-connect-habits')(
+    (set, get) => ({
+      habits: [],
+      completions: {}, // { habitId: { date: completed } }
+      quests: {}, // { date: { questId: quest } }
+      questCompletions: {}, // { questId-date: completed }
+      
+      // Actions
+      addHabit: async (habit) => {
+        const { user, isGuest, guestId } = useAppStore.getState();
+        const userId = user?.id;
+        
+        const newHabit = {
+          id: Date.now().toString(),
+          ...habit,
+          createdAt: new Date().toISOString(),
+          userId: isGuest ? guestId : userId,
+        };
+        
+        // Always update the store state first for immediate UI feedback
+        set(state => {
+          const currentHabits = Array.isArray(state.habits) ? state.habits : [];
+          return { habits: [...currentHabits, newHabit] };
+        });
+        
+        if (!isGuest && userId) {
+          try {
+            const response = await fetch('/api/habits', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newHabit),
+            });
+            
+            if (response.ok) {
+              const savedHabit = await response.json();
+              // Update with server response if different
+              if (savedHabit.id !== newHabit.id) {
+                set(state => {
+                  const currentHabits = Array.isArray(state.habits) ? state.habits : [];
+                  return { 
+                    habits: currentHabits.map(h => h.id === newHabit.id ? savedHabit : h)
+                  };
+                });
+              }
+              return savedHabit;
+            } else {
+              console.error('Failed to save habit to database');
+              return newHabit;
+            }
+          } catch (error) {
+            console.error('Failed to save habit to database:', error);
+            return newHabit;
+          }
+        } else {
+          // For guests, the persistence middleware will handle localStorage automatically
+          return newHabit;
+        }
+      },
+      
+      // Helper method to safely get habits array
+      getHabits: () => {
+        const habits = get().habits;
+        return Array.isArray(habits) ? habits : [];
+      },
+      
+      updateHabit: async (habitId, updates) => {
+        const { user, isGuest } = useAppStore.getState();
+        const userId = user?.id;
+        
+        if (!isGuest && userId) {
+          try {
+            const response = await fetch(`/api/habits/${habitId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updates),
+            });
+            
+            if (response.ok) {
+              const updatedHabit = await response.json();
+              set(state => {
+                const currentHabits = Array.isArray(state.habits) ? state.habits : [];
+                return {
+                  habits: currentHabits.map(h => h.id === habitId ? updatedHabit : h)
+                };
+              });
+            }
+          } catch (error) {
+            console.error('Failed to update habit in database:', error);
+          }
+        } else {
+          // For guests, update state (persistence middleware handles localStorage)
+          set(state => {
+            const currentHabits = Array.isArray(state.habits) ? state.habits : [];
+            return {
+              habits: currentHabits.map(h => 
+                h.id === habitId ? { ...h, ...updates } : h
+              )
+            };
+          });
+        }
+      },
+      
+      deleteHabit: async (habitId) => {
+        const { user, isGuest } = useAppStore.getState();
+        const userId = user?.id;
+        
+        if (!isGuest && userId) {
+          try {
+            const response = await fetch(`/api/habits/${habitId}`, {
+              method: 'DELETE',
+            });
+            
+            if (response.ok) {
+              set(state => {
+                const currentHabits = Array.isArray(state.habits) ? state.habits : [];
+                return {
+                  habits: currentHabits.filter(h => h.id !== habitId),
+                  completions: Object.fromEntries(
+                    Object.entries(state.completions || {}).filter(([key]) => !key.startsWith(habitId))
+                  )
+                };
+              });
+            }
+          } catch (error) {
+            console.error('Failed to delete habit from database:', error);
+          }
+        } else {
+          // For guests, update state (persistence middleware handles localStorage)
+          set(state => {
+            const currentHabits = Array.isArray(state.habits) ? state.habits : [];
+            return {
+              habits: currentHabits.filter(h => h.id !== habitId),
+              completions: Object.fromEntries(
+                Object.entries(state.completions || {}).filter(([key]) => !key.startsWith(habitId))
+              )
+            };
+          });
+        }
+      },
+      
+      toggleHabitCompletion: async (habitId, date = null) => {
+        const { user, isGuest } = useAppStore.getState();
+        const userId = user?.id;
+        const targetDate = date || new Date().toISOString().split('T')[0];
+        const completionKey = `${habitId}-${targetDate}`;
+        
+        const currentCompletions = get().completions || {};
+        const newCompletionStatus = !currentCompletions[completionKey];
+        
+        const newCompletion = {
+          habitId,
+          date: targetDate,
+          completed: newCompletionStatus,
+          timestamp: new Date().toISOString(),
+          userId: isGuest ? useAppStore.getState().guestId : userId,
+        };
+        
+        // Update state immediately for UI responsiveness
+        set(state => ({
+          completions: {
+            ...state.completions,
+            [completionKey]: newCompletionStatus
+          }
+        }));
+        
+        if (!isGuest && userId) {
+          try {
+            const response = await fetch('/api/habit-completions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newCompletion),
+            });
+            
+            if (!response.ok) {
+              // Revert on error
+              set(state => ({
+                completions: {
+                  ...state.completions,
+                  [completionKey]: !newCompletionStatus
+                }
+              }));
+            }
+          } catch (error) {
+            console.error('Failed to save habit completion to database:', error);
+            // Revert on error
+            set(state => ({
+              completions: {
+                ...state.completions,
+                [completionKey]: !newCompletionStatus
+              }
+            }));
+          }
+        } else {
+          // For guests, the persistence middleware handles localStorage automatically
+        }
+        
+        // Update quest progress after habit completion
+        get().updateQuestProgress();
+      },
+      
+      loadHabitsFromAPI: async (userId, guestId) => {
+        if (!userId && !guestId) return;
+        
+        try {
+          const response = await fetch(`/api/habits?userId=${userId || guestId}`);
+          if (response.ok) {
+            const { habits, completions } = await response.json();
+            const habitsArray = Array.isArray(habits) ? habits : [];
+            set({ habits: habitsArray, completions: completions || {} });
+          }
+        } catch (error) {
+          console.error('Failed to load habits from API:', error);
+          // Fallback to local storage for guests
+          if (guestId) {
+            get().loadFromLocalStorage();
+          }
+        }
+      },
+      
+      loadFromLocalStorage: () => {
+        // With persistence middleware, this is handled automatically
+        // This method is kept for compatibility but does nothing
+      },
+      
+      getHabitStreak: (habitId) => {
+        const completions = get().completions || {};
+        const today = new Date();
+        let streak = 0;
+        
+        for (let i = 0; i < 365; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() - i);
+          const dateStr = date.toISOString().split('T')[0];
+          const completionKey = `${habitId}-${dateStr}`;
+          
+          if (completions[completionKey]) {
+            streak++;
+          } else if (i > 0) {
+            // If today isn't completed, don't break the streak yet
+            break;
+          }
+        }
+        
+        return streak;
+      },
+      
+      getHabitCompletionRate: (habitId, days = 30) => {
+        const completions = get().completions || {};
+        const today = new Date();
+        let completed = 0;
+        
+        for (let i = 0; i < days; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() - i);
+          const dateStr = date.toISOString().split('T')[0];
+          const completionKey = `${habitId}-${dateStr}`;
+          
+          if (completions[completionKey]) {
+            completed++;
+          }
+        }
+        
+        return Math.round((completed / days) * 100);
+      },
+      
+      getTodaysHabits: () => {
+        const habits = get().getHabits();
+        const completions = get().completions || {};
+        const today = new Date().toISOString().split('T')[0];
+        
+        return habits.map(habit => ({
+          ...habit,
+          completed: completions[`${habit.id}-${today}`] || false,
+          streak: get().getHabitStreak(habit.id),
+          completionRate: get().getHabitCompletionRate(habit.id, 7)
+        }));
+      },
+      
+      // Quest methods
+      generateDailyQuests: (date = null) => {
+        const targetDate = date || new Date().toISOString().split('T')[0];
+        const habits = get().getHabits();
+        const existingQuests = get().quests[targetDate];
+        
+        if (existingQuests && Object.keys(existingQuests).length > 0) {
+          return existingQuests;
+        }
+        
+        const questTemplates = [
+          { type: 'streak', title: 'Maintain Your Streak', description: 'Keep your longest habit streak going', points: 20 },
+          { type: 'complete_all', title: 'Perfect Day', description: 'Complete all your habits today', points: 50 },
+          { type: 'early_bird', title: 'Early Bird', description: 'Complete 3 habits before noon', points: 25 },
+          { type: 'consistency', title: 'Stay Consistent', description: 'Complete the same habit 3 days in a row', points: 30 },
+          { type: 'habit_combo', title: 'Habit Combo', description: 'Complete any 5 habits today', points: 35 },
+          { type: 'weekend_warrior', title: 'Weekend Warrior', description: 'Complete all habits on weekend', points: 40 },
+        ];
+        
+        // Generate 3 random quests for the day
+        const dailyQuests = {};
+        const selectedTemplates = questTemplates.sort(() => 0.5 - Math.random()).slice(0, 3);
+        
+        selectedTemplates.forEach((template, index) => {
+          const questId = `${targetDate}-quest-${index}`;
+          dailyQuests[questId] = {
+            id: questId,
+            ...template,
+            date: targetDate,
+            completed: false,
+            progress: 0,
+            target: template.type === 'complete_all' ? habits.length : 
+                    template.type === 'early_bird' ? 3 :
+                    template.type === 'habit_combo' ? 5 : 1
+          };
+        });
+        
+        set(state => ({
+          quests: {
+            ...state.quests,
+            [targetDate]: dailyQuests
+          }
+        }));
+        
+        return dailyQuests;
+      },
+      
+      updateQuestProgress: (date = null) => {
+        const targetDate = date || new Date().toISOString().split('T')[0];
+        const quests = get().quests[targetDate];
+        const completions = get().completions || {};
+        const habits = get().getHabits();
+        
+        if (!quests) return;
+        
+        const updatedQuests = { ...quests };
+        const currentHour = new Date().getHours();
+        
+        Object.values(updatedQuests).forEach(quest => {
+          let progress = 0;
+          let completed = false;
+          
+          switch (quest.type) {
+            case 'complete_all':
+              progress = habits.filter(h => completions[`${h.id}-${targetDate}`]).length;
+              completed = progress === habits.length && habits.length > 0;
+              break;
+              
+            case 'early_bird':
+              // Check if 3 habits completed before noon
+              const earlyCompletions = habits.filter(h => {
+                const completion = completions[`${h.id}-${targetDate}`];
+                return completion && currentHour < 12;
+              }).length;
+              progress = Math.min(earlyCompletions, 3);
+              completed = progress >= 3;
+              break;
+              
+            case 'habit_combo':
+              progress = habits.filter(h => completions[`${h.id}-${targetDate}`]).length;
+              completed = progress >= 5;
+              break;
+              
+            case 'streak':
+              const maxStreak = habits.length > 0 ? Math.max(...habits.map(h => get().getHabitStreak(h.id)), 0) : 0;
+              progress = maxStreak > 0 ? 1 : 0;
+              completed = maxStreak > 0;
+              break;
+              
+            case 'consistency':
+              // Check if any habit completed 3 days in a row
+              const threeRowCheck = habits.length > 0 && habits.some(habit => {
+                let consecutive = 0;
+                for (let i = 0; i < 3; i++) {
+                  const checkDate = new Date();
+                  checkDate.setDate(checkDate.getDate() - i);
+                  const dateStr = checkDate.toISOString().split('T')[0];
+                  if (completions[`${habit.id}-${dateStr}`]) {
+                    consecutive++;
+                  } else {
+                    break;
+                  }
+                }
+                return consecutive >= 3;
+              });
+              progress = threeRowCheck ? 1 : 0;
+              completed = threeRowCheck;
+              break;
+              
+            case 'weekend_warrior':
+              const isWeekend = new Date(targetDate).getDay() === 0 || new Date(targetDate).getDay() === 6;
+              if (isWeekend) {
+                progress = habits.filter(h => completions[`${h.id}-${targetDate}`]).length;
+                completed = progress === habits.length && habits.length > 0;
+              }
+              break;
+          }
+          
+          updatedQuests[quest.id] = {
+            ...quest,
+            progress,
+            completed
+          };
+        });
+        
+        set(state => ({
+          quests: {
+            ...state.quests,
+            [targetDate]: updatedQuests
+          }
+        }));
+      },
+      
+      getTodaysQuests: () => {
+        const today = new Date().toISOString().split('T')[0];
+        return get().quests[today] || {};
+      },
+      
+      getQuestPoints: (date = null) => {
+        const targetDate = date || new Date().toISOString().split('T')[0];
+        const quests = get().quests[targetDate];
+        if (!quests) return 0;
+        
+        return Object.values(quests)
+          .filter(quest => quest.completed)
+          .reduce((total, quest) => total + quest.points, 0);
+      },
+      
+      getTotalQuestPoints: () => {
+        const allQuests = get().quests;
+        let total = 0;
+        
+        Object.values(allQuests).forEach(dayQuests => {
+          Object.values(dayQuests).forEach(quest => {
+            if (quest.completed) {
+              total += quest.points;
+            }
+          });
+        });
+        
+        return total;
+      },
+      
+      getMonthlyCalendar: (year = null, month = null) => {
+        const targetYear = year || new Date().getFullYear();
+        const targetMonth = month || new Date().getMonth();
+        const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+        const firstDay = new Date(targetYear, targetMonth, 1).getDay();
+        
+        const calendar = [];
+        const completions = get().completions || {};
+        const habits = get().getHabits();
+        
+        // Add empty cells for days before the first day of the month
+        for (let i = 0; i < firstDay; i++) {
+          calendar.push(null);
+        }
+        
+        // Add days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          const date = new Date(targetYear, targetMonth, day);
+          const dateStr = date.toISOString().split('T')[0];
+          
+          const dayHabits = habits.map(habit => ({
+            ...habit,
+            completed: completions[`${habit.id}-${dateStr}`] || false
+          }));
+          
+          const completedCount = dayHabits.filter(h => h.completed).length;
+          const totalCount = habits.length;
+          const completionRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+          
+          calendar.push({
+            day,
+            date: dateStr,
+            completedCount,
+            totalCount,
+            completionRate,
+            isToday: dateStr === new Date().toISOString().split('T')[0]
+          });
+        }
+        
+        return calendar;
+      },
+      
+      clearData: () => set({ habits: [], completions: {}, quests: {}, questCompletions: {} }),
+    })
+  )
+);

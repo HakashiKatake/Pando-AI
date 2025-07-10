@@ -5,17 +5,17 @@ import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
-        destructive: 'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
-        outline: 'border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
-        gradient: 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5',
+        default: 'bg-blue-600 text-white shadow hover:bg-blue-700',
+        destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
+        outline: 'border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900',
+        secondary: 'bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200',
+        ghost: 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
+        link: 'text-blue-600 underline-offset-4 hover:underline',
+        gradient: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5',
       },
       size: {
         default: 'h-9 px-4 py-2',
