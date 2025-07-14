@@ -8,15 +8,17 @@ const isProtectedRoute = createRouteMatcher([
   '/games(.*)',
   '/feedback(.*)',
   '/settings(.*)',
-  '/questionnaire(.*)'
+  '/questionnaire(.*)',
+  '/org(.*)',
+  '/classroom-code(.*)',
+  '/api/organizations(.*)',
+  '/api/classrooms(.*)'
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Allow guest access to protected routes or redirect to sign-in
   if (isProtectedRoute(req)) {
-    // For protected routes, allow guest access by not calling auth().protect()
-    // This allows both authenticated users and guests to access these routes
-    // The application logic will handle guest vs authenticated user experience
+    // Protect these routes - require authentication
+    await auth.protect();
   }
 });
 

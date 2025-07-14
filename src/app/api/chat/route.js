@@ -36,7 +36,7 @@ export async function POST(request) {
     const currentConversationId = conversationId || `conv_${Date.now()}`;
     
     // Detect triggers in the message (skip for auto-greetings)
-    const triggerAnalysis = isAutoGreeting ? { level: 'none' } : detectTriggers(message);
+    const triggerAnalysis = isAutoGreeting ? { level: 'low', crisis: false, concern: false } : detectTriggers(message);
     
     // Save user message (skip for auto-greetings)
     let userMessage = null;

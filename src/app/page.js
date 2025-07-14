@@ -50,11 +50,11 @@ export default function WellnessLanding() {
   }
 
   const handleSignIn = () => {
-    router.push('/sign-in')
+    router.push('/auth/signin-select')
   }
 
   const handleSignUp = () => {
-    router.push('/sign-up')
+    router.push('/auth/signup-select')
   }
 
   // Loading state
