@@ -1,5 +1,5 @@
 import { useUser } from '@clerk/nextjs';
-import { useAppStore, useMoodStore, useChatStore, useFeedbackStore, useExerciseStore } from './store';
+import { useAppStore, useMoodStore, useChatStore, useFeedbackStore, useExerciseStore, useHabitStore } from './store';
 import { useEffect } from 'react';
 
 // Custom hook to initialize data based on authentication status
@@ -11,6 +11,7 @@ export function useDataInitialization() {
   const chatStore = useChatStore();
   const feedbackStore = useFeedbackStore();
   const exerciseStore = useExerciseStore();
+  const habitStore = useHabitStore();
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -28,12 +29,14 @@ export function useDataInitialization() {
       chatStore.clearData();
       feedbackStore.clearData();
       exerciseStore.clearData();
+      habitStore.clearData();
       
       // Load from API
       moodStore.loadMoodsFromAPI(userId, null);
       chatStore.loadMessagesFromAPI(userId, null);
       feedbackStore.loadEntriesFromAPI(userId, null);
       exerciseStore.loadSessionsFromAPI(userId, null);
+      habitStore.loadHabitsFromAPI(userId, null);
       
     } else if (!isSignedIn && currentGuestId) {
       // Guest user - load from localStorage
@@ -43,6 +46,7 @@ export function useDataInitialization() {
       chatStore.loadFromLocalStorage();
       feedbackStore.loadFromLocalStorage();
       exerciseStore.loadFromLocalStorage();
+      habitStore.loadFromLocalStorage();
     }
   }, [isSignedIn, user, isLoaded, guestId]);
 

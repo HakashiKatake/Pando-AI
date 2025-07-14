@@ -584,7 +584,7 @@ export const useHabitStore = create(
               }
               return savedHabit;
             } else {
-              console.error('Failed to save habit to database');
+              console.warn('Failed to save habit to database, keeping local state');
               return newHabit;
             }
           } catch (error) {
@@ -679,7 +679,21 @@ export const useHabitStore = create(
       },
       
       toggleHabitCompletion: async (habitId, date = null) => {
-        const { user, isGuest } = useAppStore.getState();
+        const appState = useAppStore.getState();
+        const { user, isGuest, guestId } = appState;
+        
+        // Ensure we have a valid guest ID if we're in guest mode
+        if (isGuest && !guestId) {
+          console.warn('No guest ID found, initializing guest...');
+          useAppStore.getState().initializeGuest();
+          // Get the updated state after initialization
+          const updatedAppState = useAppStore.getState();
+          if (!updatedAppState.guestId) {
+            console.error('Failed to initialize guest ID');
+            return;
+          }
+        }
+        
         const userId = user?.id;
         const targetDate = date || new Date().toISOString().split('T')[0];
         const completionKey = `${habitId}-${targetDate}`;
@@ -692,7 +706,7 @@ export const useHabitStore = create(
           date: targetDate,
           completed: newCompletionStatus,
           timestamp: new Date().toISOString(),
-          userId: isGuest ? useAppStore.getState().guestId : userId,
+          userId: isGuest ? (guestId || useAppStore.getState().guestId) : userId,
         };
         
         // Update state immediately for UI responsiveness
@@ -703,6 +717,20 @@ export const useHabitStore = create(
           }
         }));
         
+        // Force persist the state change
+        if (typeof window !== 'undefined') {
+          const stateToStore = {
+            habits: get().habits,
+            completions: {
+              ...get().completions,
+              [completionKey]: newCompletionStatus
+            },
+            quests: get().quests,
+            questCompletions: get().questCompletions,
+          };
+          localStorage.setItem('calm-connect-habits', JSON.stringify({ state: stateToStore }));
+        }
+        
         if (!isGuest && userId) {
           try {
             const response = await fetch('/api/habit-completions', {
@@ -712,27 +740,15 @@ export const useHabitStore = create(
             });
             
             if (!response.ok) {
-              // Revert on error
-              set(state => ({
-                completions: {
-                  ...state.completions,
-                  [completionKey]: !newCompletionStatus
-                }
-              }));
+              console.warn('Failed to save habit completion to database, keeping local state');
+              // Don't revert on error for now, keep local state
             }
           } catch (error) {
             console.error('Failed to save habit completion to database:', error);
-            // Revert on error
-            set(state => ({
-              completions: {
-                ...state.completions,
-                [completionKey]: !newCompletionStatus
-              }
-            }));
+            // Don't revert on error for now, keep local state
           }
-        } else {
-          // For guests, the persistence middleware handles localStorage automatically
         }
+        // For guests, the persistence middleware handles localStorage automatically
         
         // Update quest progress after habit completion
         get().updateQuestProgress();

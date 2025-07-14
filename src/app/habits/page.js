@@ -1,29 +1,34 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Input } from '@/components/ui/Input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
+import React, { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { 
-  CheckCircle2, 
-  Circle, 
-  Plus, 
-  Clock, 
   TrendingUp, 
+  Percent, 
+  Flame, 
   Target,
-  Calendar,
-  Flame,
-  MoreVertical,
-  Edit2,
+  Calendar as CalendarIcon,
+  Trophy,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Clock,
+  Droplets,
+  Dumbbell,
+  Plus,
+  CheckCircle2,
+  Circle,
   Trash2,
-  RotateCcw
-} from 'lucide-react';
-import { useHabitStore } from '@/lib/store';
-import { useDataInitialization } from '@/lib/useDataInitialization';
-import { DailyQuests } from '@/components/DailyQuests';
-import { HabitCalendar } from '@/components/HabitCalendar';
+  Edit2
+} from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import { Input } from '@/components/ui/Input'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog'
+import { useHabitStore, useAppStore } from '@/lib/store'
+import { useDataInitialization } from '@/lib/useDataInitialization'
+import { DailyQuests } from '@/components/DailyQuests'
 
 const HABIT_CATEGORIES = [
   { id: 'health', name: 'Health & Fitness', icon: '💪', color: 'bg-green-100 text-green-800' },
@@ -33,7 +38,7 @@ const HABIT_CATEGORIES = [
   { id: 'social', name: 'Social', icon: '👥', color: 'bg-pink-100 text-pink-800' },
   { id: 'creative', name: 'Creative', icon: '🎨', color: 'bg-yellow-100 text-yellow-800' },
   { id: 'other', name: 'Other', icon: '📝', color: 'bg-gray-100 text-gray-800' }
-];
+]
 
 const HABIT_FREQUENCIES = [
   { id: 'daily', name: 'Daily', description: 'Every day' },
@@ -41,85 +46,100 @@ const HABIT_FREQUENCIES = [
   { id: 'weekends', name: 'Weekends', description: 'Saturday and Sunday' },
   { id: 'weekly', name: 'Weekly', description: 'Once a week' },
   { id: 'custom', name: 'Custom', description: 'Choose specific days' }
-];
+]
 
 function CreateHabitDialog({ isOpen, onOpenChange, onHabitCreated }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: 'other',
+    category: 'health',
     frequency: 'daily',
     targetValue: 1,
     unit: '',
     reminderTime: '',
     isActive: true
-  });
+  })
   
-  const { addHabit } = useHabitStore();
+  const { addHabit } = useHabitStore()
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.title.trim()) return;
+    e.preventDefault()
+    if (!formData.title.trim()) return
 
-    await addHabit(formData);
+    await addHabit(formData)
     
     setFormData({
       title: '',
       description: '',
-      category: 'other',
+      category: 'health',
       frequency: 'daily',
       targetValue: 1,
       unit: '',
       reminderTime: '',
       isActive: true
-    });
+    })
     
-    onHabitCreated();
-    onOpenChange(false);
-  };
+    onHabitCreated()
+    onOpenChange(false)
+  }
 
-  const selectedCategory = HABIT_CATEGORIES.find(cat => cat.id === formData.category);
+  const selectedCategory = HABIT_CATEGORIES.find(cat => cat.id === formData.category)
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Habit</DialogTitle>
+          <DialogTitle style={{ color: '#6E55A0' }}>Create New Habit</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block text-gray-900">Habit Name</label>
+            <label className="text-sm font-medium mb-2 block" style={{ color: '#6E55A0' }}>Habit Name</label>
             <Input
               placeholder="e.g., Morning run, Read for 30 minutes"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               required
+              className="border-2"
+              style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block text-gray-900">Description (Optional)</label>
+            <label className="text-sm font-medium mb-2 block" style={{ color: '#6E55A0' }}>Description (Optional)</label>
             <Input
               placeholder="Why is this habit important to you?"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              className="border-2"
+              style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block text-gray-900">Category</label>
+            <label className="text-sm font-medium mb-2 block" style={{ color: '#6E55A0' }}>Category</label>
             <div className="grid grid-cols-2 gap-2">
               {HABIT_CATEGORIES.map((category) => (
                 <button
                   key={category.id}
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, category: category.id }))}
-                  className={`p-3 rounded-lg border text-left transition-colors ${
+                  className={`p-3 rounded-lg border-2 text-left transition-colors ${
                     formData.category === category.id 
-                      ? 'border-blue-500 bg-blue-50 text-blue-900' 
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      ? 'text-white' 
+                      : 'bg-white hover:bg-gray-50'
                   }`}
+                  style={
+                    formData.category === category.id
+                      ? { 
+                          backgroundColor: '#8A6FBF',
+                          borderColor: '#8A6FBF'
+                        }
+                      : { 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }
+                  }
                 >
                   <div className="flex items-center space-x-2">
                     <span className="text-lg">{category.icon}</span>
@@ -131,11 +151,12 @@ function CreateHabitDialog({ isOpen, onOpenChange, onHabitCreated }) {
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block text-gray-900">Frequency</label>
+            <label className="text-sm font-medium mb-2 block" style={{ color: '#6E55A0' }}>Frequency</label>
             <select
               value={formData.frequency}
               onChange={(e) => setFormData(prev => ({ ...prev, frequency: e.target.value }))}
-              className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
             >
               {HABIT_FREQUENCIES.map((freq) => (
                 <option key={freq.id} value={freq.id}>
@@ -147,39 +168,64 @@ function CreateHabitDialog({ isOpen, onOpenChange, onHabitCreated }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block text-gray-900">Target</label>
+              <label className="text-sm font-medium mb-2 block" style={{ color: '#6E55A0' }}>Target</label>
               <Input
                 type="number"
                 min="1"
                 value={formData.targetValue}
                 onChange={(e) => setFormData(prev => ({ ...prev, targetValue: parseInt(e.target.value) || 1 }))}
+                className="border-2"
+                style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block text-gray-900">Unit (Optional)</label>
+              <label className="text-sm font-medium mb-2 block" style={{ color: '#6E55A0' }}>Unit (Optional)</label>
               <Input
                 placeholder="e.g., minutes, pages, cups"
                 value={formData.unit}
                 onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value }))}
+                className="border-2"
+                style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
               />
             </div>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="border-2"
+              style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
+            >
               Cancel
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit"
+              className="text-white"
+              style={{ backgroundColor: '#8A6FBF' }}
+            >
               Create Habit
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
-export default function HabitsPage() {
+const HabitTracker = () => {
+  const [currentMonth, setCurrentMonth] = useState(6) // July = 6 (0-indexed)
+  const [currentYear, setCurrentYear] = useState(2025)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [isHydrated, setIsHydrated] = useState(false)
+  
+  // Updated time to match your current timestamp
+  const currentTime = "08:03"
+  const currentDate = "Jul 14 - Jul 29"
+
+  // Use the actual habit store
   const { 
     habits, 
     completions, 
@@ -190,315 +236,580 @@ export default function HabitsPage() {
     getTodaysHabits,
     loadFromLocalStorage,
     generateDailyQuests,
-    updateQuestProgress 
-  } = useHabitStore();
+    updateQuestProgress,
+    addHabit
+  } = useHabitStore()
   
-  const dataInit = useDataInitialization();
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Initialize app store for guest handling
+  const { initializeGuest, guestId } = useAppStore()
+  
+  const dataInit = useDataInitialization()
 
   useEffect(() => {
-    setIsHydrated(true);
-    loadFromLocalStorage();
+    setIsHydrated(true)
+    // Initialize guest if not already done
+    initializeGuest()
+    loadFromLocalStorage()
     // Initialize quest system
-    generateDailyQuests();
-    updateQuestProgress();
-  }, [loadFromLocalStorage, generateDailyQuests, updateQuestProgress]);
+    generateDailyQuests()
+    updateQuestProgress()
+  }, [initializeGuest, loadFromLocalStorage, generateDailyQuests, updateQuestProgress])
 
   const handleToggleHabit = async (habitId) => {
-    await toggleHabitCompletion(habitId);
-  };
+    console.log('=== HABIT TOGGLE DEBUG ===');
+    console.log('Toggling habit:', habitId);
+    console.log('Current guestId:', guestId);
+    console.log('Current completions before toggle:', completions);
+    
+    try {
+      await toggleHabitCompletion(habitId);
+      console.log('Habit toggled successfully');
+      console.log('Current completions after toggle:', useHabitStore.getState().completions);
+    } catch (error) {
+      console.error('Error toggling habit:', error);
+    }
+    
+    console.log('=== END HABIT TOGGLE DEBUG ===');
+  }
 
   const handleHabitCreated = () => {
     // No need to manually refresh - store is reactive
-  };
+  }
 
   const handleDeleteHabit = async (habitId) => {
     if (confirm('Are you sure you want to delete this habit?')) {
-      await deleteHabit(habitId);
+      await deleteHabit(habitId)
     }
-  };
+  }
 
   // Get today's habits directly from store
-  const todaysHabits = isHydrated ? getTodaysHabits() : [];
+  const todaysHabits = isHydrated ? getTodaysHabits() : []
 
   const getOverallStats = () => {
-    const total = todaysHabits.length;
-    const completed = todaysHabits.filter(h => h.completed).length;
-    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-    const totalStreak = todaysHabits.reduce((sum, habit) => sum + habit.streak, 0);
+    const total = todaysHabits.length
+    const completed = todaysHabits.filter(h => h.completed).length
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0
+    const totalStreak = todaysHabits.reduce((sum, habit) => sum + habit.streak, 0)
     const avgCompletionRate = total > 0 
       ? Math.round(todaysHabits.reduce((sum, habit) => sum + habit.completionRate, 0) / total)
-      : 0;
+      : 0
     
-    return { total, completed, percentage, totalStreak, avgCompletionRate };
-  };
+    return { total, completed, percentage, totalStreak, avgCompletionRate }
+  }
 
   const filteredHabits = selectedCategory === 'all' 
     ? todaysHabits 
-    : todaysHabits.filter(habit => habit.category === selectedCategory);
+    : todaysHabits.filter(habit => habit.category === selectedCategory)
 
-  const stats = getOverallStats();
+  const stats = getOverallStats()
+
+  // Stats data using real data
+  const statsData = [
+    {
+      title: "Todays Progress",
+      value: `${stats.completed}/${stats.total}`,
+      icon: <TrendingUp className="w-5 h-5" />,
+      color: "bg-gradient-to-r from-pink-400 to-pink-500"
+    },
+    {
+      title: "Completion Rate",
+      value: `${stats.percentage}%`,
+      icon: <Percent className="w-5 h-5" />,
+      color: "bg-gradient-to-r from-orange-400 to-orange-500"
+    },
+    {
+      title: "Streak",
+      value: stats.totalStreak.toString(),
+      icon: <Flame className="w-5 h-5" />,
+      color: "bg-gradient-to-r from-indigo-500 to-purple-600"
+    },
+    {
+      title: "Weekly Progress",
+      value: `${stats.avgCompletionRate}%`,
+      icon: <Target className="w-5 h-5" />,
+      color: "bg-gradient-to-r from-green-400 to-green-500"
+    }
+  ]
+
+  // Generate calendar days for July 2025
+  const generateCalendarDays = () => {
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay()
+    const days = []
+
+    // Add days from previous month
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear
+    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate()
+    
+    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+      days.push({
+        day: daysInPrevMonth - i,
+        isCurrentMonth: false,
+        isNextMonth: false
+      })
+    }
+
+    // Add days of current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push({
+        day: day,
+        isCurrentMonth: true,
+        isNextMonth: false
+      })
+    }
+
+    // Add days from next month to fill the grid
+    const remainingCells = 42 - days.length // 6 rows * 7 days
+    for (let day = 1; day <= remainingCells; day++) {
+      days.push({
+        day: day,
+        isCurrentMonth: false,
+        isNextMonth: true
+      })
+    }
+
+    return days
+  }
+
+  const calendarDays = generateCalendarDays()
+  const monthNames = ["January", "February", "March", "April", "May", "June", 
+                     "July", "August", "September", "October", "November", "December"]
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+  // Calendar stats using real data
+  const calendarStats = [
+    { title: "Perfect days", value: "0", color: "#E879F9" },
+    { title: "Active days", value: stats.total > 0 ? "1" : "0", color: "#FBBF24" },
+    { title: "Avg completion", value: `${stats.percentage}%`, color: "#60A5FA" },
+    { title: "Total habits", value: stats.total.toString(), color: "#34D399" }
+  ]
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  }
+
+  const cardVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.6 }
+    },
+    hover: {
+      y: -5,
+      transition: { duration: 0.3 }
+    }
+  }
 
   if (!isHydrated) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#8A6FBF' }}></div>
+          <p style={{ color: '#6E55A0' }}>Loading your habits...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
-          <Target className="h-8 w-8" />
-          Habit Tracker
-        </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Build lasting habits that improve your life. Track your progress and stay motivated with streaks and insights.
-        </p>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.completed}/{stats.total}</p>
-                <p className="text-sm text-muted-foreground">Today's Progress</p>
-              </div>
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+      {/* Header */}
+      <motion.header 
+        className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 fixed top-0 left-0 right-0 z-30"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <span className="text-sm sm:text-lg">🐼</span>
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-base sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
+          </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.percentage}%</p>
-                <p className="text-sm text-muted-foreground">Completion Rate</p>
-              </div>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+              <span>{currentDate}</span>
+              <ChevronDown className="w-4 h-4" />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                <Flame className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.totalStreak}</p>
-                <p className="text-sm text-muted-foreground">Total Streak Days</p>
-              </div>
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>{currentTime}</span>
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.avgCompletionRate}%</p>
-                <p className="text-sm text-muted-foreground">Weekly Average</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Progress Bar */}
-      {stats.total > 0 && (
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium">Today's Progress</h3>
-                <Badge variant={stats.percentage >= 80 ? "default" : stats.percentage >= 50 ? "secondary" : "outline"}>
-                  {stats.completed} of {stats.total} completed
-                </Badge>
-              </div>
-              <div className="w-full bg-secondary h-3 rounded-full">
-                <div 
-                  className="bg-primary h-3 rounded-full transition-all duration-500" 
-                  style={{ width: `${stats.percentage}%` }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Button
-          variant={selectedCategory === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setSelectedCategory('all')}
-        >
-          All Habits
-        </Button>
-        {HABIT_CATEGORIES.map((category) => {
-          const categoryHabits = todaysHabits.filter(h => h.category === category.id);
-          if (categoryHabits.length === 0) return null;
-          
-          return (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory(category.id)}
-              className="flex items-center gap-2"
-            >
-              <span>{category.icon}</span>
-              {category.name}
-              <Badge variant="secondary" className="ml-1">
-                {categoryHabits.length}
-              </Badge>
-            </Button>
-          );
-        })}
-      </div>
-
-      {/* Create Habit Button */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">
-          {selectedCategory === 'all' ? 'All Habits' : HABIT_CATEGORIES.find(c => c.id === selectedCategory)?.name}
-        </h2>
-        
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Habit
-            </Button>
-          </DialogTrigger>
-          <CreateHabitDialog 
-            isOpen={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}
-            onHabitCreated={handleHabitCreated}
-          />
-        </Dialog>
-      </div>
-
-      {/* Habits List */}
-      {filteredHabits.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">
-              {todaysHabits.length === 0 ? 'No habits yet' : 'No habits in this category'}
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              {todaysHabits.length === 0 
-                ? 'Create your first habit to start building a better routine'
-                : 'Try selecting a different category or create a new habit'
-              }
-            </p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Habit
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filteredHabits.map((habit) => {
-            const category = HABIT_CATEGORIES.find(cat => cat.id === habit.category);
-            
-            return (
-              <Card key={habit.id} className="transition-all duration-200 hover:shadow-md">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 flex-1">
-                      <button
-                        onClick={() => handleToggleHabit(habit.id)}
-                        className="flex-shrink-0 transition-colors"
-                      >
-                        {habit.completed ? (
-                          <CheckCircle2 className="h-8 w-8 text-green-600" />
-                        ) : (
-                          <Circle className="h-8 w-8 text-muted-foreground hover:text-primary" />
-                        )}
-                      </button>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className={`font-medium ${habit.completed ? 'line-through text-muted-foreground' : ''}`}>
-                            {habit.title}
-                          </h3>
-                          {category && (
-                            <Badge variant="outline" className={`${category.color} text-xs`}>
-                              {category.icon} {category.name}
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        {habit.description && (
-                          <p className="text-sm text-muted-foreground mb-2">{habit.description}</p>
-                        )}
-                        
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <div className="flex items-center space-x-1">
-                            <Flame className="h-4 w-4" />
-                            <span>{habit.streak} day streak</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <TrendingUp className="h-4 w-4" />
-                            <span>{habit.completionRate}% this week</span>
-                          </div>
-                          {habit.targetValue > 1 && (
-                            <div className="flex items-center space-x-1">
-                              <Target className="h-4 w-4" />
-                              <span>{habit.targetValue} {habit.unit}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteHabit(habit.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+            <button className="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm">
+              SOS
+            </button>
+          </div>
         </div>
-      )}
+      </motion.header>
 
-      {/* Daily Quests Section */}
-      <div className="mt-12">
-        <DailyQuests />
-      </div>
+      {/* Main Content */}
+      <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">
+        <motion.div
+          className="max-w-7xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Title Section */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4" style={{ color: '#6E55A0' }}>
+              Habit Tracker
+            </h1>
+            <p className="text-sm sm:text-base lg:text-lg" style={{ color: '#8A6FBF' }}>
+              Build lasting habits that improve your life. Track your progress and stay motivated with 
+              streaks and insights
+            </p>
+          </motion.div>
 
-      {/* Calendar Section */}
-      <div className="mt-12">
-        <HabitCalendar />
-      </div>
+          {/* Stats Cards */}
+          <motion.div 
+            variants={itemVariants}
+            className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8"
+          >
+            {statsData.map((stat, index) => (
+              <motion.div
+                key={index}
+                variants={cardVariants}
+                whileHover="hover"
+                className={`${stat.color} rounded-xl sm:rounded-2xl p-3 sm:p-6 text-white relative overflow-hidden`}
+              >
+                <div className="absolute -top-2 -right-2 text-lg sm:text-2xl opacity-20">✨</div>
+                <div className="absolute -bottom-2 -left-2 text-lg sm:text-2xl opacity-20">✨</div>
+                
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <p className="text-white/80 text-xs sm:text-sm font-medium">{stat.title}</p>
+                  {stat.icon}
+                </div>
+                <p className="text-lg sm:text-2xl lg:text-3xl font-bold">{stat.value}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Today's Progress Section */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>
+                  Today's Progress
+                </h2>
+                <span className="text-sm" style={{ color: '#8A6FBF' }}>{stats.completed}/{stats.total} Completed</span>
+              </div>
+              
+              {/* Progress Bar */}
+              {stats.total > 0 && (
+                <div className="space-y-2">
+                  <div className="w-full h-3 rounded-full" style={{ backgroundColor: '#E3DEF1' }}>
+                    <motion.div 
+                      className="h-3 rounded-full transition-all duration-500"
+                      style={{ backgroundColor: '#8A6FBF', width: `${stats.percentage}%` }}
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${stats.percentage}%` }}
+                      transition={{ duration: 1 }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Habit Categories and List */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <button 
+                onClick={() => setSelectedCategory('all')}
+                className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
+                  selectedCategory === 'all' ? 'text-white' : 'bg-white border border-gray-200'
+                }`}
+                style={
+                  selectedCategory === 'all'
+                    ? { backgroundColor: '#FBBF24' }
+                    : { color: '#8A6FBF' }
+                }
+              >
+                All Habits
+              </button>
+              {HABIT_CATEGORIES.map((category) => {
+                const categoryHabits = todaysHabits.filter(h => h.category === category.id)
+                if (categoryHabits.length === 0) return null
+                
+                return (
+                  <button 
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium bg-white border border-gray-200 flex items-center gap-2 transition-colors ${
+                      selectedCategory === category.id ? 'text-white' : ''
+                    }`}
+                    style={
+                      selectedCategory === category.id
+                        ? { backgroundColor: '#8A6FBF', borderColor: '#8A6FBF' }
+                        : { color: '#8A6FBF' }
+                    }
+                  >
+                    <span>{category.icon}</span>
+                    {category.name}
+                    <span className="bg-gray-100 px-1.5 py-0.5 rounded text-xs text-gray-700">{categoryHabits.length}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                {selectedCategory === 'all' ? 'All Habits' : HABIT_CATEGORIES.find(c => c.id === selectedCategory)?.name}
+              </h2>
+              
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 px-4 py-2 text-white rounded-full font-medium text-sm"
+                    style={{ backgroundColor: '#8A6FBF' }}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Habit
+                  </motion.button>
+                </DialogTrigger>
+                <CreateHabitDialog 
+                  isOpen={isCreateDialogOpen}
+                  onOpenChange={setIsCreateDialogOpen}
+                  onHabitCreated={handleHabitCreated}
+                />
+              </Dialog>
+            </div>
+            
+            {/* Habits List */}
+            {filteredHabits.length === 0 ? (
+              <div className="bg-white rounded-xl sm:rounded-2xl p-8 sm:p-12 text-center shadow-sm">
+                <Target className="h-12 w-12 mx-auto mb-4" style={{ color: '#8A6FBF' }} />
+                <h3 className="text-lg font-medium mb-2" style={{ color: '#6E55A0' }}>
+                  {todaysHabits.length === 0 ? 'No habits yet' : 'No habits in this category'}
+                </h3>
+                <p className="mb-4" style={{ color: '#8A6FBF' }}>
+                  {todaysHabits.length === 0 
+                    ? 'Create your first habit to start building a better routine'
+                    : 'Try selecting a different category or create a new habit'
+                  }
+                </p>
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="text-white"
+                  style={{ backgroundColor: '#8A6FBF' }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Habit
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
+                {filteredHabits.map((habit, index) => {
+                  const category = HABIT_CATEGORIES.find(cat => cat.id === habit.category)
+                  
+                  return (
+                    <motion.div
+                      key={habit.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 sm:space-x-4 flex-1">
+                          <motion.button
+                            onClick={() => handleToggleHabit(habit.id)}
+                            className="flex-shrink-0 transition-colors"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            {habit.completed ? (
+                              <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#22C55E' }} />
+                            ) : (
+                              <Circle className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 hover:text-purple-500" />
+                            )}
+                          </motion.button>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className={`font-semibold text-sm sm:text-base ${habit.completed ? 'line-through text-gray-400' : ''}`} style={{ color: habit.completed ? '#9CA3AF' : '#6E55A0' }}>
+                                {habit.title}
+                              </h3>
+                              {category && (
+                                <span 
+                                  className="px-2 py-1 rounded text-xs font-medium"
+                                  style={{ backgroundColor: '#E3DEF1', color: '#8A6FBF' }}
+                                >
+                                  {category.icon} {category.name}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {habit.description && (
+                              <p className="text-sm mb-2" style={{ color: '#8A6FBF' }}>{habit.description}</p>
+                            )}
+                            
+                            <div className="flex items-center gap-4 text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                              <span>🔥 {habit.streak} day streak</span>
+                              <span>📊 {habit.completionRate}% this week</span>
+                              {habit.targetValue > 1 && (
+                                <span>🎯 {habit.targetValue} {habit.unit}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleDeleteHabit(habit.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Daily Quests Section */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+            <DailyQuests />
+          </motion.div>
+
+          {/* Habit Calendar - Single Calendar Only */}
+          <motion.div variants={itemVariants}>
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#6E55A0' }} />
+                <h2 className="text-xl sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                  Habit Calendar
+                </h2>
+              </div>
+              <p className="text-sm sm:text-base mb-4 sm:mb-6" style={{ color: '#8A6FBF' }}>
+                Track your habit completion over time
+              </p>
+
+              {/* Calendar Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                {calendarStats.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    whileHover={{ scale: 1.02 }}
+                    className="text-center p-3 sm:p-4 rounded-lg sm:rounded-xl"
+                    style={{ backgroundColor: stat.color + '20' }}
+                  >
+                    <div className="text-lg sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                      {stat.value}
+                    </div>
+                    <div className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                      {stat.title}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between mb-6 sm:mb-8">
+                <h3 className="text-xl sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                  {monthNames[currentMonth]} {currentYear}
+                </h3>
+                <div className="flex items-center space-x-2">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-lg hover:bg-gray-100"
+                    onClick={() => setCurrentMonth(prev => prev === 0 ? 11 : prev - 1)}
+                  >
+                    <ChevronLeft className="w-5 h-5" style={{ color: '#8A6FBF' }} />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-lg hover:bg-gray-100"
+                    onClick={() => setCurrentMonth(prev => prev === 11 ? 0 : prev + 1)}
+                  >
+                    <ChevronRight className="w-5 h-5" style={{ color: '#8A6FBF' }} />
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-0">
+                {/* Day headers */}
+                {dayNames.map(day => (
+                  <div key={day} className="text-center p-3 text-sm font-medium border-b" style={{ color: '#8A6FBF' }}>
+                    {day}
+                  </div>
+                ))}
+
+                {/* Calendar days */}
+                {calendarDays.map((dayObj, index) => {
+                  const { day, isCurrentMonth, isNextMonth } = dayObj
+                  const isToday = isCurrentMonth && day === 14 // July 14, 2025
+
+                  return (
+                    <motion.div
+                      key={index}
+                      className="min-h-[60px] sm:min-h-[80px] p-2 border-b border-r border-gray-100 relative"
+                      whileHover={isCurrentMonth ? { backgroundColor: '#F9FAFB' } : {}}
+                    >
+                      {/* Day number */}
+                      <div className="flex items-center justify-between mb-1">
+                        <span 
+                          className={`text-sm font-medium ${
+                            isToday 
+                              ? 'bg-gray-900 text-white w-6 h-6 rounded-full flex items-center justify-center' 
+                              : isCurrentMonth 
+                                ? 'text-gray-900' 
+                                : 'text-gray-400'
+                          }`}
+                        >
+                          {day}
+                        </span>
+                      </div>
+
+                      {/* Habit completion dots */}
+                      <div className="flex flex-wrap gap-1">
+                        {/* Sample habit indicators - you can connect these to real habit data */}
+                        {isCurrentMonth && day <= 14 && (
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8A6FBF' }}></div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </main>
     </div>
-  );
+  )
 }
+
+export default HabitTracker
