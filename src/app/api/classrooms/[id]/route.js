@@ -44,7 +44,7 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const { name, subject, description } = body;
 
-    await dbConnect();
+    await connectDB();
     
     const classroom = await Classroom.findOneAndUpdate(
       { _id: params.id, teacherId: userId },
@@ -75,7 +75,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await dbConnect();
+    await connectDB();
     
     const classroom = await Classroom.findOneAndDelete({
       _id: params.id,

@@ -28,8 +28,16 @@ export default function WellnessLanding() {
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
-        // Authenticated users go to chat
-        router.push('/chat')
+        // Check if user is part of an organization
+        const hasOrganization = user?.organizationMemberships && user.organizationMemberships.length > 0;
+        
+        if (hasOrganization) {
+          // User is part of an organization - redirect to org dashboard
+          router.push('/org/dashboard');
+        } else {
+          // Regular user - go to chat
+          router.push('/chat');
+        }
       } else {
         // Initialize guest if not already initialized
         initializeGuest()
@@ -41,7 +49,7 @@ export default function WellnessLanding() {
         }
       }
     }
-  }, [isLoaded, isSignedIn, guestId, isOnboarded, initializeGuest, router])
+  }, [isLoaded, isSignedIn, guestId, isOnboarded, initializeGuest, router, user])
 
   const handleStartAsGuest = () => {
     setIsStartingAsGuest(true)
