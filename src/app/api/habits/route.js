@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongoose';
 import { Habit } from '@/models/Habit';
+import { HabitCompletion } from '@/models/HabitCompletion';
 import { auth } from '@clerk/nextjs/server';
 
 await connectToDatabase();
@@ -25,8 +26,20 @@ export async function GET(request) {
       ]
     }).sort({ createdAt: -1 });
 
-    // Get habit completions (you might want to create a separate model for this)
-    const completions = {}; // For now, return empty completions
+    // Get habit completions from the database
+    const habitCompletions = await HabitCompletion.find({ 
+      $or: [
+        { userId: userId },
+        { userId: guestId }
+      ]
+    });
+
+    // Transform completions to the format expected by the frontend
+    const completions = {};
+    habitCompletions.forEach(completion => {
+      const key = `${completion.habitId}-${completion.date}`;
+      completions[key] = completion.completed;
+    });
 
     return NextResponse.json({
       success: true,

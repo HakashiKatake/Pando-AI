@@ -7,8 +7,11 @@ await connectToDatabase();
 
 export async function POST(request) {
   try {
+    const { userId: authUserId } = await auth();
     const body = await request.json();
     const { habitId, date, completed, userId } = body;
+    
+    console.log('Habit completion API received:', { authUserId, body });
     
     if (!habitId || !date || userId === undefined) {
       return NextResponse.json(
@@ -17,11 +20,21 @@ export async function POST(request) {
       );
     }
 
+    // Use the authenticated user ID if available, otherwise use the provided userId
+    const targetUserId = authUserId || userId;
+    
+    if (!targetUserId) {
+      return NextResponse.json(
+        { error: 'No valid user ID found' },
+        { status: 401 }
+      );
+    }
+
     // Find existing completion for this habit and date
     const existingCompletion = await HabitCompletion.findOne({
       habitId,
       date,
-      userId
+      userId: targetUserId
     });
 
     if (existingCompletion) {
@@ -30,6 +43,7 @@ export async function POST(request) {
       existingCompletion.timestamp = new Date();
       await existingCompletion.save();
       
+      console.log('Updated existing habit completion:', existingCompletion);
       return NextResponse.json(existingCompletion);
     } else {
       // Create new completion
@@ -37,11 +51,12 @@ export async function POST(request) {
         habitId,
         date,
         completed,
-        userId,
+        userId: targetUserId,
         timestamp: new Date()
       });
 
       await completion.save();
+      console.log('Created new habit completion:', completion);
       return NextResponse.json(completion);
     }
   } catch (error) {

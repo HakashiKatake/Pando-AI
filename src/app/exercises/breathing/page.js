@@ -379,35 +379,7 @@ export default function BreathingExercisePage() {
             </div>
 
             {/* Other Exercises */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">More Exercises</h3>
-              
-              <div className="space-y-3">
-                <Link 
-                  href="/exercises/grounding"
-                  className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900">5-4-3-2-1 Grounding</h4>
-                  <p className="text-sm text-gray-600">Use your senses to stay present</p>
-                </Link>
-                
-                <Link 
-                  href="/exercises/body-scan"
-                  className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900">Body Scan Meditation</h4>
-                  <p className="text-sm text-gray-600">Progressive relaxation technique</p>
-                </Link>
-                
-                <Link 
-                  href="/exercises/gratitude"
-                  className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900">Gratitude Practice</h4>
-                  <p className="text-sm text-gray-600">Focus on positive thoughts</p>
-                </Link>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

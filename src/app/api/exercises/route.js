@@ -9,6 +9,12 @@ export async function POST(request) {
     
     const { userId } = await auth();
     const body = await request.json();
+    
+    console.log('Exercise API received:', {
+      userId,
+      body
+    });
+    
     const { 
       exerciseType, 
       duration, 
@@ -24,6 +30,7 @@ export async function POST(request) {
     
     // Validate required fields
     if (!exerciseType || !duration) {
+      console.log('Validation failed:', { exerciseType, duration });
       return NextResponse.json(
         { error: 'Exercise type and duration are required' },
         { status: 400 }
@@ -32,6 +39,7 @@ export async function POST(request) {
     
     // Check if user is authenticated or guest
     if (!userId && !guestId) {
+      console.log('Authentication failed:', { userId, guestId });
       return NextResponse.json(
         { error: 'User authentication or guest ID required' },
         { status: 401 }
@@ -59,7 +67,9 @@ export async function POST(request) {
     }
     
     // Create the session
+    console.log('Creating exercise session with data:', sessionDataObj);
     const exerciseSession = await ExerciseSession.create(sessionDataObj);
+    console.log('Exercise session created successfully:', exerciseSession._id);
     
     return NextResponse.json({
       success: true,

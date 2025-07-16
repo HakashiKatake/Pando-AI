@@ -22,7 +22,7 @@ export function useDataInitialization() {
     // Initialize data based on authentication status
     if (isSignedIn && user) {
       // Authenticated user - load from database
-      console.log('Loading authenticated user data from database');
+      console.log('Loading authenticated user data from database for user:', user.id);
       
       // Clear any existing local storage data
       moodStore.clearData();
@@ -40,7 +40,7 @@ export function useDataInitialization() {
       
     } else if (!isSignedIn && currentGuestId) {
       // Guest user - load from localStorage
-      console.log('Loading guest user data from localStorage');
+      console.log('Loading guest user data from localStorage for guestId:', currentGuestId);
       
       moodStore.loadFromLocalStorage();
       chatStore.loadFromLocalStorage();
@@ -52,9 +52,11 @@ export function useDataInitialization() {
 
   return {
     isReady: isLoaded,
+    isLoaded: isLoaded,
     userId: isSignedIn && user ? user.id : null,
     guestId: !isSignedIn ? guestId : null,
     isAuthenticated: isSignedIn,
+    isSignedIn: isSignedIn,
     isGuest: !isSignedIn
   };
 }

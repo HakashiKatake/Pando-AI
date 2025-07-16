@@ -243,7 +243,7 @@ export default function OrganizationDashboard() {
               <div className="space-y-4">
                 {classrooms.map((classroom, index) => (
                   <motion.div
-                    key={classroom.id}
+                    key={classroom.id || classroom._id || `classroom-${index}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}

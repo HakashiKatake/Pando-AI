@@ -1,13 +1,68 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, MessageSquare, Globe, Clock, ArrowLeft, Heart, AlertTriangle, MapPin } from 'lucide-react';
+import { Phone, MessageSquare, Globe, Clock, ArrowLeft, Heart, AlertTriangle, MapPin, Calendar, ChevronDown } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function EmergencyPage() {
-  const [selectedCountry, setSelectedCountry] = useState('US');
+  const [selectedCountry, setSelectedCountry] = useState('IN');
+
+  // Updated time to match your current timestamp
+  const currentTime = "07:51"
+  const currentDate = "Jul 16, 2025"
 
   const emergencyResources = {
+    IN: {
+      hotlines: [
+        {
+          name: "National Mental Health Helpline",
+          phone: "1800-599-0019",
+          description: "24/7 mental health support in multiple Indian languages",
+          available: "24/7",
+          website: "https://mentalhealthhelpline.in"
+        },
+        {
+          name: "Vandrevala Foundation Helpline",
+          phone: "1860-2662-345 or 1800-2333-330",
+          description: "Free counseling and crisis intervention support",
+          available: "24/7",
+          website: "https://vandrevalafoundation.com"
+        },
+        {
+          name: "iCall Psychosocial Helpline",
+          phone: "9152987821",
+          description: "Professional counseling support via phone and email",
+          available: "Mon-Sat 8am-10pm",
+          website: "https://icallhelpline.org"
+        },
+        {
+          name: "Sneha India Foundation",
+          phone: "044-24640050",
+          description: "Suicide prevention and emotional support",
+          available: "24/7",
+          website: "https://snehaindia.org"
+        },
+        {
+          name: "Fortis Stress Helpline",
+          phone: "8376804102",
+          description: "Mental health and stress management support",
+          available: "24/7",
+          website: "https://fortishealthcare.com"
+        },
+        {
+          name: "NIMHANS Helpline",
+          phone: "080-46110007",
+          description: "Mental health support from National Institute",
+          available: "Mon-Sat 9am-5pm",
+          website: "https://nimhans.ac.in"
+        }
+      ],
+      emergency: {
+        number: "102 / 108",
+        description: "Call 102 (Mental Health) or 108 (Emergency) for immediate assistance"
+      }
+    },
     US: {
       hotlines: [
         {
@@ -105,9 +160,10 @@ export default function EmergencyPage() {
   };
 
   const countries = [
-    { code: 'US', name: 'United States' },
-    { code: 'UK', name: 'United Kingdom' },
-    { code: 'CA', name: 'Canada' }
+    { code: 'IN', name: 'India', flag: '🇮🇳' },
+    { code: 'US', name: 'United States', flag: '🇺🇸' },
+    { code: 'UK', name: 'United Kingdom', flag: '🇬🇧' },
+    { code: 'CA', name: 'Canada', flag: '🇨🇦' }
   ];
 
   const warningSignsData = [
@@ -150,213 +206,349 @@ export default function EmergencyPage() {
 
   const selectedResources = emergencyResources[selectedCountry];
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  }
+
+  const cardVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.6 }
+    },
+    hover: {
+      y: -2,
+      transition: { duration: 0.3 }
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-red-50">
-      {/* Header */}
-      <header className="bg-red-600 text-white px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+      {/* Header - Consistent with other pages */}
+      <motion.header 
+        className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 fixed top-0 left-0 right-0 z-30"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <span className="text-sm sm:text-lg">🐼</span>
+            </div>
+            <h1 className="text-base sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
+          </div>
+
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+              <Calendar className="w-4 h-4" />
+              <span>{currentDate}</span>
+              <ChevronDown className="w-4 h-4" />
+            </div>
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>{currentTime}</span>
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+            </div>
+            <div className="bg-red-500 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold">
+              SOS
+            </div>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Main Content */}
+      <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">
+        <motion.div
+          className="max-w-6xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Page Title */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
             <Link 
               href="/dashboard"
-              className="p-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="inline-flex items-center space-x-2 mb-4 px-4 py-2 rounded-lg transition-colors hover:bg-white"
+              style={{ color: '#8A6FBF' }}
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Back to Dashboard</span>
             </Link>
             
-            <div className="flex items-center space-x-3">
-              <AlertTriangle className="w-8 h-8" />
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-2xl flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold">Crisis Support</h1>
-                <p className="text-red-100">Immediate help when you need it most</p>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: '#6E55A0' }}>
+                  Crisis Support
+                </h1>
+                <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                  Immediate help when you need it most
+                </p>
               </div>
             </div>
-          </div>
-          
-          <div className="text-right">
-            <p className="text-lg font-semibold">Need immediate help?</p>
-            <p className="text-red-100">Call {selectedResources.emergency.number} now</p>
-          </div>
-        </div>
-      </header>
+          </motion.div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Immediate Danger Alert */}
-        <div className="bg-red-100 border border-red-400 rounded-lg p-6 mb-8">
-          <div className="flex items-start space-x-3">
-            <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="text-xl font-bold text-red-800 mb-2">
-                If you or someone you know is in immediate danger
-              </h2>
-              <p className="text-red-700 mb-4">
-                Please call emergency services immediately. Your life matters and help is available right now.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <a 
-                  href={`tel:${selectedResources.emergency.number}`}
-                  className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center space-x-2"
-                >
-                  <Phone className="w-5 h-5" />
-                  <span>Call {selectedResources.emergency.number}</span>
-                </a>
-                <a 
-                  href="tel:988"
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                >
-                  <Phone className="w-5 h-5" />
-                  <span>Call 988 (Suicide & Crisis Lifeline)</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Crisis Hotlines */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Crisis Hotlines</h2>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-gray-500" />
-                  <select
-                    value={selectedCountry}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {/* Immediate Danger Alert */}
+          <motion.div 
+            variants={itemVariants}
+            className="bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl p-6 mb-8 shadow-sm"
+          >
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="w-6 h-6 flex-shrink-0 mt-1 text-red-600" />
+              <div>
+                <h2 className="text-xl font-bold mb-2 text-red-800">
+                  If you or someone you know is in immediate danger
+                </h2>
+                <p className="text-red-700 mb-4">
+                  Please call emergency services immediately. Your life matters and help is available right now.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <motion.a 
+                    href={`tel:${selectedResources.emergency.number.replace(/[^\d]/g, '')}`}
+                    className="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center space-x-2"
+                    whileHover={{ scale: 1.05, backgroundColor: '#DC2626' }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    {countries.map(country => (
-                      <option key={country.code} value={country.code}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
+                    <Phone className="w-5 h-5" />
+                    <span>Call {selectedResources.emergency.number}</span>
+                  </motion.a>
+                  {selectedCountry === 'IN' && (
+                    <motion.a 
+                      href="tel:1800599019"
+                      className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center space-x-2"
+                      whileHover={{ scale: 1.05, backgroundColor: '#2563EB' }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Phone className="w-5 h-5" />
+                      <span>Mental Health Helpline</span>
+                    </motion.a>
+                  )}
                 </div>
               </div>
+            </div>
+          </motion.div>
 
-              <div className="space-y-4">
-                {selectedResources.hotlines.map((hotline, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">{hotline.name}</h3>
-                      <div className="flex items-center space-x-1 text-green-600 text-sm">
-                        <Clock className="w-4 h-4" />
-                        <span>{hotline.available}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Crisis Hotlines */}
+            <div className="lg:col-span-2 space-y-6">
+              <motion.div 
+                variants={cardVariants}
+                className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-6"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>Crisis Hotlines</h2>
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4" style={{ color: '#8A6FBF' }} />
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      className="border-2 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
+                      style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
+                    >
+                      {countries.map(country => (
+                        <option key={country.code} value={country.code}>
+                          {country.flag} {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {selectedResources.hotlines.map((hotline, index) => (
+                    <motion.div 
+                      key={index} 
+                      className="border-2 rounded-xl p-4 transition-all duration-200"
+                      style={{ borderColor: '#E3DEF1' }}
+                      whileHover={{ 
+                        backgroundColor: '#F7F5FA',
+                        borderColor: '#8A6FBF',
+                        y: -2
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold" style={{ color: '#6E55A0' }}>{hotline.name}</h3>
+                        <div className="flex items-center space-x-1 text-sm text-green-600">
+                          <Clock className="w-4 h-4" />
+                          <span>{hotline.available}</span>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <p className="text-gray-600 mb-3">{hotline.description}</p>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      <a 
-                        href={`tel:${hotline.phone.replace(/[^\d]/g, '')}`}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                      >
-                        <Phone className="w-4 h-4" />
-                        <span>{hotline.phone}</span>
-                      </a>
                       
-                      {hotline.website && (
-                        <a 
-                          href={hotline.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                      <p className="mb-3" style={{ color: '#8A6FBF' }}>{hotline.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <motion.a 
+                          href={`tel:${hotline.phone.replace(/[^\d]/g, '')}`}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+                          whileHover={{ scale: 1.05, backgroundColor: '#2563EB' }}
+                          whileTap={{ scale: 0.95 }}
                         >
-                          <Globe className="w-4 h-4" />
-                          <span>Website</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                          <Phone className="w-4 h-4" />
+                          <span>{hotline.phone}</span>
+                        </motion.a>
+                        
+                        {hotline.website && (
+                          <motion.a 
+                            href={hotline.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="border-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+                            style={{ borderColor: '#E3DEF1', color: '#6E55A0' }}
+                            whileHover={{ backgroundColor: '#F7F5FA', borderColor: '#8A6FBF' }}
+                          >
+                            <Globe className="w-4 h-4" />
+                            <span>Website</span>
+                          </motion.a>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Warning Signs */}
+              <motion.div 
+                variants={cardVariants}
+                className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-6"
+              >
+                <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: '#6E55A0' }}>Warning Signs to Watch For</h2>
+                <p className="mb-6" style={{ color: '#8A6FBF' }}>
+                  If you notice these signs in yourself or someone else, it's important to seek help immediately:
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {warningSignsData.map((sign, index) => (
+                    <motion.div 
+                      key={index} 
+                      className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-sm text-yellow-800">{sign}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             </div>
 
-            {/* Warning Signs */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Warning Signs to Watch For</h2>
-              <p className="text-gray-600 mb-6">
-                If you notice these signs in yourself or someone else, it's important to seek help immediately:
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {warningSignsData.map((sign, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700 text-sm">{sign}</span>
-                  </div>
-                ))}
-              </div>
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Quick Actions */}
+              <motion.div 
+                variants={cardVariants}
+                className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-6"
+              >
+                <h3 className="text-lg font-semibold mb-4" style={{ color: '#6E55A0' }}>If Someone is in Crisis</h3>
+                
+                <div className="space-y-4">
+                  {immediateSteps.map((step, index) => (
+                    <motion.div 
+                      key={index} 
+                      className="flex items-start space-x-3"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 text-white" style={{ backgroundColor: '#8A6FBF' }}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-medium" style={{ color: '#6E55A0' }}>{step.title}</h4>
+                        <p className="text-sm" style={{ color: '#8A6FBF' }}>{step.description}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Resources */}
+              <motion.div 
+                variants={cardVariants}
+                className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-6"
+              >
+                <h3 className="text-lg font-semibold mb-4" style={{ color: '#6E55A0' }}>Additional Resources</h3>
+                
+                <div className="space-y-3">
+                  {selectedCountry === 'IN' && (
+                    <motion.a 
+                      href="https://www.mohfw.gov.in/mental-health"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block p-3 bg-green-50 rounded-lg transition-colors border border-green-200"
+                      whileHover={{ backgroundColor: '#DCFCE7' }}
+                    >
+                      <h4 className="font-medium text-green-900">Ministry of Health Mental Health</h4>
+                      <p className="text-sm text-green-700">Government mental health resources</p>
+                    </motion.a>
+                  )}
+                  
+                  <motion.a 
+                    href="https://www.mentalhealthfirstaid.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3 bg-blue-50 rounded-lg transition-colors border border-blue-200"
+                    whileHover={{ backgroundColor: '#DBEAFE' }}
+                  >
+                    <h4 className="font-medium text-blue-900">Mental Health First Aid</h4>
+                    <p className="text-sm text-blue-700">Learn how to help someone in crisis</p>
+                  </motion.a>
+                  
+                  <Link 
+                    href="/chat"
+                    className="block"
+                  >
+                    <motion.div 
+                      className="p-3 rounded-lg transition-colors border border-purple-200"
+                      style={{ backgroundColor: '#E3DEF1' }}
+                      whileHover={{ backgroundColor: '#D8B4FE' }}
+                    >
+                      <h4 className="font-medium" style={{ color: '#6E55A0' }}>AI Support Chat</h4>
+                      <p className="text-sm" style={{ color: '#8A6FBF' }}>Talk to our wellness companion</p>
+                    </motion.div>
+                  </Link>
+                </div>
+              </motion.div>
+
+              {/* You Matter */}
+              <motion.div 
+                variants={cardVariants}
+                className="rounded-xl sm:rounded-2xl p-6 text-white text-center"
+                style={{ background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)' }}
+              >
+                <Heart className="w-12 h-12 mx-auto mb-4 text-pink-200" />
+                <h3 className="text-lg font-semibold mb-2">You Matter</h3>
+                <p className="text-sm opacity-90">
+                  Your life has value. You are not alone. Help is available, and things can get better.
+                </p>
+              </motion.div>
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">If Someone is in Crisis</h3>
-              
-              <div className="space-y-4">
-                {immediateSteps.map((step, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">{step.title}</h4>
-                      <p className="text-sm text-gray-600">{step.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Resources */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Resources</h3>
-              
-              <div className="space-y-3">
-                <a 
-                  href="https://www.mentalhealthfirstaid.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <h4 className="font-medium text-blue-900">Mental Health First Aid</h4>
-                  <p className="text-sm text-blue-700">Learn how to help someone in crisis</p>
-                </a>
-                
-                <a 
-                  href="https://www.nimh.nih.gov/health/find-help"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-                >
-                  <h4 className="font-medium text-green-900">Find Mental Health Services</h4>
-                  <p className="text-sm text-green-700">Locate professionals in your area</p>
-                </a>
-                
-                <Link 
-                  href="/chat"
-                  className="block p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                >
-                  <h4 className="font-medium text-purple-900">AI Support Chat</h4>
-                  <p className="text-sm text-purple-700">Talk to our wellness companion</p>
-                </Link>
-              </div>
-            </div>
-
-            {/* You Matter */}
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 text-white text-center">
-              <Heart className="w-12 h-12 mx-auto mb-4 text-pink-200" />
-              <h3 className="text-lg font-semibold mb-2">You Matter</h3>
-              <p className="text-blue-100 text-sm">
-                Your life has value. You are not alone. Help is available, and things can get better.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      </main>
     </div>
   );
 }

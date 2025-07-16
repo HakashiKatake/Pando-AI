@@ -56,9 +56,9 @@ export default function SettingsPage() {
   const handleExportData = () => {
     const data = {
       profile: {
-        name: session?.user?.name || guestName,
-        email: session?.user?.email,
-        isGuest: !session
+        name: user?.fullName || user?.firstName || guestName,
+        email: user?.primaryEmailAddress?.emailAddress,
+        isGuest: !user
       },
       preferences: preferences,
       exportDate: new Date().toISOString()
@@ -114,19 +114,19 @@ export default function SettingsPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-medium">
-                    {session?.user?.name || guestName || 'Guest User'}
+                    {user?.fullName || user?.firstName || guestName || 'Guest User'}
                   </h3>
-                  {!session && (
+                  {!user && (
                     <Badge variant="secondary">Guest Mode</Badge>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {session?.user?.email || 'No email address'}
+                  {user?.primaryEmailAddress?.emailAddress || 'No email address'}
                 </p>
               </div>
             </div>
 
-            {!session && (
+            {!user && (
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">

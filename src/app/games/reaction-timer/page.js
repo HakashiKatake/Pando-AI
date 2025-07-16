@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Play, RotateCcw, Trophy, Zap, Timer } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Play, RotateCcw, Trophy, Zap, Timer, Calendar, Clock, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useExerciseStore } from '../../../lib/store';
 import { useDataInitialization } from '../../../lib/useDataInitialization';
@@ -21,6 +22,10 @@ export default function ReactionTimerGame() {
   const reactionStartRef = useRef(null);
   const { addSession } = useExerciseStore();
   const dataInit = useDataInitialization();
+
+  // Updated time to match your current timestamp
+  const currentTime = "07:09"
+  const currentDate = "Jul 16, 2025"
 
   const maxAttempts = 5;
 
@@ -141,20 +146,20 @@ export default function ReactionTimerGame() {
   };
 
   const getReactionRating = (time) => {
-    if (typeof time !== 'number') return { rating: 'Invalid', color: 'text-gray-500' };
-    if (time < 200) return { rating: 'Lightning Fast!', color: 'text-purple-600' };
-    if (time < 250) return { rating: 'Excellent', color: 'text-blue-600' };
-    if (time < 300) return { rating: 'Great', color: 'text-green-600' };
-    if (time < 400) return { rating: 'Good', color: 'text-yellow-600' };
-    if (time < 500) return { rating: 'Average', color: 'text-orange-600' };
-    return { rating: 'Keep Practicing', color: 'text-red-600' };
+    if (typeof time !== 'number') return { rating: 'Invalid', color: '#6B7280' };
+    if (time < 200) return { rating: 'Lightning Fast!', color: '#8A6FBF' };
+    if (time < 250) return { rating: 'Excellent', color: '#3B82F6' };
+    if (time < 300) return { rating: 'Great', color: '#22C55E' };
+    if (time < 400) return { rating: 'Good', color: '#F59E0B' };
+    if (time < 500) return { rating: 'Average', color: '#F97316' };
+    return { rating: 'Keep Practicing', color: '#EF4444' };
   };
 
   const getBackgroundColor = () => {
     switch (gameState) {
-      case 'waiting': return 'bg-red-500';
-      case 'react': return 'bg-green-500';
-      default: return 'bg-gray-100';
+      case 'waiting': return '#EF4444';
+      case 'react': return '#22C55E';
+      default: return '#F7F5FA';
     }
   };
 
@@ -175,258 +180,421 @@ export default function ReactionTimerGame() {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  }
+
+  const cardVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.6 }
+    },
+    hover: {
+      y: -5,
+      transition: { duration: 0.3 }
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50">
-      {/* Header */}
-      <header className="px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link 
-            href="/games"
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Games</span>
-          </Link>
-          
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Reaction Timer</h1>
-            <p className="text-gray-600">Test your reflexes and reaction speed</p>
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+      {/* Header - Consistent with other pages */}
+      <motion.header 
+        className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 fixed top-0 left-0 right-0 z-30"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <span className="text-sm sm:text-lg">🐼</span>
+            </div>
+            <h1 className="text-base sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
           </div>
-          
-          <div className="text-right">
-            <p className="text-sm text-gray-500">Personal Best</p>
-            <p className="text-xl font-bold text-yellow-600">
-              {bestTime ? `${bestTime}ms` : 'N/A'}
-            </p>
+
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+              <Calendar className="w-4 h-4" />
+              <span>{currentDate}</span>
+              <ChevronDown className="w-4 h-4" />
+            </div>
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>{currentTime}</span>
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+            </div>
+            <button className="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm">
+              SOS
+            </button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Game Stats */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
-          <div className="grid grid-cols-3 gap-6 text-center">
-            <div>
-              <p className="text-3xl font-bold text-gray-900">{attempt}</p>
-              <p className="text-sm text-gray-500">Attempt</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-orange-600">
-                {averageTime ? `${averageTime}ms` : '--'}
+      {/* Main Content */}
+      <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">
+        <motion.div
+          className="max-w-4xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Back Button and Title */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+            <Link 
+              href="/games"
+              className="inline-flex items-center space-x-2 mb-4 px-4 py-2 rounded-lg transition-colors hover:bg-white"
+              style={{ color: '#8A6FBF' }}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Back to Games</span>
+            </Link>
+            
+            <div className="text-center">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2" style={{ color: '#6E55A0' }}>
+                Reaction Timer
+              </h1>
+              <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                Test your reflexes and reaction speed
               </p>
-              <p className="text-sm text-gray-500">Average</p>
             </div>
-            <div>
-              <p className="text-3xl font-bold text-yellow-600">
-                {reactionTimes.length > 0 ? `${Math.min(...reactionTimes)}ms` : '--'}
-              </p>
-              <p className="text-sm text-gray-500">Session Best</p>
-            </div>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Game Area */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          {gameState === 'ready' && (
-            <div className="p-8 text-center">
-              <div className="mb-8">
-                <Zap className="w-16 h-16 mx-auto mb-4 text-yellow-600" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Reaction Speed Test</h2>
-                <p className="text-gray-600 mb-4">
-                  Test how quickly you can react to visual stimuli
+          {/* Game Stats */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm text-center">
+                <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#6E55A0' }}>{attempt}</p>
+                <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Attempt</p>
+              </div>
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm text-center">
+                <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#F97316' }}>
+                  {averageTime ? `${averageTime}ms` : '--'}
                 </p>
-                <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-gray-900 mb-2">How to Play:</h3>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Wait for the screen to turn green</li>
-                    <li>• Click as soon as you see green</li>
-                    <li>• Don't click while the screen is red (false start)</li>
-                    <li>• Complete 5 attempts for your average</li>
+                <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Average</p>
+              </div>
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm text-center">
+                <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#F59E0B' }}>
+                  {reactionTimes.length > 0 ? `${Math.min(...reactionTimes)}ms` : '--'}
+                </p>
+                <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Session Best</p>
+              </div>
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm text-center">
+                <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#8A6FBF' }}>
+                  {bestTime ? `${bestTime}ms` : '--'}
+                </p>
+                <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Personal Best</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Game Area */}
+          <motion.div variants={cardVariants} className="bg-white rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden mb-6 sm:mb-8">
+            {gameState === 'ready' && (
+              <div className="p-6 sm:p-8 text-center">
+                <motion.div 
+                  className="mb-8"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#E3DEF1' }}>
+                    <Zap className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#8A6FBF' }} />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold mb-2" style={{ color: '#6E55A0' }}>Reaction Speed Test</h2>
+                  <p className="mb-6" style={{ color: '#8A6FBF' }}>
+                    Test how quickly you can react to visual stimuli
+                  </p>
+                  
+                  <div className="rounded-xl p-4 sm:p-6 mb-6" style={{ backgroundColor: '#F7F5FA' }}>
+                    <h3 className="font-semibold mb-3" style={{ color: '#6E55A0' }}>How to Play:</h3>
+                    <ul className="text-sm space-y-2 text-left" style={{ color: '#8A6FBF' }}>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                        Wait for the screen to turn green
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                        Click as soon as you see green
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                        Don't click while the screen is red (false start)
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                        Complete 5 attempts for your average
+                      </li>
+                    </ul>
+                  </div>
+                </motion.div>
+                
+                <motion.button
+                  onClick={startGame}
+                  className="px-8 py-3 sm:py-4 rounded-xl font-semibold text-white transition-all"
+                  style={{ backgroundColor: '#8A6FBF' }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Start Test
+                </motion.button>
+              </div>
+            )}
+
+            {(gameState === 'waiting' || gameState === 'react') && (
+              <motion.div 
+                className="cursor-pointer transition-colors duration-300"
+                onClick={handleReaction}
+                style={{ backgroundColor: getBackgroundColor(), minHeight: '400px' }}
+                initial={{ opacity: 0.8 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="h-full flex items-center justify-center text-white">
+                  <motion.div 
+                    className="text-center"
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {gameState === 'waiting' && (
+                      <>
+                        <Timer className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" />
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Wait...</h2>
+                        <p className="text-lg sm:text-xl">Red means wait</p>
+                      </>
+                    )}
+                    {gameState === 'react' && (
+                      <>
+                        <Zap className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" />
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-2">CLICK!</h2>
+                        <p className="text-lg sm:text-xl">Green means go</p>
+                      </>
+                    )}
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+
+            {gameState === 'result' && (
+              <div className="p-6 sm:p-8 text-center">
+                <motion.div 
+                  className="mb-8"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {typeof currentReactionTime === 'number' ? (
+                    <>
+                      <div className="mb-4">
+                        <p className="text-4xl sm:text-5xl font-bold mb-2" style={{ color: '#6E55A0' }}>
+                          {currentReactionTime}ms
+                        </p>
+                        <p className="text-lg sm:text-xl font-semibold" style={{ color: getReactionRating(currentReactionTime).color }}>
+                          {getReactionRating(currentReactionTime).rating}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mb-4" style={{ color: '#EF4444' }}>
+                        <p className="text-2xl sm:text-3xl font-bold mb-2">Too Early!</p>
+                        <p className="text-lg">Wait for the green signal</p>
+                      </div>
+                    </>
+                  )}
+                  
+                  <div className="rounded-lg p-4" style={{ backgroundColor: '#F7F5FA' }}>
+                    <p className="text-sm" style={{ color: '#8A6FBF' }}>
+                      Attempt {attempt} of {maxAttempts}
+                    </p>
+                    <div className="flex justify-center gap-1 mt-2">
+                      {Array.from({ length: maxAttempts }, (_, i) => (
+                        <div
+                          key={i}
+                          className="w-3 h-3 rounded-full transition-colors duration-200"
+                          style={{ 
+                            backgroundColor: i < attempt ? '#8A6FBF' : '#D1D5DB' 
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+
+            {gameState === 'finished' && (
+              <div className="p-6 sm:p-8 text-center">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#FEF3C7' }}>
+                    <Trophy className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#F59E0B' }} />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold mb-6" style={{ color: '#6E55A0' }}>Test Complete!</h2>
+                  
+                  <div className="rounded-xl p-6 mb-6" style={{ backgroundColor: '#F7F5FA' }}>
+                    <div className="grid grid-cols-2 gap-4 text-center mb-4">
+                      <div>
+                        <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#F59E0B' }}>
+                          {Math.min(...reactionTimes)}ms
+                        </p>
+                        <p className="text-sm" style={{ color: '#8A6FBF' }}>Best Time</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#F97316' }}>
+                          {averageTime}ms
+                        </p>
+                        <p className="text-sm" style={{ color: '#8A6FBF' }}>Average Time</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-semibold" style={{ color: '#6E55A0' }}>All Attempts:</h4>
+                      <div className="flex justify-center gap-2 flex-wrap">
+                        {reactionTimes.map((time, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 rounded-full text-sm font-medium"
+                            style={
+                              time === Math.min(...reactionTimes)
+                                ? { backgroundColor: '#E3DEF1', color: '#8A6FBF' }
+                                : { backgroundColor: '#F3F4F6', color: '#6B7280' }
+                            }
+                          >
+                            {time}ms
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {Math.min(...reactionTimes) === bestTime && (
+                      <motion.div 
+                        className="mt-4 p-3 rounded-lg"
+                        style={{ backgroundColor: '#E3DEF1' }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                      >
+                        <p className="font-semibold" style={{ color: '#8A6FBF' }}>⚡ New Personal Best!</p>
+                      </motion.div>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    <motion.button
+                      onClick={startGame}
+                      className="px-6 py-2 rounded-lg font-semibold text-white transition-colors"
+                      style={{ backgroundColor: '#8A6FBF' }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Test Again
+                    </motion.button>
+                    <Link
+                      href="/games"
+                      className="inline-block px-6 py-2 rounded-lg font-semibold text-white transition-colors"
+                      style={{ backgroundColor: '#6B7280' }}
+                    >
+                      Back to Games
+                    </Link>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Instructions */}
+          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+              <div className="text-center">
+                <p className="text-base sm:text-lg font-medium" style={{ color: '#6E55A0' }}>
+                  {getInstructions()}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Benefits Section */}
+          <motion.div variants={itemVariants}>
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm">
+              <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6" style={{ color: '#6E55A0' }}>
+                Benefits of Reaction Training
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-3" style={{ color: '#6E55A0' }}>Physical Benefits:</h4>
+                  <ul className="space-y-2 text-sm" style={{ color: '#8A6FBF' }}>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                      Improves reflexes
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                      Enhances hand-eye coordination
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                      Builds neural pathways
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-3" style={{ color: '#6E55A0' }}>Mental Benefits:</h4>
+                  <ul className="space-y-2 text-sm" style={{ color: '#8A6FBF' }}>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                      Increases alertness
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                      Improves decision making speed
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
+                      Enhances focus and attention
+                    </li>
                   </ul>
                 </div>
               </div>
               
-              <button
-                onClick={startGame}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+              <motion.div 
+                className="mt-4 p-3 rounded-lg"
+                style={{ backgroundColor: '#E3DEF1' }}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
               >
-                Start Test
-              </button>
+                <p className="text-sm" style={{ color: '#8A6FBF' }}>
+                  <strong>Tip:</strong> Average human reaction time is 200-300ms. Elite athletes can achieve under 200ms!
+                </p>
+              </motion.div>
             </div>
-          )}
-
-          {(gameState === 'waiting' || gameState === 'react') && (
-            <div 
-              className={`${getBackgroundColor()} transition-colors duration-300 cursor-pointer`}
-              onClick={handleReaction}
-              style={{ minHeight: '400px' }}
-            >
-              <div className="h-full flex items-center justify-center text-white">
-                <div className="text-center">
-                  {gameState === 'waiting' && (
-                    <>
-                      <Timer className="w-16 h-16 mx-auto mb-4" />
-                      <h2 className="text-3xl font-bold mb-2">Wait...</h2>
-                      <p className="text-xl">Red means wait</p>
-                    </>
-                  )}
-                  {gameState === 'react' && (
-                    <>
-                      <Zap className="w-16 h-16 mx-auto mb-4" />
-                      <h2 className="text-3xl font-bold mb-2">CLICK!</h2>
-                      <p className="text-xl">Green means go</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {gameState === 'result' && (
-            <div className="p-8 text-center">
-              <div className="mb-8">
-                {typeof currentReactionTime === 'number' ? (
-                  <>
-                    <div className="mb-4">
-                      <p className="text-5xl font-bold text-gray-900 mb-2">
-                        {currentReactionTime}ms
-                      </p>
-                      <p className={`text-xl font-semibold ${getReactionRating(currentReactionTime).color}`}>
-                        {getReactionRating(currentReactionTime).rating}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-red-500 mb-4">
-                      <p className="text-3xl font-bold mb-2">Too Early!</p>
-                      <p className="text-lg">Wait for the green signal</p>
-                    </div>
-                  </>
-                )}
-                
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600">
-                    Attempt {attempt} of {maxAttempts}
-                  </p>
-                  <div className="flex justify-center gap-1 mt-2">
-                    {Array.from({ length: maxAttempts }, (_, i) => (
-                      <div
-                        key={i}
-                        className={`w-3 h-3 rounded-full ${
-                          i < attempt ? 'bg-yellow-500' : 'bg-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {gameState === 'finished' && (
-            <div className="p-8 text-center">
-              <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Test Complete!</h2>
-              
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <div className="grid grid-cols-2 gap-4 text-center mb-4">
-                  <div>
-                    <p className="text-3xl font-bold text-yellow-600">
-                      {Math.min(...reactionTimes)}ms
-                    </p>
-                    <p className="text-sm text-gray-500">Best Time</p>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-orange-600">
-                      {averageTime}ms
-                    </p>
-                    <p className="text-sm text-gray-500">Average Time</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-900">All Attempts:</h4>
-                  <div className="flex justify-center gap-2 flex-wrap">
-                    {reactionTimes.map((time, index) => (
-                      <span
-                        key={index}
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          time === Math.min(...reactionTimes)
-                            ? 'bg-yellow-200 text-yellow-800'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {time}ms
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {Math.min(...reactionTimes) === bestTime && (
-                  <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
-                    <p className="text-yellow-800 font-semibold">⚡ New Personal Best!</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={startGame}
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Test Again
-                </button>
-                <Link
-                  href="/games"
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Back to Games
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Instructions */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mt-8">
-          <div className="text-center">
-            <p className="text-lg text-gray-700 font-medium">
-              {getInstructions()}
-            </p>
-          </div>
-        </div>
-
-        {/* Tips */}
-        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 mt-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Benefits of Reaction Training</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-            <div>
-              <p className="font-medium mb-2">Physical Benefits:</p>
-              <ul className="space-y-1">
-                <li>• Improves reflexes</li>
-                <li>• Enhances hand-eye coordination</li>
-                <li>• Builds neural pathways</li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-medium mb-2">Mental Benefits:</p>
-              <ul className="space-y-1">
-                <li>• Increases alertness</li>
-                <li>• Improves decision making speed</li>
-                <li>• Enhances focus and attention</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <strong>Tip:</strong> Average human reaction time is 200-300ms. Elite athletes can achieve under 200ms!
-            </p>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </main>
     </div>
   );
 }

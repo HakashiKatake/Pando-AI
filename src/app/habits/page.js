@@ -249,11 +249,12 @@ const HabitTracker = () => {
     setIsHydrated(true)
     // Initialize guest if not already done
     initializeGuest()
-    loadFromLocalStorage()
+    // Note: Data loading is handled by useDataInitialization hook
+    // No need to manually call loadFromLocalStorage here as it would cause double loading
     // Initialize quest system
     generateDailyQuests()
     updateQuestProgress()
-  }, [initializeGuest, loadFromLocalStorage, generateDailyQuests, updateQuestProgress])
+  }, [initializeGuest, generateDailyQuests, updateQuestProgress])
 
   const handleToggleHabit = async (habitId) => {
     console.log('=== HABIT TOGGLE DEBUG ===');

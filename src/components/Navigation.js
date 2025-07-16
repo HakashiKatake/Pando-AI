@@ -46,7 +46,7 @@ const navigationItems = [
 const bottomSidebarItems = [
   { icon: Bell, label: "Notifications", href: "/notifications" },
   { icon: Settings, label: "Settings", href: "/settings" },
-  { icon: HelpCircle, label: "Support", href: "/support" },
+  { icon: HelpCircle, label: "Support", href: "/emergency" },
 ]
 
 const Navigation = () => {
@@ -54,7 +54,7 @@ const Navigation = () => {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const { isGuest, guestName } = useAppStore()
+  const { isGuest, preferences } = useAppStore()
 
   // Don't show navigation on certain pages (same logic as old navigation)
   if (pathname === '/' || 
@@ -66,7 +66,10 @@ const Navigation = () => {
     return null
   }
 
-  const currentUser = user?.fullName || user?.firstName || guestName || 'HakashiKatake'
+  // Determine display name based on user type
+  const currentUser = isSignedIn 
+    ? (user?.fullName || user?.firstName || 'User')
+    : (preferences?.name || 'Guest User')
   const userEmail = user?.primaryEmailAddress?.emailAddress || 'Guest Mode'
 
   return (
@@ -77,7 +80,7 @@ const Navigation = () => {
           variant="outline"
           size="icon"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="bg-white/80 backdrop-blur-sm border-gray-200"
+          className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg"
           style={{ color: '#6E55A0' }}
         >
           {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -87,7 +90,7 @@ const Navigation = () => {
       {/* Sidebar */}
       <div className={cn(
         'fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0',
-        isCollapsed ? 'w-20' : 'w-64',
+        isCollapsed ? 'w-16 sm:w-20' : 'w-64 sm:w-72 lg:w-64',
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}>
         {/* Collapse/Expand Button - Desktop only */}
@@ -102,13 +105,18 @@ const Navigation = () => {
         </Button>
 
         {/* Logo and Header */}
-        <div className="p-6">
+        <div className={cn(
+          'flex-shrink-0 border-b border-gray-100',
+          isCollapsed ? 'p-3 sm:p-4' : 'p-4 sm:p-6'
+        )}>
           {!isCollapsed ? (
             <Link href="/dashboard" className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0">
                 <Heart className="h-5 w-5" style={{ color: '#8A6FBF' }} />
               </div>
-              <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
+              <h1 className="text-lg sm:text-xl font-semibold truncate" style={{ color: '#6E55A0' }}>
+                CalmConnect
+              </h1>
             </Link>
           ) : (
             <Link href="/dashboard" className="flex justify-center">
@@ -121,22 +129,22 @@ const Navigation = () => {
 
         {/* User Profile Section */}
         {!isCollapsed && (
-          <div className="px-4 pb-4 border-b border-gray-100">
+          <div className="flex-shrink-0 px-3 sm:px-4 pb-4 border-b border-gray-100">
             <div className="flex items-center space-x-3 p-3 rounded-lg" style={{ backgroundColor: '#F7F5FA' }}>
-              <Avatar className="w-10 h-10 flex-shrink-0">
+              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                 <AvatarImage src={user?.imageUrl} />
                 <AvatarFallback style={{ backgroundColor: '#8A6FBF', color: 'white' }}>
                   {currentUser.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: '#6E55A0' }}>
+                <p className="text-xs sm:text-sm font-medium truncate" style={{ color: '#6E55A0' }}>
                   {currentUser}
                 </p>
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-gray-500 truncate">{userEmail}</p>
                   {!isSignedIn && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs flex-shrink-0">
                       Guest
                     </Badge>
                   )}
@@ -146,69 +154,115 @@ const Navigation = () => {
           </div>
         )}
 
-        {/* Navigation Items */}
-        <nav className="flex-1 px-4 py-4">
-          <div className="space-y-2">
-            {navigationItems.map((item) => {
-              const IconComponent = item.icon
-              const isActive = pathname === item.href
-              
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "text-white shadow-lg"
-                      : "hover:bg-gray-50"
-                  }`}
-                  style={isActive ? { backgroundColor: '#8A6FBF' } : { color: '#6E55A0' }}
-                  title={isCollapsed ? item.label : undefined}
-                  onClick={() => setIsMobileOpen(false)}
-                >
-                  <IconComponent className="w-5 h-5 flex-shrink-0" />
-                  {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-                </Link>
-              )
-            })}
-          </div>
+        {/* Scrollable Navigation Container */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          {/* Main Navigation Items */}
+          <nav className={cn(
+            'px-3 sm:px-4 py-4',
+            isCollapsed ? 'px-2' : ''
+          )}>
+            <div className="space-y-1 sm:space-y-2">
+              {navigationItems.map((item) => {
+                const IconComponent = item.icon
+                const isActive = pathname === item.href
+                
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center rounded-lg transition-all duration-200 group',
+                      isCollapsed ? 'justify-center p-2 sm:p-3' : 'space-x-3 px-3 py-2 sm:py-3',
+                      isActive
+                        ? "text-white shadow-lg"
+                        : "hover:bg-gray-50"
+                    )}
+                    style={isActive ? { backgroundColor: '#8A6FBF' } : { color: '#6E55A0' }}
+                    title={isCollapsed ? item.label : undefined}
+                    onClick={() => setIsMobileOpen(false)}
+                  >
+                    <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="text-xs sm:text-sm font-medium truncate">
+                        {item.label}
+                      </span>
+                    )}
+                    
+                    {/* Tooltip for collapsed state */}
+                    {isCollapsed && (
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                        {item.label}
+                      </div>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
 
-          {/* Bottom Navigation Items */}
-          <div className="mt-8 space-y-2">
-            {bottomSidebarItems.map((item, index) => {
-              const IconComponent = item.icon
-              const isActive = pathname === item.href
-              
-              return (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-lg cursor-pointer transition-colors ${
-                    isActive ? "text-white" : "hover:bg-gray-50"
-                  }`}
-                  style={isActive ? { backgroundColor: '#8A6FBF' } : { color: '#6E55A0' }}
-                  title={isCollapsed ? item.label : undefined}
-                  onClick={() => setIsMobileOpen(false)}
-                >
-                  <IconComponent className="w-5 h-5 flex-shrink-0" />
-                  {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-                </Link>
-              )
-            })}
-          </div>
-        </nav>
+            {/* Bottom Navigation Items */}
+            <div className="mt-6 sm:mt-8 space-y-1 sm:space-y-2 border-t border-gray-100 pt-4 sm:pt-6">
+              {bottomSidebarItems.map((item, index) => {
+                const IconComponent = item.icon
+                const isActive = pathname === item.href
+                
+                return (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center rounded-lg transition-all duration-200 group',
+                      isCollapsed ? 'justify-center p-2 sm:p-3' : 'space-x-3 px-3 py-2 sm:py-3',
+                      isActive ? "text-white" : "hover:bg-gray-50"
+                    )}
+                    style={isActive ? { backgroundColor: '#8A6FBF' } : { color: '#6E55A0' }}
+                    title={isCollapsed ? item.label : undefined}
+                    onClick={() => setIsMobileOpen(false)}
+                  >
+                    <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="text-xs sm:text-sm font-medium truncate">
+                        {item.label}
+                      </span>
+                    )}
+                    
+                    {/* Tooltip for collapsed state */}
+                    {isCollapsed && (
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                        {item.label}
+                      </div>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          </nav>
+        </div>
 
-        {/* Bottom Profile & Sign Out */}
-        <div className="p-4 border-t border-gray-100 space-y-2">
+        {/* Bottom Profile & Sign Out - Fixed at bottom */}
+        <div className={cn(
+          'flex-shrink-0 border-t border-gray-100 space-y-2',
+          isCollapsed ? 'p-2 sm:p-3' : 'p-3 sm:p-4'
+        )}>
           {/* Sign Out Button */}
           {isSignedIn && (
             <SignOutButton redirectUrl="/">
-              <button className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors w-full text-left`}
+              <button 
+                className={cn(
+                  'flex items-center rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-50 transition-colors w-full text-left group',
+                  isCollapsed ? 'justify-center p-2 sm:p-3' : 'space-x-3 px-3 py-2 sm:py-3'
+                )}
                 style={{ color: '#6E55A0' }}
                 title={isCollapsed ? "Sign Out" : undefined}
               >
-                <LogOut className="w-5 h-5 flex-shrink-0" />
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                 {!isCollapsed && <span>Sign Out</span>}
+                
+                {/* Tooltip for collapsed state */}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                    Sign Out
+                  </div>
+                )}
               </button>
             </SignOutButton>
           )}
@@ -216,7 +270,7 @@ const Navigation = () => {
           {/* Collapsed Profile */}
           {isCollapsed && (
             <div className="flex justify-center">
-              <Avatar className="w-10 h-10 flex-shrink-0">
+              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                 <AvatarImage src={user?.imageUrl} />
                 <AvatarFallback style={{ backgroundColor: '#8A6FBF', color: 'white' }}>
                   {currentUser.charAt(0).toUpperCase()}
@@ -229,7 +283,9 @@ const Navigation = () => {
           {!isCollapsed && (
             <div className="text-center pt-2">
               <p className="text-xs text-gray-500">Welcome back 👋</p>
-              <p className="text-sm font-medium" style={{ color: '#6E55A0' }}>{currentUser}</p>
+              <p className="text-xs sm:text-sm font-medium truncate" style={{ color: '#6E55A0' }}>
+                {currentUser}
+              </p>
             </div>
           )}
         </div>
@@ -247,6 +303,7 @@ const Navigation = () => {
 }
 
 export function PageLayout({ children }) {
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
   
   // Full width for landing page, auth pages, onboarding, and org pages
@@ -262,8 +319,12 @@ export function PageLayout({ children }) {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
       <Navigation />
-      <main className="lg:pl-64">
-        <div className="p-4 lg:p-8 pt-16 lg:pt-8">
+      <main className={cn(
+        'transition-all duration-300 ease-in-out',
+        'lg:pl-64', // Default expanded width
+        'pl-0' // Mobile no padding
+      )}>
+        <div className="p-3 sm:p-4 lg:p-8 pt-16 lg:pt-8">
           {children}
         </div>
       </main>

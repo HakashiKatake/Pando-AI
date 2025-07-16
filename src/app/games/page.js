@@ -1,288 +1,581 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Gamepad2, Trophy, Target, Brain, Palette, Clock, Zap } from 'lucide-react';
-import { useExerciseStore } from '@/lib/store';
-import { useDataInitialization } from '@/lib/useDataInitialization';
+import React, { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { useRouter } from 'next/navigation'
+import { 
+  Calendar,
+  Clock,
+  ChevronDown,
+  Gamepad2,
+  Brain,
+  Timer,
+  Zap,
+  Eye,
+  Target,
+  Trophy,
+  Palette
+} from "lucide-react"
+import { useExerciseStore } from '@/lib/store'
+import { useDataInitialization } from '@/lib/useDataInitialization'
 
-const games = [
-  {
-    id: 'color-match',
-    title: 'Color Match Challenge',
-    description: 'Train your focus and reaction time by matching color names with their actual colors',
-    icon: Palette,
-    category: 'Focus',
-    difficulty: 'Beginner',
-    benefits: ['Improves focus', 'Enhances reaction time', 'Builds concentration'],
-    estimatedTime: '2-5 minutes',
-    route: '/games/color-match'
-  },
-  {
-    id: 'memory-sequence',
-    title: 'Memory Sequence',
-    description: 'Challenge your working memory by remembering and repeating sequences',
-    icon: Brain,
-    category: 'Memory',
-    difficulty: 'Intermediate',
-    benefits: ['Improves working memory', 'Enhances concentration', 'Builds pattern recognition'],
-    estimatedTime: '3-7 minutes',
-    route: '/games/memory-sequence'
-  },
-  {
-    id: 'reaction-timer',
-    title: 'Reaction Timer',
-    description: 'Test and improve your reflexes with this reaction speed challenge',
-    icon: Zap,
-    category: 'Mindfulness',
-    difficulty: 'Beginner',
-    benefits: ['Improves reflexes', 'Increases alertness', 'Enhances decision making speed'],
-    estimatedTime: '1-3 minutes',
-    route: '/games/reaction-timer'
-  }
-];
-
-export default function GamesPage() {
-  const router = useRouter();
-  const { sessions } = useExerciseStore();
-  const dataInit = useDataInitialization();
-  const [isHydrated, setIsHydrated] = useState(false);
+const WellnessGames = () => {
+  const router = useRouter()
+  const { sessions } = useExerciseStore()
+  const dataInit = useDataInitialization()
+  const [isHydrated, setIsHydrated] = useState(false)
+  
+  // Updated time to match your current timestamp
+  const currentTime = "06:49"
+  const currentDate = "Jul 16, 2025"
 
   useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+    setIsHydrated(true)
+  }, [])
 
+  // Games data with routes and functionality
+  const games = [
+    {
+      id: 'color-match',
+      title: "Color Match",
+      category: "Focus",
+      duration: "2-5 mins",
+      description: "Match color names with their actual colors to improve focus and reduce anxiety",
+      difficulty: ["Easy", "Medium", "Hard"],
+      difficultyLevels: [
+        { level: "Easy", color: "#22C55E", active: true },
+        { level: "Medium", color: "#F59E0B", active: false },
+        { level: "Hard", color: "#EF4444", active: false }
+      ],
+      backgroundColor: "#1F2937",
+      textColor: "#FFFFFF",
+      buttonColor: "#8B5CF6",
+      icon: Palette,
+      route: '/games/color-match',
+      benefits: [
+        "Reduces Stress",
+        "Improves focus", 
+        "Calms mind"
+      ]
+    },
+    {
+      id: 'memory-sequence',
+      title: "Memory Sequence",
+      category: "Memory",
+      duration: "3-7 mins",
+      description: "Remember and repeat sequence to boost working memory and concentration",
+      difficulty: ["Easy", "Medium", "Hard"],
+      difficultyLevels: [
+        { level: "Easy", color: "#22C55E", active: true },
+        { level: "Medium", color: "#F59E0B", active: false },
+        { level: "Hard", color: "#EF4444", active: false }
+      ],
+      backgroundColor: "#E0F2FE",
+      textColor: "#1E293B",
+      buttonColor: "#8B5CF6",
+      icon: Brain,
+      route: '/games/memory-sequence',
+      benefits: [
+        "Boost memory",
+        "Improves focus"
+      ]
+    },
+    {
+      id: 'reaction-timer',
+      title: "Reaction Timer",
+      category: "Mindfulness",
+      duration: "2-5 mins",
+      description: "Test and improve your reaction time with this mindfulness-based game",
+      difficulty: ["Easy", "Medium", "Hard"],
+      difficultyLevels: [
+        { level: "Easy", color: "#22C55E", active: true },
+        { level: "Medium", color: "#F59E0B", active: false },
+        { level: "Hard", color: "#EF4444", active: false }
+      ],
+      backgroundColor: "#6366F1",
+      textColor: "#FFFFFF",
+      buttonColor: "#8B5CF6",
+      icon: Zap,
+      route: '/games/reaction-timer',
+      benefits: [
+        "Improves reaction time",
+        "Enhances Mindfulness"
+      ]
+    }
+  ]
+
+  // Game functionality from old code
   const handleStartGame = (game) => {
-    router.push(game.route);
-  };
+    router.push(game.route)
+  }
 
   const getGameStats = () => {
+    if (!isHydrated) return { totalGames: 0, totalTime: 0, bestScores: {}, recentSessions: [] }
+    
     // Filter sessions to only include games
     const gameSessions = sessions.filter(session => 
       session.exerciseType === 'game' || 
       ['color-match', 'memory-sequence', 'reaction-timer'].includes(session.gameType || session.exerciseId)
-    );
+    )
     
-    const totalGames = gameSessions.length;
-    const totalTime = gameSessions.reduce((acc, session) => acc + (session.duration || 0), 0);
-    const bestScores = {};
+    const totalGames = gameSessions.length
+    const totalTime = gameSessions.reduce((acc, session) => acc + (session.duration || 0), 0)
+    const bestScores = {}
     
     // Calculate best scores for each game type
     gameSessions.forEach(session => {
-      const gameType = session.gameType || session.exerciseId;
+      const gameType = session.gameType || session.exerciseId
       if (gameType && session.score !== undefined) {
         if (!bestScores[gameType] || session.score > bestScores[gameType]) {
-          bestScores[gameType] = session.score;
+          bestScores[gameType] = session.score
         }
       }
-    });
+    })
 
     return {
       totalGames,
       totalTime: Math.round(totalTime),
       bestScores,
       recentSessions: gameSessions.slice(-5).reverse()
-    };
-  };
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty.toLowerCase()) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
     }
-  };
+  }
 
   const formatTime = (seconds) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
-  };
+    if (seconds < 60) return `${seconds}s`
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}m ${remainingSeconds}s`
+  }
+
+  const stats = getGameStats()
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.2
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.6 }
+    }
+  }
+
+  const cardVariants = {
+    hidden: { y: 50, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.7 }
+    },
+    hover: {
+      y: -10,
+      scale: 1.02,
+      transition: { duration: 0.3 }
+    }
+  }
 
   // Prevent hydration errors
   if (!isHydrated) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#8A6FBF' }}></div>
+          <p style={{ color: '#6E55A0' }}>Loading your games...</p>
         </div>
       </div>
-    );
+    )
   }
 
-  const stats = getGameStats();
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
-          <Gamepad2 className="h-8 w-8" />
-          Wellness Games
-        </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Play engaging mini-games designed to improve focus, memory, and mindfulness while reducing stress and anxiety.
-        </p>
-      </div>
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+      {/* Header */}
+      <motion.header 
+        className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 fixed top-0 left-0 right-0 z-30"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <span className="text-sm sm:text-lg">🐼</span>
+            </div>
+            <h1 className="text-base sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
+          </div>
 
-      {/* Game Stats */}
-      {stats.totalGames > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <Gamepad2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.totalGames}</p>
-                  <p className="text-sm text-muted-foreground">Games Played</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <Trophy className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {Object.keys(stats.bestScores).length > 0 
-                      ? Math.max(...Object.values(stats.bestScores)) 
-                      : 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Best Score</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <Clock className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatTime(stats.totalTime)}</p>
-                  <p className="text-sm text-muted-foreground">Total Time</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Games Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {games.map((game) => {
-          const Icon = game.icon;
-          const gameStats = stats.bestScores[game.id];
-          
-          return (
-            <Card key={game.id} className="group hover:shadow-lg transition-all duration-200">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
-                      <Icon className="h-5 w-5" />
-                      {game.title}
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{game.category}</Badge>
-                      <Badge className={getDifficultyColor(game.difficulty)}>
-                        {game.difficulty}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {game.estimatedTime}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">{game.description}</p>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground">Benefits:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {game.benefits.slice(0, 2).map((benefit) => (
-                      <Badge key={benefit} variant="secondary" className="text-xs">
-                        {benefit}
-                      </Badge>
-                    ))}
-                    {game.benefits.length > 2 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{game.benefits.length - 2} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Personal Best Score */}
-                {gameStats && (
-                  <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                    <Trophy className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm font-medium">Best: {gameStats}</span>
-                  </div>
-                )}
-
-                <Button
-                  onClick={() => handleStartGame(game)}
-                  className="w-full"
-                >
-                  <Target className="h-4 w-4 mr-2" />
-                  Play Game
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Recent Sessions */}
-      {stats.recentSessions.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Recent Game Sessions</h2>
-          <div className="space-y-3">
-            {stats.recentSessions.map((session, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <Trophy className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {games.find(g => g.id === (session.gameType || session.exerciseId))?.title || 'Game'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatTime(session.duration || 0)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-primary">
-                        {session.score !== undefined ? session.score : 'N/A'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Score</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+              <Calendar className="w-4 h-4" />
+              <span>{currentDate}</span>
+              <ChevronDown className="w-4 h-4" />
+            </div>
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>{currentTime}</span>
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+            </div>
+            <button className="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm">
+              SOS
+            </button>
           </div>
         </div>
-      )}
+      </motion.header>
+
+      {/* Main Content */}
+      <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">
+        <motion.div
+          className="max-w-6xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Title Section */}
+          <motion.div 
+            variants={itemVariants}
+            className="text-center mb-8 sm:mb-12"
+          >
+            {/* Game Controller Icon */}
+            <motion.div
+              className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gray-800 rounded-2xl flex items-center justify-center"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+            </motion.div>
+
+            <motion.h1 
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4"
+              style={{ color: '#1F2937' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              Wellness Games
+            </motion.h1>
+            
+            <motion.p 
+              className="text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed"
+              style={{ color: '#6B7280' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              Play engaging mini-games designed to improve focus, memory, and mindfulness while reducing stress and anxiety
+            </motion.p>
+          </motion.div>
+
+          {/* Game Stats */}
+          {stats.totalGames > 0 && (
+            <motion.div 
+              variants={itemVariants}
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12"
+            >
+              <motion.div
+                className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl" style={{ backgroundColor: '#E3DEF1' }}>
+                    <Gamepad2 className="h-6 w-6" style={{ color: '#8A6FBF' }} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold" style={{ color: '#6E55A0' }}>{stats.totalGames}</p>
+                    <p className="text-sm" style={{ color: '#8A6FBF' }}>Games Played</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl" style={{ backgroundColor: '#E3DEF1' }}>
+                    <Trophy className="h-6 w-6" style={{ color: '#8A6FBF' }} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                      {Object.keys(stats.bestScores).length > 0 
+                        ? Math.max(...Object.values(stats.bestScores)) 
+                        : 0}
+                    </p>
+                    <p className="text-sm" style={{ color: '#8A6FBF' }}>Best Score</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl" style={{ backgroundColor: '#E3DEF1' }}>
+                    <Clock className="h-6 w-6" style={{ color: '#8A6FBF' }} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold" style={{ color: '#6E55A0' }}>{formatTime(stats.totalTime)}</p>
+                    <p className="text-sm" style={{ color: '#8A6FBF' }}>Total Time</p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Games Grid */}
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12"
+            variants={containerVariants}
+          >
+            {games.map((game, index) => {
+              const gameStats = stats.bestScores[game.id]
+              const Icon = game.icon
+              
+              return (
+                <motion.div
+                  key={game.id}
+                  variants={cardVariants}
+                  whileHover="hover"
+                  className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg"
+                >
+                  {/* Game Image */}
+                  <div 
+                    className="h-48 sm:h-56 relative overflow-hidden"
+                    style={{ backgroundColor: game.backgroundColor }}
+                  >
+                    {/* Placeholder for game image */}
+                    <div className="w-full h-full flex items-center justify-center">
+                      {game.id === 'color-match' && (
+                        // Color Match - Colorful grid pattern
+                        <div className="grid grid-cols-4 gap-1 p-4">
+                          {[
+                            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
+                            '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD',
+                            '#00D2D3', '#FF9F43', '#0FB9B1', '#EE5A24',
+                            '#FD79A8', '#FDCB6E', '#6C5CE7', '#A29BFE'
+                          ].map((color, i) => (
+                            <div
+                              key={i}
+                              className="w-6 h-6 sm:w-8 sm:h-8 rounded"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {game.id === 'memory-sequence' && (
+                        // Memory Sequence - Brain illustration placeholder
+                        <div className="flex items-center justify-center">
+                          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-pink-200 flex items-center justify-center">
+                            <Brain className="w-12 h-12 sm:w-16 sm:h-16 text-pink-600" />
+                          </div>
+                        </div>
+                      )}
+                      {game.id === 'reaction-timer' && (
+                        // Reaction Timer - Mobile device placeholder
+                        <div className="flex items-center justify-center">
+                          <div className="w-16 h-24 sm:w-20 sm:h-32 bg-white rounded-lg border-4 border-gray-300 flex items-center justify-center">
+                            <div className="grid grid-cols-2 gap-1">
+                              {['#FF6B6B', '#4ECDC4', '#FECA57', '#96CEB4'].map((color, i) => (
+                                <div
+                                  key={i}
+                                  className="w-3 h-3 sm:w-4 sm:h-4 rounded"
+                                  style={{ backgroundColor: color }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Game Title Overlay */}
+                    <div className="absolute bottom-4 left-4">
+                      <h3 
+                        className="text-xl sm:text-2xl font-bold"
+                        style={{ color: game.textColor }}
+                      >
+                        {game.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-4 sm:p-6">
+                    {/* Category and Duration */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span 
+                        className="text-sm font-medium px-3 py-1 rounded-full"
+                        style={{ 
+                          backgroundColor: '#E3DEF1',
+                          color: '#8A6FBF'
+                        }}
+                      >
+                        {game.category}
+                      </span>
+                      <span 
+                        className="text-sm font-medium"
+                        style={{ color: '#6B7280' }}
+                      >
+                        {game.duration}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm leading-relaxed mb-4" style={{ color: '#6B7280' }}>
+                      {game.description}
+                    </p>
+
+                    {/* Personal Best Score */}
+                    {gameStats && (
+                      <div className="flex items-center gap-2 p-2 mb-4 rounded-lg" style={{ backgroundColor: '#FEF3C7' }}>
+                        <Trophy className="h-4 w-4" style={{ color: '#D97706' }} />
+                        <span className="text-sm font-medium" style={{ color: '#92400E' }}>Best: {gameStats}</span>
+                      </div>
+                    )}
+
+                    {/* Difficulty Levels */}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-2" style={{ color: '#374151' }}>
+                        Difficulty levels:
+                      </p>
+                      <div className="flex gap-2">
+                        {game.difficultyLevels.map((level, levelIndex) => (
+                          <span
+                            key={levelIndex}
+                            className="px-3 py-1 rounded-full text-xs font-bold text-white"
+                            style={{ backgroundColor: level.color }}
+                          >
+                            {level.level}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Benefits */}
+                    <div className="mb-6">
+                      <p className="text-sm font-medium mb-3" style={{ color: '#374151' }}>
+                        Benefits:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {game.benefits.map((benefit, benefitIndex) => (
+                          <motion.span
+                            key={benefitIndex}
+                            className="text-xs px-3 py-1 rounded-full border"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#8A6FBF',
+                              backgroundColor: '#F7F5FA'
+                            }}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.8 + benefitIndex * 0.1 }}
+                          >
+                            {benefit}
+                          </motion.span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Play Button */}
+                    <motion.button
+                      className="w-full py-3 sm:py-4 rounded-xl font-bold text-white text-sm sm:text-base flex items-center justify-center gap-2"
+                      style={{ backgroundColor: game.buttonColor }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={() => handleStartGame(game)}
+                    >
+                      <span>▶</span>
+                      Play Game
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+
+          {/* Recent Sessions */}
+          {stats.recentSessions.length > 0 && (
+            <motion.div variants={itemVariants} className="mb-8">
+              <h2 className="text-2xl font-bold mb-6" style={{ color: '#6E55A0' }}>Recent Game Sessions</h2>
+              <div className="space-y-3">
+                {stats.recentSessions.map((session, index) => (
+                  <motion.div
+                    key={index}
+                    className="bg-white rounded-xl p-4 shadow-sm"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg" style={{ backgroundColor: '#E3DEF1' }}>
+                          <Trophy className="h-4 w-4" style={{ color: '#8A6FBF' }} />
+                        </div>
+                        <div>
+                          <p className="font-medium" style={{ color: '#6E55A0' }}>
+                            {games.find(g => g.id === (session.gameType || session.exerciseId))?.title || 'Game'}
+                          </p>
+                          <p className="text-sm" style={{ color: '#8A6FBF' }}>
+                            {formatTime(session.duration || 0)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold" style={{ color: '#8A6FBF' }}>
+                          {session.score !== undefined ? session.score : 'N/A'}
+                        </p>
+                        <p className="text-xs" style={{ color: '#8A6FBF' }}>Score</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Additional Info Section */}
+          <motion.div
+            variants={itemVariants}
+            className="text-center"
+          >
+            <motion.div
+              className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E3DEF1' }}>
+                  <Brain className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#8A6FBF' }} />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold" style={{ color: '#6E55A0' }}>
+                  Why Play Wellness Games?
+                </h3>
+              </div>
+              <p className="text-sm sm:text-base leading-relaxed max-w-3xl mx-auto" style={{ color: '#8A6FBF' }}>
+                Our carefully designed mini-games combine fun with science-backed techniques to enhance cognitive function, 
+                reduce stress, and improve overall mental well-being. Each game targets specific areas of brain health 
+                while providing an enjoyable and engaging experience.
+              </p>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </main>
     </div>
-  );
+  )
 }
+
+export default WellnessGames

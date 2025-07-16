@@ -483,22 +483,35 @@ export const useExerciseStore = create((set, get) => ({
     if (userId) {
       // For authenticated users, save to database
       try {
+        const requestBody = { ...sessionData, guestId };
+        console.log('Sending exercise session to API:', requestBody);
+        
         const response = await fetch('/api/exercises', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...sessionData, guestId }),
+          body: JSON.stringify(requestBody),
         });
         
         if (response.ok) {
+          const result = await response.json();
+          console.log('Exercise session saved successfully:', result);
           // Add to local state immediately for UI responsiveness
           set(state => ({ sessions: [...state.sessions, newSession] }));
           // Then reload from database to ensure consistency
           get().loadSessionsFromAPI(userId, guestId);
         } else {
-          console.error('Failed to save exercise session to database');
+          const errorData = await response.json();
+          console.error('Failed to save exercise session to database:', response.status, errorData);
         }
       } catch (error) {
-        console.error('Failed to save exercise session:', error);
+        console.error('Failed to save exercise session - Network/Request error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          sessionData,
+          userId,
+          guestId
+        });
       }
     } else {
       // For guests, use local storage
@@ -733,6 +746,7 @@ export const useHabitStore = create(
         
         if (!isGuest && userId) {
           try {
+            console.log('Saving habit completion to database:', newCompletion);
             const response = await fetch('/api/habit-completions', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -740,8 +754,12 @@ export const useHabitStore = create(
             });
             
             if (!response.ok) {
-              console.warn('Failed to save habit completion to database, keeping local state');
+              const errorData = await response.json();
+              console.warn('Failed to save habit completion to database:', response.status, errorData);
               // Don't revert on error for now, keep local state
+            } else {
+              const savedCompletion = await response.json();
+              console.log('Habit completion saved successfully:', savedCompletion);
             }
           } catch (error) {
             console.error('Failed to save habit completion to database:', error);
@@ -758,11 +776,15 @@ export const useHabitStore = create(
         if (!userId && !guestId) return;
         
         try {
+          console.log('Loading habits from API for userId:', userId, 'guestId:', guestId);
           const response = await fetch(`/api/habits?userId=${userId || guestId}`);
           if (response.ok) {
             const { habits, completions } = await response.json();
             const habitsArray = Array.isArray(habits) ? habits : [];
+            console.log('Loaded habits from API:', habitsArray.length, 'habits and', Object.keys(completions || {}).length, 'completions');
             set({ habits: habitsArray, completions: completions || {} });
+          } else {
+            console.error('Failed to load habits from API:', response.status);
           }
         } catch (error) {
           console.error('Failed to load habits from API:', error);
