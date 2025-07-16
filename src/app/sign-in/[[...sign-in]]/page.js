@@ -4,8 +4,9 @@ import { SignIn } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 import { useTheme } from 'next-themes';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function SignInPage() {
+function SignInContent() {
   const { theme } = useTheme();
   const searchParams = useSearchParams();
   const userType = searchParams.get('type');
@@ -51,5 +52,20 @@ export default function SignInPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4">
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 }

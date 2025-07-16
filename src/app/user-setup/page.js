@@ -2,9 +2,9 @@
 
 import { useUser } from '@clerk/nextjs';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
-export default function UserSetupPage() {
+function UserSetupContent() {
   const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -64,5 +64,20 @@ export default function UserSetupPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function UserSetupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <UserSetupContent />
+    </Suspense>
   );
 }
