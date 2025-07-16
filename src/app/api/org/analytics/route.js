@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { connectDB } from '@/lib/database';
 import Classroom from '@/models/Classroom';
+import Report from '@/models/Report';
 
 export async function GET(request) {
   try {
@@ -26,6 +27,22 @@ export async function GET(request) {
       sum + (classroom.studentCount || 0), 0
     );
 
+    // Get report statistics
+    const totalReports = await Report.countDocuments({
+      organizationId: organizationId || userId
+    });
+
+    const pendingReports = await Report.countDocuments({
+      organizationId: organizationId || userId,
+      status: 'pending'
+    });
+
+    const urgentReports = await Report.countDocuments({
+      organizationId: organizationId || userId,
+      severity: 'urgent',
+      status: { $in: ['pending', 'under_review'] }
+    });
+
     // For now, we'll use mock data for wellness metrics
     // In a real implementation, you'd query actual student wellness data
     const analytics = {
@@ -33,6 +50,11 @@ export async function GET(request) {
       activeStudents: Math.floor(totalStudents * 0.8), // 80% active
       averageWellness: 7.2, // Mock average wellness score
       alertCount: Math.floor(totalStudents * 0.1), // 10% might have alerts
+      reports: {
+        total: totalReports,
+        pending: pendingReports,
+        urgent: urgentReports,
+      }
     };
 
     return NextResponse.json(analytics);

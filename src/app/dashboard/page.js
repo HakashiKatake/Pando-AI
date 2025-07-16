@@ -361,6 +361,18 @@ const Dashboard = () => {
               <span>{currentTime}</span>
               <ChevronDown className="w-4 h-4" />
             </div>
+            {/* Anonymous Report Button for Students */}
+            {user?.unsafeMetadata?.userType === 'student' && user?.unsafeMetadata?.classroomId && (
+              <Link href="/report">
+                <Button 
+                  variant="outline" 
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                  title="Report an issue anonymously"
+                >
+                  🛡️ Report
+                </Button>
+              </Link>
+            )}
             <Link href="/emergency">
               <Button className="bg-red-500 hover:bg-red-600 text-white">
                 SOS

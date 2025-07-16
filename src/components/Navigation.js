@@ -26,7 +26,8 @@ import {
   Calendar,
   BarChart3,
   Menu,
-  X
+  X,
+  Shield
 } from "lucide-react"
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
@@ -65,6 +66,31 @@ const Navigation = () => {
       pathname === '/classroom-code') {
     return null
   }
+
+  // Check if user is a student in a classroom
+  const isStudentInClassroom = user?.unsafeMetadata?.userType === 'student' && user?.unsafeMetadata?.classroomId
+
+  // Add reporting option for students in classrooms
+  const getNavigationItems = () => {
+    const baseItems = [...navigationItems]
+    
+    if (isStudentInClassroom) {
+      // Insert anonymous reporting after chat
+      const chatIndex = baseItems.findIndex(item => item.href === '/chat')
+      if (chatIndex !== -1) {
+        baseItems.splice(chatIndex + 1, 0, {
+          name: 'Anonymous Report',
+          href: '/report',
+          icon: Shield,
+          label: "Anonymous Report"
+        })
+      }
+    }
+    
+    return baseItems
+  }
+
+  const currentNavigationItems = getNavigationItems()
 
   // Determine display name based on user type
   const currentUser = isSignedIn 
@@ -162,7 +188,7 @@ const Navigation = () => {
             isCollapsed ? 'px-2' : ''
           )}>
             <div className="space-y-1 sm:space-y-2">
-              {navigationItems.map((item) => {
+              {currentNavigationItems.map((item) => {
                 const IconComponent = item.icon
                 const isActive = pathname === item.href
                 
