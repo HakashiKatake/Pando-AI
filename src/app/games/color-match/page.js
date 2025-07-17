@@ -6,6 +6,7 @@ import { ArrowLeft, Play, Pause, RotateCcw, Trophy, Calendar, Clock, ChevronDown
 import Link from 'next/link';
 import { useExerciseStore } from '../../../lib/store';
 import { useDataInitialization } from '../../../lib/useDataInitialization';
+import Header from '@/components/Header';
 
 export default function ColorMatchGame() {
   const [gameState, setGameState] = useState('ready'); // ready, playing, paused, finished
@@ -22,9 +23,7 @@ export default function ColorMatchGame() {
   const { addSession } = useExerciseStore();
   const dataInit = useDataInitialization();
 
-  // Updated time to match your current timestamp
-  const currentTime = "07:03"
-  const currentDate = "Jul 16, 2025"
+
 
   const colors = [
     { name: 'RED', value: '#dc2626', bg: 'bg-red-600' },
@@ -211,39 +210,7 @@ export default function ColorMatchGame() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-      {/* Header - Consistent with other pages */}
-      <motion.header 
-        className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 fixed top-0 left-0 right-0 z-30"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-              <span className="text-sm sm:text-lg">🐼</span>
-            </div>
-            <h1 className="text-base sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
-          </div>
-
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
-              <Calendar className="w-4 h-4" />
-              <span>{currentDate}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
-              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>{currentTime}</span>
-              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-            </div>
-            <button className="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm">
-              SOS
-            </button>
-          </div>
-        </div>
-      </motion.header>
+      <Header/>
 
       {/* Main Content */}
       <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">

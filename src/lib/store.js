@@ -54,6 +54,13 @@ export const useAppStore = create(
             localStorage.removeItem('calm-connect-journal');
             localStorage.removeItem('calm-connect-exercises');
             localStorage.removeItem('calm-connect-feedback');
+            localStorage.removeItem('calm-connect-habits');
+            
+            // Also clear any guest-specific habit storage
+            const currentGuestId = get().guestId;
+            if (currentGuestId) {
+              localStorage.removeItem(`calm-connect-habits-guest-${currentGuestId}`);
+            }
           }
         }
       },
@@ -63,7 +70,29 @@ export const useAppStore = create(
       initializeGuest: () => {
         const existingGuestId = get().guestId;
         if (!existingGuestId) {
-          set({ guestId: generateGuestId() });
+          const newGuestId = generateGuestId();
+          set({ guestId: newGuestId });
+          
+          console.log('Initializing new guest with ID:', newGuestId);
+          
+          // Clear habit data for new guest to prevent contamination
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('calm-connect-habits');
+            
+            // Also clear any other potential habit storage
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('calm-connect-habits')) {
+                localStorage.removeItem(key);
+              }
+            });
+          }
+          
+          // Clear habit store state immediately for new guests
+          // We need to do this after localStorage is cleared to prevent re-persistence
+          setTimeout(() => {
+            const habitStore = useHabitStore.getState();
+            habitStore.clearData();
+          }, 100);
         }
       },
       
@@ -99,6 +128,7 @@ export const useAppStore = create(
         localStorage.removeItem('calm-connect-journal');
         localStorage.removeItem('calm-connect-exercises');
         localStorage.removeItem('calm-connect-feedback');
+        localStorage.removeItem('calm-connect-habits');
         
         // Reset app state
         set({
@@ -795,11 +825,15 @@ export const useHabitStore = create(
       },
       
       loadHabitsFromAPI: async (userId, guestId) => {
-        if (!userId && !guestId) return;
+        // Only load from API for authenticated users
+        if (!userId) {
+          console.log('No userId provided, skipping API load');
+          return;
+        }
         
         try {
-          console.log('Loading habits from API for userId:', userId, 'guestId:', guestId);
-          const response = await fetch(`/api/habits?userId=${userId || guestId}`);
+          console.log('Loading habits from API for authenticated user:', userId);
+          const response = await fetch(`/api/habits?userId=${userId}`);
           if (response.ok) {
             const { habits, completions } = await response.json();
             const habitsArray = Array.isArray(habits) ? habits : [];
@@ -810,16 +844,22 @@ export const useHabitStore = create(
           }
         } catch (error) {
           console.error('Failed to load habits from API:', error);
-          // Fallback to local storage for guests
-          if (guestId) {
-            get().loadFromLocalStorage();
-          }
         }
       },
       
       loadFromLocalStorage: () => {
         // With persistence middleware, this is handled automatically
         // This method is kept for compatibility but does nothing
+      },
+      
+      clearData: () => {
+        console.log('Clearing habit store data');
+        set({ 
+          habits: [], 
+          completions: {}, 
+          quests: {}, 
+          questCompletions: {} 
+        });
       },
       
       getHabitStreak: (habitId) => {

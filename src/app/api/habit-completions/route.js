@@ -8,25 +8,23 @@ await connectToDatabase();
 export async function POST(request) {
   try {
     const { userId: authUserId } = await auth();
+    
+    if (!authUserId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
     const body = await request.json();
-    const { habitId, date, completed, userId } = body;
+    const { habitId, date, completed } = body;
     
     console.log('Habit completion API received:', { authUserId, body });
     
-    if (!habitId || !date || userId === undefined) {
+    if (!habitId || !date || completed === undefined) {
       return NextResponse.json(
-        { error: 'Missing required fields: habitId, date, userId' },
+        { error: 'Missing required fields: habitId, date, completed' },
         { status: 400 }
-      );
-    }
-
-    // Use the authenticated user ID if available, otherwise use the provided userId
-    const targetUserId = authUserId || userId;
-    
-    if (!targetUserId) {
-      return NextResponse.json(
-        { error: 'No valid user ID found' },
-        { status: 401 }
       );
     }
 
@@ -34,7 +32,7 @@ export async function POST(request) {
     const existingCompletion = await HabitCompletion.findOne({
       habitId,
       date,
-      userId: targetUserId
+      userId: authUserId
     });
 
     if (existingCompletion) {
@@ -51,7 +49,7 @@ export async function POST(request) {
         habitId,
         date,
         completed,
-        userId: targetUserId,
+        userId: authUserId, // Always use authenticated user's ID
         timestamp: new Date()
       });
 
@@ -70,24 +68,19 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const guestId = searchParams.get('guestId');
-    const habitId = searchParams.get('habitId');
+    const { userId: authUserId } = auth();
     
-    if (!userId && !guestId) {
+    if (!authUserId) {
       return NextResponse.json(
-        { error: 'User ID or Guest ID required' },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
-
-    const query = {
-      $or: [
-        { userId: userId },
-        { userId: guestId }
-      ]
-    };
+    
+    const { searchParams } = new URL(request.url);
+    const habitId = searchParams.get('habitId');
+    
+    const query = { userId: authUserId };
 
     if (habitId) {
       query.habitId = habitId;

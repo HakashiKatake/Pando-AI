@@ -39,14 +39,14 @@ export function useDataInitialization() {
       habitStore.loadHabitsFromAPI(userId, null);
       
     } else if (!isSignedIn && currentGuestId) {
-      // Guest user - load from localStorage
-      console.log('Loading guest user data from localStorage for guestId:', currentGuestId);
+      // Guest user - ensure clean state with localStorage only
+      console.log('Initializing guest user with clean state for guestId:', currentGuestId);
       
-      moodStore.loadFromLocalStorage();
-      chatStore.loadFromLocalStorage();
-      feedbackStore.loadFromLocalStorage();
-      exerciseStore.loadFromLocalStorage();
-      habitStore.loadFromLocalStorage();
+      // For guests, we rely on Zustand persistence to handle localStorage
+      // The key fixes are:
+      // 1. API endpoints now require authentication and won't return data for guests
+      // 2. loadHabitsFromAPI won't run for guests (no userId provided)
+      // 3. Guest data stays in localStorage only
     }
   }, [isSignedIn, user, isLoaded, guestId]);
 

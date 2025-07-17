@@ -23,6 +23,7 @@ import { useTheme } from 'next-themes';
 import { useAppStore, useMoodStore, useFeedbackStore, useExerciseStore } from '@/lib/store';
 import { useDataInitialization } from '@/lib/useDataInitialization';
 
+
 export default function SettingsPage() {
   const { user } = useUser();
   const { theme, setTheme } = useTheme();
