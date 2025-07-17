@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
-import Header from '@/components/Header';
 
 import Header from '@/components/Header';
 import { useMusicStore } from '@/lib/store';
@@ -398,8 +397,8 @@ const MoodMusic = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F7F5FA" }}>
 
-      {/* Hidden audio element */}
-      <audio ref={audioRef} />
+      {/* Hidden audio element
+      <audio ref={audioRef} /> */}
 
       <Header/>
 

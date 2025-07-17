@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Mic, MicOff, Trophy, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -28,9 +28,10 @@ export default function ChirpJumpGame() {
   const analyserRef = useRef(null);
   const streamRef = useRef(null);
   const dataArrayRef = useRef(null);
+  const isGameRunningRef = useRef(false);
   
-  // Game objects
-  const gameObjectsRef = useRef({
+  // Game objects - using regular objects instead of refs for better updates
+  const [gameObjects, setGameObjects] = useState({
     chicken: null,
     platforms: [],
     eggs: [],
@@ -55,185 +56,6 @@ export default function ChirpJumpGame() {
       if (stored) setBestScore(parseInt(stored));
     }
   }, []);
-
-  // Game Classes
-  const createChicken = (x, y) => ({
-    x,
-    y,
-    width: 40,
-    height: 40,
-    velocityX: 0,
-    velocityY: 0,
-    onGround: false,
-    animFrame: 0,
-
-    update() {
-      this.animFrame++;
-      
-      // Apply gravity
-      if (!this.onGround) {
-        this.velocityY += GRAVITY;
-      }
-
-      // Update position
-      this.x += this.velocityX;
-      this.y += this.velocityY;
-
-      // Air resistance
-      this.velocityX *= 0.95;
-
-      // Check platform collisions
-      this.onGround = false;
-      gameObjectsRef.current.platforms.forEach(platform => {
-        if (this.x < platform.x + platform.width &&
-            this.x + this.width > platform.x &&
-            this.y < platform.y + platform.height &&
-            this.y + this.height > platform.y) {
-          
-          if (this.velocityY > 0 && this.y < platform.y) {
-            this.y = platform.y - this.height;
-            this.velocityY = 0;
-            this.onGround = true;
-          }
-        }
-      });
-
-      // Check egg collisions
-      gameObjectsRef.current.eggs = gameObjectsRef.current.eggs.filter(egg => {
-        if (this.x < egg.x + egg.width &&
-            this.x + this.width > egg.x &&
-            this.y < egg.y + egg.height &&
-            this.y + this.height > egg.y) {
-          
-          setEggsCollected(prev => prev + 1);
-          setScore(prev => prev + 100);
-          return false;
-        }
-        return true;
-      });
-
-      // Check if fallen
-      if (this.y > CANVAS_HEIGHT + 100) {
-        setGameState('gameOver');
-      }
-    },
-
-    jump(power) {
-      if (this.onGround || this.velocityY > -5) {
-        this.velocityY = -Math.min(power, JUMP_POWER);
-        this.onGround = false;
-      }
-    },
-
-    draw(ctx) {
-      const camera = gameObjectsRef.current.camera;
-      const screenX = this.x - camera.x;
-      const screenY = this.y - camera.y;
-      
-      ctx.save();
-      ctx.translate(screenX, screenY);
-
-      // Body
-      ctx.fillStyle = '#FFDD44';
-      ctx.fillRect(5, 15, 30, 20);
-      
-      // Head
-      ctx.fillRect(0, 5, 25, 20);
-      
-      // Beak
-      ctx.fillStyle = '#FF8C00';
-      ctx.fillRect(25, 12, 8, 6);
-      
-      // Eye
-      ctx.fillStyle = '#000';
-      ctx.fillRect(18, 8, 4, 4);
-      ctx.fillStyle = '#FFF';
-      ctx.fillRect(19, 9, 2, 2);
-      
-      // Comb
-      ctx.fillStyle = '#FF4444';
-      ctx.fillRect(8, 0, 4, 8);
-      ctx.fillRect(12, 2, 4, 6);
-      
-      // Wings
-      ctx.fillStyle = '#FFCC33';
-      ctx.fillRect(10, 12, 15, 8);
-      
-      // Legs (only when on ground)
-      if (this.onGround) {
-        ctx.fillStyle = '#FF8C00';
-        ctx.fillRect(8, 35, 3, 8);
-        ctx.fillRect(20, 35, 3, 8);
-      }
-      
-      ctx.restore();
-    }
-  });
-
-  const createPlatform = (x, y, width, type = 'normal') => ({
-    x,
-    y,
-    width,
-    height: 20,
-    type,
-    oscillation: 0,
-    originalY: y,
-
-    update() {
-      if (this.type === 'moving') {
-        this.oscillation += 0.05;
-        this.y = this.originalY + Math.sin(this.oscillation) * 30;
-      }
-      this.x -= 2;
-    },
-
-    draw(ctx) {
-      const camera = gameObjectsRef.current.camera;
-      const screenX = this.x - camera.x;
-      const screenY = this.y - camera.y;
-      
-      // Platform
-      ctx.fillStyle = this.type === 'moving' ? '#FF6B6B' : '#4ECDC4';
-      ctx.fillRect(screenX, screenY, this.width, this.height);
-      
-      // Highlight
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.fillRect(screenX, screenY, this.width, 4);
-    }
-  });
-
-  const createEgg = (x, y) => ({
-    x,
-    y,
-    width: 20,
-    height: 25,
-    rotation: 0,
-
-    update() {
-      this.rotation += 0.05;
-      this.x -= 2;
-    },
-
-    draw(ctx) {
-      const camera = gameObjectsRef.current.camera;
-      const screenX = this.x - camera.x;
-      const screenY = this.y - camera.y;
-      
-      ctx.save();
-      ctx.translate(screenX + this.width / 2, screenY + this.height / 2);
-      ctx.rotate(this.rotation);
-      
-      // Egg
-      ctx.fillStyle = '#FFD700';
-      ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-      
-      // Highlight
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.fillRect(-this.width / 2 + 3, -this.height / 2 + 3, this.width - 6, 6);
-      
-      ctx.restore();
-    }
-  });
 
   // Audio functions
   const initAudio = async () => {
@@ -275,7 +97,7 @@ export default function ChirpJumpGame() {
     }
   };
 
-  const getVoiceLevel = () => {
+  const getVoiceLevel = useCallback(() => {
     if (!analyserRef.current || !dataArrayRef.current) return 0;
     
     analyserRef.current.getByteFrequencyData(dataArrayRef.current);
@@ -286,98 +108,185 @@ export default function ChirpJumpGame() {
     }
     
     return sum / dataArrayRef.current.length;
-  };
+  }, []);
 
   // Game functions
-  const initGame = () => {
-    const objects = gameObjectsRef.current;
+  const initGame = useCallback(() => {
+    console.log('Initializing game...');
     
-    // Create chicken
-    objects.chicken = createChicken(100, 300);
+    const newGameObjects = {
+      chicken: {
+        x: 100,
+        y: 300,
+        width: 40,
+        height: 40,
+        velocityX: 0,
+        velocityY: 0,
+        onGround: false,
+        animFrame: 0
+      },
+      platforms: [
+        { x: 50, y: 500, width: 150, height: 20, type: 'normal', oscillation: 0, originalY: 500 },
+        { x: 250, y: 400, width: 120, height: 20, type: 'normal', oscillation: 0, originalY: 400 },
+        { x: 420, y: 350, width: 100, height: 20, type: 'moving', oscillation: 0, originalY: 350 },
+        { x: 580, y: 450, width: 130, height: 20, type: 'normal', oscillation: 0, originalY: 450 },
+        { x: 750, y: 380, width: 110, height: 20, type: 'normal', oscillation: 0, originalY: 380 },
+        { x: 920, y: 320, width: 100, height: 20, type: 'moving', oscillation: 0, originalY: 320 }
+      ],
+      eggs: [
+        { x: 270, y: 360, width: 20, height: 25, rotation: 0 },
+        { x: 440, y: 310, width: 20, height: 25, rotation: 0 },
+        { x: 600, y: 410, width: 20, height: 25, rotation: 0 }
+      ],
+      particles: [],
+      camera: { x: 0, y: 0 }
+    };
     
-    // Create platforms
-    objects.platforms = [
-      createPlatform(50, 500, 150),
-      createPlatform(250, 400, 120),
-      createPlatform(420, 350, 100, 'moving'),
-      createPlatform(580, 450, 130),
-      createPlatform(750, 380, 110),
-      createPlatform(920, 320, 100, 'moving')
-    ];
-    
-    // Create eggs
-    objects.eggs = [
-      createEgg(270, 360),
-      createEgg(440, 310),
-      createEgg(600, 410)
-    ];
-    
-    // Reset camera
-    objects.camera = { x: 0, y: 0 };
-    
-    // Reset scores
+    setGameObjects(newGameObjects);
     setScore(0);
     setEggsCollected(0);
-  };
+    
+    console.log('Game initialized with chicken at:', newGameObjects.chicken);
+  }, []);
 
-  const updateGame = () => {
-    if (gameState !== 'playing') return;
+  const updateGame = useCallback(() => {
+    if (!isGameRunningRef.current) return;
     
-    const objects = gameObjectsRef.current;
-    if (!objects.chicken) return;
-    
-    // Voice control
-    const currentVoiceLevel = getVoiceLevel();
-    setVoiceLevel(currentVoiceLevel);
-    
-    if (currentVoiceLevel > VOICE_THRESHOLD) {
-      const jumpPower = Math.min((currentVoiceLevel - VOICE_THRESHOLD) / 5, JUMP_POWER);
-      objects.chicken.jump(jumpPower);
-    }
-    
-    // Update chicken
-    objects.chicken.update();
-    
-    // Update camera to follow chicken
-    objects.camera.x = objects.chicken.x - CANVAS_WIDTH / 3;
-    objects.camera.y = objects.chicken.y - CANVAS_HEIGHT / 2;
-    
-    // Update platforms
-    objects.platforms.forEach(platform => platform.update());
-    
-    // Update eggs
-    objects.eggs.forEach(egg => egg.update());
-    
-    // Remove off-screen objects
-    objects.platforms = objects.platforms.filter(p => p.x + p.width > objects.camera.x - 200);
-    objects.eggs = objects.eggs.filter(e => e.x + e.width > objects.camera.x - 200);
-    
-    // Generate new platforms
-    const rightmost = objects.platforms.reduce((max, p) => Math.max(max, p.x + p.width), 0);
-    
-    while (rightmost < objects.chicken.x + CANVAS_WIDTH * 2) {
-      const x = rightmost + 120 + Math.random() * 80;
-      const y = 200 + Math.random() * 250;
-      const width = 80 + Math.random() * 80;
-      const isMoving = Math.random() < 0.3;
+    setGameObjects(prevObjects => {
+      const newObjects = { ...prevObjects };
       
-      objects.platforms.push(createPlatform(x, y, width, isMoving ? 'moving' : 'normal'));
+      if (!newObjects.chicken) return prevObjects;
       
-      if (Math.random() < 0.5) {
-        objects.eggs.push(createEgg(x + 20, y - 30));
+      // Update chicken animation frame
+      newObjects.chicken = { ...newObjects.chicken };
+      newObjects.chicken.animFrame++;
+      
+      // Apply gravity
+      if (!newObjects.chicken.onGround) {
+        newObjects.chicken.velocityY += GRAVITY;
       }
-    }
+
+      // Update position
+      newObjects.chicken.x += newObjects.chicken.velocityX;
+      newObjects.chicken.y += newObjects.chicken.velocityY;
+
+      // Air resistance
+      newObjects.chicken.velocityX *= 0.95;
+
+      // Check platform collisions
+      newObjects.chicken.onGround = false;
+      newObjects.platforms.forEach(platform => {
+        if (newObjects.chicken.x < platform.x + platform.width &&
+            newObjects.chicken.x + newObjects.chicken.width > platform.x &&
+            newObjects.chicken.y < platform.y + platform.height &&
+            newObjects.chicken.y + newObjects.chicken.height > platform.y) {
+          
+          if (newObjects.chicken.velocityY > 0 && newObjects.chicken.y < platform.y) {
+            newObjects.chicken.y = platform.y - newObjects.chicken.height;
+            newObjects.chicken.velocityY = 0;
+            newObjects.chicken.onGround = true;
+          }
+        }
+      });
+
+      // Check egg collisions
+      const eggsBeforeCollection = newObjects.eggs.length;
+      newObjects.eggs = newObjects.eggs.filter(egg => {
+        if (newObjects.chicken.x < egg.x + egg.width &&
+            newObjects.chicken.x + newObjects.chicken.width > egg.x &&
+            newObjects.chicken.y < egg.y + egg.height &&
+            newObjects.chicken.y + newObjects.chicken.height > egg.y) {
+          return false; // Remove this egg
+        }
+        return true;
+      });
+      
+      // Update score if eggs were collected
+      const eggsCollectedNow = eggsBeforeCollection - newObjects.eggs.length;
+      if (eggsCollectedNow > 0) {
+        setEggsCollected(prev => prev + eggsCollectedNow);
+        setScore(prev => prev + (eggsCollectedNow * 100));
+      }
+
+      // Check if fallen
+      if (newObjects.chicken.y > CANVAS_HEIGHT + 100) {
+        isGameRunningRef.current = false;
+        setGameState('gameOver');
+        return prevObjects;
+      }
+      
+      // Update camera to follow chicken
+      newObjects.camera = {
+        x: newObjects.chicken.x - CANVAS_WIDTH / 3,
+        y: newObjects.chicken.y - CANVAS_HEIGHT / 2
+      };
+      
+      // Update platforms
+      newObjects.platforms = newObjects.platforms.map(platform => {
+        const updatedPlatform = { ...platform };
+        
+        if (updatedPlatform.type === 'moving') {
+          updatedPlatform.oscillation += 0.05;
+          updatedPlatform.y = updatedPlatform.originalY + Math.sin(updatedPlatform.oscillation) * 30;
+        }
+        updatedPlatform.x -= 2;
+        
+        return updatedPlatform;
+      });
+      
+      // Update eggs
+      newObjects.eggs = newObjects.eggs.map(egg => ({
+        ...egg,
+        rotation: egg.rotation + 0.05,
+        x: egg.x - 2
+      }));
+      
+      // Remove off-screen objects
+      newObjects.platforms = newObjects.platforms.filter(p => p.x + p.width > newObjects.camera.x - 200);
+      newObjects.eggs = newObjects.eggs.filter(e => e.x + e.width > newObjects.camera.x - 200);
+      
+      // Generate new platforms
+      const rightmost = newObjects.platforms.reduce((max, p) => Math.max(max, p.x + p.width), 0);
+      
+      if (rightmost < newObjects.chicken.x + CANVAS_WIDTH * 2) {
+        const x = rightmost + 120 + Math.random() * 80;
+        const y = 200 + Math.random() * 250;
+        const width = 80 + Math.random() * 80;
+        const isMoving = Math.random() < 0.3;
+        
+        newObjects.platforms.push({
+          x,
+          y,
+          width,
+          height: 20,
+          type: isMoving ? 'moving' : 'normal',
+          oscillation: 0,
+          originalY: y
+        });
+        
+        if (Math.random() < 0.5) {
+          newObjects.eggs.push({
+            x: x + 20,
+            y: y - 30,
+            width: 20,
+            height: 25,
+            rotation: 0
+          });
+        }
+      }
+      
+      return newObjects;
+    });
     
     // Increase score
     setScore(prev => prev + 1);
-  };
+  }, []);
 
-  const drawGame = () => {
+  const drawGame = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    const objects = gameObjectsRef.current;
     
     // Clear canvas
     const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
@@ -390,49 +299,157 @@ export default function ChirpJumpGame() {
     // Draw clouds
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     for (let i = 0; i < 6; i++) {
-      const x = (i * 200 - objects.camera.x * 0.2) % (CANVAS_WIDTH + 100);
+      const x = (i * 200 - gameObjects.camera.x * 0.2) % (CANVAS_WIDTH + 100);
       const y = 50 + (i % 3) * 40;
       
-      ctx.beginPath();
-      ctx.arc(x, y, 20, 0, Math.PI * 2);
-      ctx.arc(x + 25, y, 25, 0, Math.PI * 2);
-      ctx.arc(x + 50, y, 20, 0, Math.PI * 2);
-      ctx.fill();
+      if (x > -100 && x < CANVAS_WIDTH + 100) {
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.arc(x + 25, y, 25, 0, Math.PI * 2);
+        ctx.arc(x + 50, y, 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     
-    // Draw game objects
-    objects.platforms.forEach(platform => platform.draw(ctx));
-    objects.eggs.forEach(egg => egg.draw(ctx));
+    // Draw platforms
+    gameObjects.platforms.forEach(platform => {
+      const screenX = platform.x - gameObjects.camera.x;
+      const screenY = platform.y - gameObjects.camera.y;
+      
+      // Platform
+      ctx.fillStyle = platform.type === 'moving' ? '#FF6B6B' : '#4ECDC4';
+      ctx.fillRect(screenX, screenY, platform.width, platform.height);
+      
+      // Highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.fillRect(screenX, screenY, platform.width, 4);
+    });
     
-    if (objects.chicken) {
-      objects.chicken.draw(ctx);
-    }
-  };
+    // Draw eggs
+    gameObjects.eggs.forEach(egg => {
+      const screenX = egg.x - gameObjects.camera.x;
+      const screenY = egg.y - gameObjects.camera.y;
+      
+      ctx.save();
+      ctx.translate(screenX + egg.width / 2, screenY + egg.height / 2);
+      ctx.rotate(egg.rotation);
+      
+      // Egg
+      ctx.fillStyle = '#FFD700';
+      ctx.fillRect(-egg.width / 2, -egg.height / 2, egg.width, egg.height);
+      
+      // Highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.fillRect(-egg.width / 2 + 3, -egg.height / 2 + 3, egg.width - 6, 6);
+      
+      ctx.restore();
+    });
+    
+    // Draw chicken
+    if (gameObjects.chicken) {
+      const chicken = gameObjects.chicken;
+      const screenX = chicken.x - gameObjects.camera.x;
+      const screenY = chicken.y - gameObjects.camera.y;
+      
+      ctx.save();
+      ctx.translate(screenX, screenY);
 
-  const gameLoop = () => {
+      const bobOffset = chicken.onGround ? Math.sin(chicken.animFrame * 0.3) * 2 : 0;
+      
+      // Body
+      ctx.fillStyle = '#FFDD44';
+      ctx.fillRect(5, 15 + bobOffset, 30, 20);
+      
+      // Head
+      ctx.fillRect(0, 5 + bobOffset, 25, 20);
+      
+      // Beak
+      ctx.fillStyle = '#FF8C00';
+      ctx.fillRect(25, 12 + bobOffset, 8, 6);
+      
+      // Eye
+      ctx.fillStyle = '#000';
+      ctx.fillRect(18, 8 + bobOffset, 4, 4);
+      ctx.fillStyle = '#FFF';
+      ctx.fillRect(19, 9 + bobOffset, 2, 2);
+      
+      // Comb
+      ctx.fillStyle = '#FF4444';
+      ctx.fillRect(8, 0 + bobOffset, 4, 8);
+      ctx.fillRect(12, 2 + bobOffset, 4, 6);
+      
+      // Wings
+      const wingFlap = chicken.onGround ? Math.sin(chicken.animFrame * 0.4) * 3 : 5;
+      ctx.fillStyle = '#FFCC33';
+      ctx.fillRect(10, 12 + bobOffset + wingFlap, 15, 8);
+      
+      // Legs (only when on ground)
+      if (chicken.onGround) {
+        ctx.fillStyle = '#FF8C00';
+        ctx.fillRect(8, 35, 3, 8);
+        ctx.fillRect(20, 35, 3, 8);
+      }
+      
+      ctx.restore();
+    }
+  }, [gameObjects]);
+
+  const gameLoop = useCallback(() => {
+    if (!isGameRunningRef.current) return;
+    
+    // Voice control
+    const currentVoiceLevel = getVoiceLevel();
+    setVoiceLevel(currentVoiceLevel);
+    
+    if (currentVoiceLevel > VOICE_THRESHOLD) {
+      setGameObjects(prevObjects => {
+        if (!prevObjects.chicken) return prevObjects;
+        
+        const jumpPower = Math.min((currentVoiceLevel - VOICE_THRESHOLD) / 5, JUMP_POWER);
+        
+        if (prevObjects.chicken.onGround || prevObjects.chicken.velocityY > -5) {
+          return {
+            ...prevObjects,
+            chicken: {
+              ...prevObjects.chicken,
+              velocityY: -jumpPower,
+              onGround: false
+            }
+          };
+        }
+        
+        return prevObjects;
+      });
+    }
+    
     updateGame();
     drawGame();
     
-    if (gameState === 'playing') {
-      gameLoopRef.current = requestAnimationFrame(gameLoop);
-    }
-  };
+    gameLoopRef.current = requestAnimationFrame(gameLoop);
+  }, [updateGame, drawGame, getVoiceLevel]);
 
   const startGame = async () => {
+    console.log('Starting game...');
     setStartTime(new Date());
     await initAudio();
     initGame();
     setGameState('playing');
+    isGameRunningRef.current = true;
     gameLoop();
   };
 
   const resetGame = () => {
+    console.log('Resetting game...');
     initGame();
     setGameState('playing');
+    isGameRunningRef.current = true;
     gameLoop();
   };
 
-  const handleGameOver = async () => {
+  const handleGameOver = useCallback(async () => {
+    console.log('Game over triggered');
+    isGameRunningRef.current = false;
+    
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
     }
@@ -464,22 +481,38 @@ export default function ChirpJumpGame() {
         console.error('Failed to save session:', error);
       }
     }
-  };
+  }, [score, bestScore, startTime, eggsCollected, addSession, dataInit.userId, dataInit.guestId]);
 
   // Effects
   useEffect(() => {
     if (gameState === 'gameOver') {
       handleGameOver();
     }
-  }, [gameState]);
+  }, [gameState, handleGameOver]);
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (gameState === 'playing' && gameObjectsRef.current.chicken) {
+      if (gameState === 'playing' && isGameRunningRef.current) {
         if (e.code === 'Space') {
           e.preventDefault();
-          gameObjectsRef.current.chicken.jump(JUMP_POWER);
+          
+          setGameObjects(prevObjects => {
+            if (!prevObjects.chicken) return prevObjects;
+            
+            if (prevObjects.chicken.onGround || prevObjects.chicken.velocityY > -5) {
+              return {
+                ...prevObjects,
+                chicken: {
+                  ...prevObjects.chicken,
+                  velocityY: -JUMP_POWER,
+                  onGround: false
+                }
+              };
+            }
+            
+            return prevObjects;
+          });
         }
       }
     };
@@ -491,6 +524,7 @@ export default function ChirpJumpGame() {
   // Cleanup
   useEffect(() => {
     return () => {
+      isGameRunningRef.current = false;
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }

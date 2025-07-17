@@ -36,7 +36,11 @@ import {
   Settings,
   Plus,
   Circle,
-  CheckCircle2
+  CheckCircle2,
+  Gamepad2,
+  Music,
+  PenTool,
+  CheckSquare
 } from "lucide-react"
 import Link from 'next/link'
 import { getRandomQuote, getMoodData, isToday } from '../../lib/utils'
@@ -87,7 +91,10 @@ const Dashboard = () => {
   
       updateTime()
       const interval = setInterval(updateTime, 1000)
-    })
+      
+      return () => clearInterval(interval)
+    }, [])
+
   // All useEffect hooks - must be called in same order every time
   useEffect(() => {
     setTodaysQuote(getRandomQuote())
@@ -371,7 +378,7 @@ const Dashboard = () => {
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
               <span className="text-lg">🐼</span>
             </div>
-            
+            <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -781,40 +788,51 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Daily Progress */}
+          {/* Quick Actions - NEW SECTION REPLACING DAILY PROGRESS */}
           <Card className="bg-white border border-gray-200">
             <CardHeader>
-              <CardTitle className="text-lg" style={{ color: '#6E55A0' }}>Daily progress</CardTitle>
+              <CardTitle className="text-lg" style={{ color: '#6E55A0' }}>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-center space-y-4">
-              <div className="relative w-32 h-32">
-                <svg className="w-32 h-32" viewBox="0 0 36 36">
-                  <path
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831
-                      a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#E3DEF1"
-                    strokeWidth="3"
-                  />
-                  <path
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831
-                      a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#8A6FBF"
-                    strokeWidth="3"
-                    strokeDasharray="85, 100"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold" style={{ color: '#6E55A0' }}>85%</span>
+            <CardContent className="space-y-3">
+              {/* Games */}
+              <Link href="/games" className="block">
+                <div className="flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#E8E4F3' }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8A6FBF' }}>
+                    <Gamepad2 className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-medium" style={{ color: '#6E55A0' }}>Games</span>
                 </div>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-500">Keep working on your</p>
-                <p className="text-sm text-gray-500">nutrition and sleep</p>
-              </div>
+              </Link>
+
+              {/* Mood Music */}
+              <Link href="/music" className="block">
+                <div className="flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#E0F2FE' }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0EA5E9' }}>
+                    <Music className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-medium" style={{ color: '#6E55A0' }}>Mood Music</span>
+                </div>
+              </Link>
+
+              {/* Journal */}
+              <Link href="/journal" className="block">
+                <div className="flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#FEF3C7' }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F59E0B' }}>
+                    <PenTool className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-medium" style={{ color: '#6E55A0' }}>Journal</span>
+                </div>
+              </Link>
+
+              {/* Habits */}
+              <Link href="/habits" className="block">
+                <div className="flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#D1FAE5' }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#10B981' }}>
+                    <CheckSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-medium" style={{ color: '#6E55A0' }}>Habits</span>
+                </div>
+              </Link>
             </CardContent>
           </Card>
         </div>
