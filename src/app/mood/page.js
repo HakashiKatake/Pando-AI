@@ -1,35 +1,26 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import {
   Play,
   Pause,
-  SkipBack,
-  SkipForward,
-  Volume2,
-  Repeat,
-  Shuffle,
-  Heart,
   ChevronDown,
   Calendar,
   Clock,
-  Minimize2,
 } from "lucide-react";
+import Header from '@/components/Header';
+import { useMusicStore } from '@/lib/store';
 
 const MoodMusic = () => {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [currentTrack, setCurrentTrack] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(75);
-  const [isShuffled, setIsShuffled] = useState(false);
-  const [isRepeated, setIsRepeated] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [showPlayer, setShowPlayer] = useState(false);
-  const audioRef = useRef(null);
+  const { 
+    currentTrack, 
+    isPlaying, 
+    playTrack, 
+    setPlaylist 
+  } = useMusicStore();
 
   // Updated time to match your current timestamp
   const currentDateTime = "06:32";
@@ -350,100 +341,21 @@ const MoodMusic = () => {
 
 
   // Filter tracks based on active category
-  const filteredTracks =
+  const filteredTracks = useMemo(() =>
     activeCategory === "All"
       ? musicTracks
-      : musicTracks.filter((track) => track.category === activeCategory);
+      : musicTracks.filter((track) => track.category === activeCategory),
+    [activeCategory]
+  );
+
+  // Set playlist when component mounts or category changes
+  useEffect(() => {
+    setPlaylist(filteredTracks);
+  }, [filteredTracks]); // Remove setPlaylist from dependencies
 
   // Handle play track
   const handlePlayTrack = (track) => {
-    if (currentTrack?.id === track.id && isPlaying) {
-      // If same track is playing, pause it
-      setIsPlaying(false);
-      audioRef.current?.pause();
-    } else {
-      // Play new track or resume current track
-      setCurrentTrack(track);
-      setIsPlaying(true);
-      setShowPlayer(true);
-
-      if (audioRef.current) {
-        audioRef.current.src = track.audioUrl;
-        audioRef.current.play().catch(console.error);
-      }
-    }
-  };
-
-  // Handle play/pause from player
-  const togglePlayPause = () => {
-    if (isPlaying) {
-      audioRef.current?.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current?.play().catch(console.error);
-      setIsPlaying(true);
-    }
-  };
-
-  // Handle skip functions
-  const skipToNext = () => {
-    const currentIndex = musicTracks.findIndex(
-      (track) => track.id === currentTrack?.id
-    );
-    const nextIndex = (currentIndex + 1) % musicTracks.length;
-    handlePlayTrack(musicTracks[nextIndex]);
-  };
-
-  const skipToPrevious = () => {
-    const currentIndex = musicTracks.findIndex(
-      (track) => track.id === currentTrack?.id
-    );
-    const prevIndex =
-      currentIndex === 0 ? musicTracks.length - 1 : currentIndex - 1;
-    handlePlayTrack(musicTracks[prevIndex]);
-  };
-
-  // Audio event handlers
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = () => {
-      if (isRepeated) {
-        audio.currentTime = 0;
-        audio.play();
-      } else {
-        skipToNext();
-      }
-    };
-
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", updateDuration);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", updateDuration);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [isRepeated]);
-
-  // Format time
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
-
-  // Handle progress bar click
-  const handleProgressClick = (e) => {
-    const rect = e.target.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const newTime = (clickX / rect.width) * duration;
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
+    playTrack(track);
   };
 
   // Animation variants
@@ -481,63 +393,12 @@ const MoodMusic = () => {
     },
   };
 
-  const playerVariants = {
-    hidden: { y: 100, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    exit: {
-      y: 100,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
-  };
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F7F5FA" }}>
-      {/* Hidden audio element */}
-      <audio ref={audioRef} />
-
-      {/* Header */}
-      <motion.header
-        className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-              <span className="text-lg">🐼</span>
-            </div>
-            <h1 className="text-xl font-semibold" style={{ color: "#6E55A0" }}>
-              CalmConnect
-            </h1>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Calendar className="w-4 h-4" />
-              <span>{currentDate}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Clock className="w-4 h-4" />
-              <span>{currentDateTime}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <Button className="bg-red-500 hover:bg-red-600 text-white">
-              SOS
-            </Button>
-          </div>
-        </div>
-      </motion.header>
+      <Header />
 
       {/* Main Content */}
-      <main className={`pt-20 px-6 ${showPlayer ? "pb-32" : "pb-12"}`}>
+      <main className="pt-20 px-6 pb-12">
         <motion.div
           className="max-w-7xl mx-auto"
           variants={containerVariants}
@@ -737,166 +598,6 @@ const MoodMusic = () => {
           )}
         </motion.div>
       </main>
-
-      {/* Music Player - Spotify-like */}
-      <AnimatePresence>
-        {showPlayer && currentTrack && (
-          <motion.div
-            variants={playerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-50"
-          >
-            <div className="px-6 py-4">
-              <div className="flex items-center justify-between">
-                {/* Track Info */}
-                <div className="flex items-center space-x-4 flex-1">
-                  <div className="w-14 h-14 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center">
-                    <div className="text-gray-400 text-xl">🎵</div>
-                  </div>
-                  <div className="min-w-0">
-                    <h4
-                      className="font-semibold truncate"
-                      style={{ color: "#6E55A0" }}
-                    >
-                      {currentTrack.title}
-                    </h4>
-                    <p
-                      className="text-sm truncate"
-                      style={{ color: "#8A6FBF" }}
-                    >
-                      {currentTrack.artist}
-                    </p>
-                  </div>
-                  <motion.button
-                    onClick={() => setIsLiked(!isLiked)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Heart
-                      className={`w-5 h-5 ${
-                        isLiked ? "fill-red-500 text-red-500" : "text-gray-400"
-                      }`}
-                    />
-                  </motion.button>
-                </div>
-
-                {/* Player Controls */}
-                <div className="flex flex-col items-center flex-2 max-w-2xl mx-8">
-                  {/* Control Buttons */}
-                  <div className="flex items-center space-x-4 mb-2">
-                    <motion.button
-                      onClick={() => setIsShuffled(!isShuffled)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className={
-                        isShuffled ? "text-green-500" : "text-gray-400"
-                      }
-                    >
-                      <Shuffle className="w-4 h-4" />
-                    </motion.button>
-
-                    <motion.button
-                      onClick={skipToPrevious}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      style={{ color: "#6E55A0" }}
-                    >
-                      <SkipBack className="w-5 h-5" />
-                    </motion.button>
-
-                    <motion.button
-                      onClick={togglePlayPause}
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white"
-                      style={{ backgroundColor: "#8A6FBF" }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {isPlaying ? (
-                        <Pause className="w-5 h-5" fill="currentColor" />
-                      ) : (
-                        <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
-                      )}
-                    </motion.button>
-
-                    <motion.button
-                      onClick={skipToNext}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      style={{ color: "#6E55A0" }}
-                    >
-                      <SkipForward className="w-5 h-5" />
-                    </motion.button>
-
-                    <motion.button
-                      onClick={() => setIsRepeated(!isRepeated)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className={
-                        isRepeated ? "text-green-500" : "text-gray-400"
-                      }
-                    >
-                      <Repeat className="w-4 h-4" />
-                    </motion.button>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="flex items-center space-x-3 w-full">
-                    <span className="text-xs" style={{ color: "#6E55A0" }}>
-                      {formatTime(currentTime)}
-                    </span>
-                    <div
-                      className="flex-1 h-1 rounded-full cursor-pointer"
-                      style={{ backgroundColor: "#E3DEF1" }}
-                      onClick={handleProgressClick}
-                    >
-                      <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{
-                          backgroundColor: "#8A6FBF",
-                          width: `${(currentTime / duration) * 100}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs" style={{ color: "#6E55A0" }}>
-                      {formatTime(duration)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Volume and Extra Controls */}
-                <div className="flex items-center space-x-4 flex-1 justify-end">
-                  <div className="flex items-center space-x-2">
-                    <Volume2 className="w-4 h-4" style={{ color: "#6E55A0" }} />
-                    <div
-                      className="w-20 h-1 rounded-full"
-                      style={{ backgroundColor: "#E3DEF1" }}
-                    >
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          backgroundColor: "#8A6FBF",
-                          width: `${volume}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <motion.button
-                    onClick={() => setShowPlayer(false)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <Minimize2 className="w-4 h-4" />
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
