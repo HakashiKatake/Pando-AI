@@ -14,7 +14,8 @@ import {
   Eye,
   Target,
   Trophy,
-  Palette
+  Palette,
+  Mic
 } from "lucide-react"
 import { useExerciseStore } from '@/lib/store'
 import { useDataInitialization } from '@/lib/useDataInitialization'
@@ -98,7 +99,31 @@ const WellnessGames = () => {
         "Improves reaction time",
         "Enhances Mindfulness"
       ]
-    }
+    },
+    {
+  id: 'chirp-jump',
+  title: "Chirp Jump",
+  category: "Focus",
+  duration: "3-8 mins",
+  description: "Voice-controlled jumping adventure that improves focus and breathing control",
+  difficulty: ["Easy", "Medium", "Hard"],
+  difficultyLevels: [
+    { level: "Easy", color: "#22C55E", active: true },
+    { level: "Medium", color: "#F59E0B", active: false },
+    { level: "Hard", color: "#EF4444", active: false }
+  ],
+  backgroundColor: "#87CEEB",
+  textColor: "#FFFFFF", 
+  buttonColor: "#8B5CF6",
+  icon: Mic,
+  route: '/games/chirp',
+  benefits: [
+    "Improves vocal control",
+    "Enhances focus",
+    "Builds coordination"
+  ]
+}
+
   ]
 
   // Game functionality from old code

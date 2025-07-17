@@ -322,65 +322,13 @@ export default function BreathingExercisePage() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Benefits */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Benefits of Breathing Exercises</h3>
-              
-              <div className="space-y-3 text-sm">
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <p className="font-medium text-gray-900">Reduces Stress</p>
-                    <p className="text-gray-600">Activates the body's relaxation response</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <p className="font-medium text-gray-900">Improves Focus</p>
-                    <p className="text-gray-600">Enhances concentration and mental clarity</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <p className="font-medium text-gray-900">Better Sleep</p>
-                    <p className="text-gray-600">Promotes relaxation and rest</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <p className="font-medium text-gray-900">Emotional Balance</p>
-                    <p className="text-gray-600">Helps regulate emotions and mood</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+         
 
-            {/* Tips */}
-            <div className="bg-gradient-to-br from-blue-50 to-green-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tips for Success</h3>
-              
-              <div className="space-y-3 text-sm text-gray-700">
-                <p>• Find a comfortable, quiet space</p>
-                <p>• Sit or lie down with your back straight</p>
-                <p>• Close your eyes or soften your gaze</p>
-                <p>• Don't force your breathing - let it flow naturally</p>
-                <p>• Practice regularly for best results</p>
-                <p>• Start with shorter sessions and build up</p>
-                <p>• Focus on the counting, not perfection</p>
-              </div>
-            </div>
-
-            {/* Other Exercises */}
             
-          </div>
+
+           
+            
+          
         </div>
       </div>
     </div>

@@ -60,9 +60,7 @@ const PandaLogo = ({ className = "w-10 h-10", showText = true }) => {
           </g>
         </svg>
       </div>
-      {showText && (
-        <span className="text-xl font-semibold text-brand-dark">CalmConnect</span>
-      )}
+      {}
     </div>
   )
 }

@@ -33,6 +33,7 @@ import {
   MoreVertical,
   Bell
 } from 'lucide-react';
+import PandaLogo from '@/components/PandaLogo';
 
 export default function OrganizationDashboard() {
   const { user } = useUser();
@@ -327,14 +328,14 @@ export default function OrganizationDashboard() {
                     <p className="text-sm text-gray-600">Wellness Score</p>
                     <p className="text-3xl font-bold text-gray-900">{analytics.averageWellness}/10</p>
                     <div className="flex items-center mt-2">
-                      <Heart className="w-4 h-4 text-purple-500 mr-1" />
+                      <PandaLogo/>
                       <span className="text-sm text-purple-600">
                         {analytics.averageWellness >= 8 ? 'Excellent' : analytics.averageWellness >= 6 ? 'Good' : 'Needs attention'}
                       </span>
                     </div>
                   </div>
                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Heart className="w-6 h-6 text-purple-600" />
+                    <PandaLogo/>
                   </div>
                 </div>
               </CardContent>

@@ -50,6 +50,30 @@ const JournalEntries = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [currentTime, setCurrentTime] = useState("")
+  const [currentDate, setCurrentDate] = useState("")
+    
+      // Update time every second
+      useEffect(() => {
+        const updateTime = () => {
+          const now = new Date()
+          setCurrentTime(now.toLocaleTimeString('en-IN', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false 
+          }))
+          
+          // Format date as "Jul 17 - Jul 31" (current date to end of month)
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+          const startDateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          const endDateStr = endOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          setCurrentDate(`${startDateStr} - ${endDateStr}`)
+        }
+    
+        updateTime()
+        const interval = setInterval(updateTime, 1000)
+      })
+
 
   useEffect(() => {
     if (dataInit.userId || dataInit.guestId) {
