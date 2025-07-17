@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { ChevronDown, Clock } from "lucide-react"
+import Link from "next/link"
 
 const Header = () => {
   const [currentTime, setCurrentTime] = useState("")
@@ -56,9 +57,12 @@ const Header = () => {
             <span>{currentTime}</span>
             <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
           </div>
+          <Link href="/emergency">
           <button className="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm">
             SOS
           </button>
+          </Link>
+          
         </div>
       </div>
     </motion.header>
