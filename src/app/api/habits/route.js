@@ -10,29 +10,28 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
-    const guestId = searchParams.get('guestId');
     
-    if (!userId && !guestId) {
+    // Only allow authenticated users to access the API
+    if (!userId) {
       return NextResponse.json(
-        { error: 'User ID or Guest ID required' },
+        { error: 'User ID required' },
         { status: 400 }
       );
     }
 
-    const habits = await Habit.find({ 
-      $or: [
-        { userId: userId },
-        { userId: guestId }
-      ]
-    }).sort({ createdAt: -1 });
+    // Verify authentication
+    const { userId: authUserId } = auth();
+    if (!authUserId || authUserId !== userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const habits = await Habit.find({ userId: userId }).sort({ createdAt: -1 });
 
     // Get habit completions from the database
-    const habitCompletions = await HabitCompletion.find({ 
-      $or: [
-        { userId: userId },
-        { userId: guestId }
-      ]
-    });
+    const habitCompletions = await HabitCompletion.find({ userId: userId });
 
     // Transform completions to the format expected by the frontend
     const completions = {};
@@ -58,11 +57,19 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const { userId } = auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
     const body = await request.json();
     
     const habit = new Habit({
       ...body,
-      userId: body.userId || userId,
+      userId: userId, // Always use the authenticated user's ID
       createdAt: new Date(),
     });
 
@@ -80,6 +87,15 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
+    const { userId } = auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
     const { searchParams } = new URL(request.url);
     const habitId = searchParams.get('id');
     
@@ -90,7 +106,8 @@ export async function DELETE(request) {
       );
     }
 
-    await Habit.findByIdAndDelete(habitId);
+    // Ensure user can only delete their own habits
+    await Habit.findOneAndDelete({ _id: habitId, userId: userId });
 
     return NextResponse.json({ success: true });
   } catch (error) {

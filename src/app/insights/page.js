@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import Header from '@/components/Header';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -50,9 +51,7 @@ export default function InsightsPage() {
   const [selectedMetric, setSelectedMetric] = useState('mood'); // mood, activity, engagement
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Updated time to match your current timestamp
-  const currentTime = "07:19"
-  const currentDate = "Jul 14 - Jul 29"
+ 
 
   useEffect(() => {
     setIsHydrated(true);
@@ -343,39 +342,7 @@ export default function InsightsPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-      {/* Header */}
-      <motion.header 
-        className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-              <span className="text-lg">🐼</span>
-            </div>
-            <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Calendar className="w-4 h-4" />
-              <span>{currentDate}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Clock className="w-4 h-4" />
-              <span>{currentTime}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <Button className="bg-red-500 hover:bg-red-600 text-white">
-              SOS
-            </Button>
-          </div>
-        </div>
-      </motion.header>
+      <Header/>
 
       {/* Main Content */}
       <main className="pt-20 px-6 pb-12">

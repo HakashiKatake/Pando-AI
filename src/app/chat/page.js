@@ -11,6 +11,7 @@ import {
   Calendar, Clock, ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import Header from '@/components/Header';
 
 export default function ChatPage() {
   const { user } = useUser();
@@ -23,10 +24,6 @@ export default function ChatPage() {
   const [conversationId, setConversationId] = useState(null);
   const [hasAutoGreeted, setHasAutoGreeted] = useState(false);
   const messagesEndRef = useRef(null);
-
-  // Updated time to match your current timestamp
-  const currentTime = "07:40"
-  const currentDate = "Jul 14, 2025"
 
   useEffect(() => {
     if (!conversationId) {
@@ -270,50 +267,8 @@ export default function ChatPage() {
         />
       </div>
 
-      {/* Header - Mobile responsive */}
-      <motion.header 
-        className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4 fixed top-0 left-0 right-0 z-30"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo - Mobile optimized */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-              <span className="text-sm sm:text-lg">🐼</span>
-            </div>
-            <h1 className="text-base sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
-          </div>
-
-          {/* Header controls - Mobile responsive */}
-          <div className="flex items-center space-x-1 sm:space-x-4">
-            {/* Date/Time - Hidden on small screens */}
-            <div className="hidden md:flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Calendar className="w-4 h-4" />
-                <span>{currentDate}</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Clock className="w-4 h-4" />
-                <span>{currentTime}</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
-            </div>
-            
-            {/* Mobile time display */}
-            <div className="md:hidden flex items-center space-x-1 text-xs text-gray-500">
-              <Clock className="w-3 h-3" />
-              <span>{currentTime}</span>
-            </div>
-
-            <Button className="bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">
-              SOS
-            </Button>
-          </div>
-        </div>
-      </motion.header>
+      {/* Header */}
+      <Header />
 
       {/* Main Content Area - Mobile responsive */}
       <main className="pt-16 sm:pt-20 px-3 sm:px-6 pb-3 sm:pb-12">

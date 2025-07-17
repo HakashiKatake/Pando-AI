@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FeedbackForm } from '@/components/FeedbackForm';
 import { useFeedbackStore } from '@/lib/store';
 import { useDataInitialization } from '@/lib/useDataInitialization';
+import Header from '@/components/Header';
 
 const JournalEntries = () => {
   const { user } = useUser();
@@ -49,9 +50,6 @@ const JournalEntries = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Updated time to match your current timestamp
-  const currentTime = "07:10"
-  const currentDate = "Jul 14 - Jul 29"
 
   useEffect(() => {
     if (dataInit.userId || dataInit.guestId) {
@@ -243,35 +241,7 @@ const JournalEntries = () => {
   if (showForm) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-        {/* Header */}
-        <motion.header 
-          className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30"
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-                <span className="text-lg">🐼</span>
-              </div>
-              <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Calendar className="w-4 h-4" />
-                <span>{currentDate}</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Clock className="w-4 h-4" />
-                <span>{currentTime}</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
-              <Button className="bg-red-500 hover:bg-red-600 text-white">SOS</Button>
-            </div>
-          </div>
-        </motion.header>
+       <Header />
 
         <div className="pt-20 px-4 py-8 max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-6">

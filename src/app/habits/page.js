@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useHabitStore, useAppStore } from '@/lib/store'
 import { useDataInitialization } from '@/lib/useDataInitialization'
 import { DailyQuests } from '@/components/DailyQuests'
+import Header from '@/components/Header'
 
 const HABIT_CATEGORIES = [
   { id: 'health', name: 'Health & Fitness', icon: '💪', color: 'bg-green-100 text-green-800' },
@@ -215,15 +216,13 @@ function CreateHabitDialog({ isOpen, onOpenChange, onHabitCreated }) {
 }
 
 const HabitTracker = () => {
-  const [currentMonth, setCurrentMonth] = useState(6) // July = 6 (0-indexed)
-  const [currentYear, setCurrentYear] = useState(2025)
+  // Initialize calendar to current month/year
+  const today = new Date()
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth()) // Current month (0-indexed)
+  const [currentYear, setCurrentYear] = useState(today.getFullYear())
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isHydrated, setIsHydrated] = useState(false)
-  
-  // Updated time to match your current timestamp
-  const currentTime = "08:03"
-  const currentDate = "Jul 14 - Jul 29"
 
   // Use the actual habit store
   const { 
@@ -378,12 +377,62 @@ const HabitTracker = () => {
                      "July", "August", "September", "October", "November", "December"]
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-  // Calendar stats using real data
+  // Calendar stats using real habit completion data
+  const calculateCalendarStats = () => {
+    const activeHabits = habits.filter(habit => habit.isActive !== false)
+    if (activeHabits.length === 0) {
+      return {
+        perfectDays: 0,
+        activeDays: 0,
+        avgCompletion: 0,
+        totalHabits: 0
+      }
+    }
+
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
+    let perfectDays = 0
+    let activeDays = 0
+    let totalCompletions = 0
+    let totalPossibleCompletions = 0
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      
+      const completedHabits = activeHabits.filter(habit => {
+        const completionKey = `${habit.id}-${dateStr}`
+        return completions[completionKey] === true
+      })
+
+      if (completedHabits.length > 0) {
+        activeDays++
+        totalCompletions += completedHabits.length
+      }
+
+      if (completedHabits.length === activeHabits.length && activeHabits.length > 0) {
+        perfectDays++
+      }
+
+      totalPossibleCompletions += activeHabits.length
+    }
+
+    const avgCompletion = totalPossibleCompletions > 0 
+      ? Math.round((totalCompletions / totalPossibleCompletions) * 100)
+      : 0
+
+    return {
+      perfectDays,
+      activeDays,
+      avgCompletion,
+      totalHabits: activeHabits.length
+    }
+  }
+
+  const calendarStatsData = calculateCalendarStats()
   const calendarStats = [
-    { title: "Perfect days", value: "0", color: "#E879F9" },
-    { title: "Active days", value: stats.total > 0 ? "1" : "0", color: "#FBBF24" },
-    { title: "Avg completion", value: `${stats.percentage}%`, color: "#60A5FA" },
-    { title: "Total habits", value: stats.total.toString(), color: "#34D399" }
+    { title: "Perfect days", value: calendarStatsData.perfectDays.toString(), color: "#10B981" },
+    { title: "Active days", value: calendarStatsData.activeDays.toString(), color: "#FBBF24" },
+    { title: "Avg completion", value: `${calendarStatsData.avgCompletion}%`, color: "#60A5FA" },
+    { title: "Total habits", value: calendarStatsData.totalHabits.toString(), color: "#8B5CF6" }
   ]
 
   // Animation variants
@@ -434,37 +483,7 @@ const HabitTracker = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
       {/* Header */}
-      <motion.header 
-        className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 fixed top-0 left-0 right-0 z-30"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-              <span className="text-sm sm:text-lg">🐼</span>
-            </div>
-            <h1 className="text-base sm:text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
-          </div>
-
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
-              <span>{currentDate}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
-              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>{currentTime}</span>
-              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-            </div>
-            <button className="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm">
-              SOS
-            </button>
-          </div>
-        </div>
-      </motion.header>
+      <Header />
 
       {/* Main Content */}
       <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">
@@ -744,7 +763,14 @@ const HabitTracker = () => {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     className="p-2 rounded-lg hover:bg-gray-100"
-                    onClick={() => setCurrentMonth(prev => prev === 0 ? 11 : prev - 1)}
+                    onClick={() => {
+                      if (currentMonth === 0) {
+                        setCurrentMonth(11)
+                        setCurrentYear(prev => prev - 1)
+                      } else {
+                        setCurrentMonth(prev => prev - 1)
+                      }
+                    }}
                   >
                     <ChevronLeft className="w-5 h-5" style={{ color: '#8A6FBF' }} />
                   </motion.button>
@@ -752,7 +778,14 @@ const HabitTracker = () => {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     className="p-2 rounded-lg hover:bg-gray-100"
-                    onClick={() => setCurrentMonth(prev => prev === 11 ? 0 : prev + 1)}
+                    onClick={() => {
+                      if (currentMonth === 11) {
+                        setCurrentMonth(0)
+                        setCurrentYear(prev => prev + 1)
+                      } else {
+                        setCurrentMonth(prev => prev + 1)
+                      }
+                    }}
                   >
                     <ChevronRight className="w-5 h-5" style={{ color: '#8A6FBF' }} />
                   </motion.button>
@@ -771,12 +804,65 @@ const HabitTracker = () => {
                 {/* Calendar days */}
                 {calendarDays.map((dayObj, index) => {
                   const { day, isCurrentMonth, isNextMonth } = dayObj
-                  const isToday = isCurrentMonth && day === 14 // July 14, 2025
+                  
+                  // Check if this is actually today
+                  const today = new Date()
+                  const isToday = isCurrentMonth && 
+                    day === today.getDate() && 
+                    currentMonth === today.getMonth() && 
+                    currentYear === today.getFullYear()
+                  
+                  // Calculate habit completion for this date
+                  const dateStr = isCurrentMonth 
+                    ? `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                    : null
+                  
+                  let completionStatus = null
+                  if (dateStr && habits.length > 0) {
+                    const habitsForDate = habits.filter(habit => habit.isActive !== false)
+                    const completedHabits = habitsForDate.filter(habit => {
+                      const completionKey = `${habit.id}-${dateStr}`
+                      return completions[completionKey] === true
+                    })
+                    
+                    if (habitsForDate.length > 0) {
+                      const allCompleted = completedHabits.length === habitsForDate.length
+                      const anyCompleted = completedHabits.length > 0
+                      
+                      if (allCompleted) {
+                        completionStatus = 'complete' // Green
+                      } else if (anyCompleted) {
+                        completionStatus = 'partial' // Orange/Yellow
+                      } else {
+                        completionStatus = 'incomplete' // Red
+                      }
+                    }
+                  }
+                  
+                  // Get background color based on completion status
+                  const getBackgroundColor = () => {
+                    if (!isCurrentMonth) return ''
+                    
+                    // Today gets special dark background
+                    if (isToday) return 'bg-gray-900 text-white'
+                    
+                    // Completion status colors for other days
+                    switch (completionStatus) {
+                      case 'complete':
+                        return 'bg-green-100 border-green-300'
+                      case 'partial':
+                        return 'bg-yellow-100 border-yellow-300'
+                      case 'incomplete':
+                        return 'bg-red-100 border-red-300'
+                      default:
+                        return ''
+                    }
+                  }
 
                   return (
                     <motion.div
                       key={index}
-                      className="min-h-[60px] sm:min-h-[80px] p-2 border-b border-r border-gray-100 relative"
+                      className={`min-h-[60px] sm:min-h-[80px] p-2 border-b border-r border-gray-100 relative ${getBackgroundColor()}`}
                       whileHover={isCurrentMonth ? { backgroundColor: '#F9FAFB' } : {}}
                     >
                       {/* Day number */}
@@ -784,7 +870,7 @@ const HabitTracker = () => {
                         <span 
                           className={`text-sm font-medium ${
                             isToday 
-                              ? 'bg-gray-900 text-white w-6 h-6 rounded-full flex items-center justify-center' 
+                              ? 'w-6 h-6 rounded-full flex items-center justify-center text-white' 
                               : isCurrentMonth 
                                 ? 'text-gray-900' 
                                 : 'text-gray-400'
@@ -794,13 +880,14 @@ const HabitTracker = () => {
                         </span>
                       </div>
 
-                      {/* Habit completion dots */}
-                      <div className="flex flex-wrap gap-1">
-                        {/* Sample habit indicators - you can connect these to real habit data */}
-                        {isCurrentMonth && day <= 14 && (
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8A6FBF' }}></div>
-                        )}
-                      </div>
+                      {/* Show completion indicator text for current month dates with habits */}
+                      {isCurrentMonth && completionStatus && (
+                        <div className="text-xs text-center opacity-75">
+                          {completionStatus === 'complete' && '✓'}
+                          {completionStatus === 'partial' && '○'}
+                          {completionStatus === 'incomplete' && '✗'}
+                        </div>
+                      )}
                     </motion.div>
                   )
                 })}

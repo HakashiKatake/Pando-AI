@@ -7,6 +7,8 @@ import { useDataInitialization } from '../../lib/useDataInitialization'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
+
+import Header from '@/components/Header';
 import {
   BarChart,
   Bar,
@@ -194,8 +196,7 @@ const Dashboard = () => {
 
   // Current user and time data - Updated to match your current timestamp
   const userName = preferences.name || user?.firstName || "HakashiKatake"
-  const currentTime = "05:31"
-  const currentDate = "Jul 13 - Jul 29"
+  
 
   // Data calculations
   const recentMoods = Array.isArray(moods) ? moods.slice(-7) : []
