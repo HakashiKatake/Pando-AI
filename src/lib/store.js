@@ -265,11 +265,15 @@ export const useChatStore = create((set, get) => ({
       if (response.ok) {
         const result = await response.json();
         const rawMessages = result.success && result.data ? result.data.messages : (Array.isArray(result) ? result : []);
-        // Ensure all messages have proper ID format
+        
+        // Ensure all messages have proper ID format and preserve roles
         const messages = rawMessages.map(msg => ({
           ...msg,
-          id: msg._id || msg.id || Date.now() + Math.random()
+          id: msg._id || msg.id || Date.now() + Math.random(),
+          // Explicitly preserve the role from database
+          role: msg.role
         }));
+        
         set({ messages, isLoading: false });
       }
     } catch (error) {
@@ -281,35 +285,53 @@ export const useChatStore = create((set, get) => ({
   addMessage: async (messageData, userId, guestId) => {
     // For authenticated users, save to database
     if (userId) {
-      try {
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...messageData, guestId }),
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success && result.data) {
-            // Add both user and assistant messages from server response
-            const userMessage = { 
-              ...result.data.userMessage, 
-              id: result.data.userMessage._id || result.data.userMessage.id,
-              role: 'user' // Ensure role is correct
-            };
-            const assistantMessage = result.data.assistantMessage ? {
-              ...result.data.assistantMessage, 
-              id: result.data.assistantMessage._id || result.data.assistantMessage.id,
-              role: 'assistant' // Ensure role is correct
-            } : null;
-            
-            set(state => ({
-              messages: [...state.messages, userMessage, ...(assistantMessage ? [assistantMessage] : [])]
-            }));
+      // Check if this is a user message that needs API processing
+      if (messageData.role === 'user') {
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              message: messageData.message,
+              privacy: messageData.privacy,
+              guestId 
+            }),
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              // Add both user and assistant messages from server response
+              const userMessage = { 
+                ...result.data.userMessage, 
+                id: result.data.userMessage._id || result.data.userMessage.id,
+                role: 'user' // Ensure role is correct
+              };
+              const assistantMessage = result.data.assistantMessage ? {
+                ...result.data.assistantMessage, 
+                id: result.data.assistantMessage._id || result.data.assistantMessage.id,
+                role: 'assistant' // Ensure role is correct
+              } : null;
+              
+              set(state => ({
+                messages: [...state.messages, userMessage, ...(assistantMessage ? [assistantMessage] : [])]
+              }));
+            }
           }
+        } catch (error) {
+          console.error('Failed to save message:', error);
         }
-      } catch (error) {
-        console.error('Failed to save message:', error);
+      } else {
+        // For assistant messages (like auto-greetings, smart responses), just add directly to store
+        const tempMessage = {
+          id: Date.now() + Math.random(),
+          timestamp: new Date().toISOString(),
+          ...messageData,
+        };
+        
+        set(state => ({
+          messages: [...state.messages, tempMessage]
+        }));
       }
     } else {
       // For guests, save to localStorage

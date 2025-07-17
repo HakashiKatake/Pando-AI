@@ -17,6 +17,7 @@ import {
   Clock,
   Minimize2,
 } from "lucide-react";
+import Link from "next/link";
 
 const MoodMusic = () => {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -31,12 +32,8 @@ const MoodMusic = () => {
   const [showPlayer, setShowPlayer] = useState(false);
   const audioRef = useRef(null);
 
-  // Updated time to match your current timestamp
-  const currentDateTime = "06:32";
-  const currentDate = "Jul 14 - Jul 29";
-  const userName = "HakashiKatake";
 
-  // Category filters
+
   const categories = [
   {
     name: 'All',
@@ -445,6 +442,7 @@ const MoodMusic = () => {
     audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
   };
+  
 
   // Animation variants
   const containerVariants = {
@@ -521,17 +519,21 @@ const MoodMusic = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <Calendar className="w-4 h-4" />
-              <span>{currentDate}</span>
+              <span>{currentTime}</span>
               <ChevronDown className="w-4 h-4" />
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <Clock className="w-4 h-4" />
-              <span>{currentDateTime}</span>
+             
+              <span>{currentTime}</span>
               <ChevronDown className="w-4 h-4" />
             </div>
+            <Link href="/emergency">
             <Button className="bg-red-500 hover:bg-red-600 text-white">
               SOS
             </Button>
+            </Link>
+            
           </div>
         </div>
       </motion.header>
