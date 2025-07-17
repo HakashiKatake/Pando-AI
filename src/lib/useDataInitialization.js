@@ -1,11 +1,12 @@
-import { useUser } from '@clerk/nextjs';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { useAppStore, useMoodStore, useChatStore, useFeedbackStore, useExerciseStore, useHabitStore } from './store';
 import { useEffect } from 'react';
 
 // Custom hook to initialize data based on authentication status
 export function useDataInitialization() {
   const { isSignedIn, user, isLoaded } = useUser();
-  const { isGuest, guestId, user: storeUser } = useAppStore();
+  const { getToken } = useAuth();
+  const { isGuest, guestId, user: storeUser, setGetToken } = useAppStore();
   
   const moodStore = useMoodStore();
   const chatStore = useChatStore();
@@ -15,6 +16,14 @@ export function useDataInitialization() {
 
   useEffect(() => {
     if (!isLoaded) return;
+
+    // Store the getToken function in the app store so other actions can use it
+    if (getToken) {
+      console.log('Setting getToken function in app store from useDataInitialization');
+      setGetToken(getToken);
+    } else {
+      console.warn('getToken function not available in useDataInitialization');
+    }
 
     const userId = isSignedIn && user ? user.id : null;
     const currentGuestId = !isSignedIn ? guestId : null;
@@ -31,12 +40,12 @@ export function useDataInitialization() {
       exerciseStore.clearData();
       habitStore.clearData();
       
-      // Load from API
-      moodStore.loadMoodsFromAPI(userId, null);
-      chatStore.loadMessagesFromAPI(userId, null);
-      feedbackStore.loadEntriesFromAPI(userId, null);
-      exerciseStore.loadSessionsFromAPI(userId, null);
-      habitStore.loadHabitsFromAPI(userId, null);
+            // Load from API
+      moodStore.loadMoodsFromAPI(userId, null, getToken);
+      chatStore.loadMessagesFromAPI(userId, null, null, getToken);
+      feedbackStore.loadEntriesFromAPI(userId, null, getToken);
+      exerciseStore.loadSessionsFromAPI(userId, null, getToken);
+      habitStore.loadHabitsFromAPI(userId, null, getToken);
       
     } else if (!isSignedIn && currentGuestId) {
       // Guest user - ensure clean state with localStorage only

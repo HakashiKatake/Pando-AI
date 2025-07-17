@@ -26,6 +26,7 @@ export const useAppStore = create(
       isGuest: true,
       guestId: null,
       guestName: '',
+      getToken: null, // Store the getToken function from useAuth
       
       // App state
       isOnboarded: false,
@@ -63,6 +64,11 @@ export const useAppStore = create(
             }
           }
         }
+      },
+      
+      setGetToken: (getToken) => {
+        console.log('setGetToken called with:', getToken ? 'Function provided' : 'No function');
+        set({ getToken });
       },
       
       setGuestName: (name) => set({ guestName: name }),
@@ -160,7 +166,7 @@ export const useMoodStore = create((set, get) => ({
   isLoading: false,
   
   // Load moods from API for authenticated users
-  loadMoodsFromAPI: async (userId, guestId) => {
+  loadMoodsFromAPI: async (userId, guestId, getToken) => {
     if (!userId && !guestId) return;
     
     set({ isLoading: true });
@@ -172,7 +178,25 @@ export const useMoodStore = create((set, get) => ({
         params.append('guestId', guestId);
       }
       
-      const response = await fetch(`/api/mood?${params}`);
+      // Get session token for authentication
+      let headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (getToken && userId) {
+        try {
+          const token = await getToken();
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+        } catch (tokenError) {
+          console.error('Failed to get session token:', tokenError);
+        }
+      }
+      
+      const response = await fetch(`/api/mood?${params}`, {
+        headers
+      });
       if (response.ok) {
         const result = await response.json();
         const moods = result.success ? result.data : (Array.isArray(result) ? result : []);
@@ -282,7 +306,7 @@ export const useChatStore = create((set, get) => ({
   isLoading: false,
   currentConversationId: null,
   
-  loadMessagesFromAPI: async (userId, guestId, conversationId) => {
+  loadMessagesFromAPI: async (userId, guestId, conversationId, getToken) => {
     if (!userId && !guestId) return;
     
     set({ isLoading: true });
@@ -291,7 +315,25 @@ export const useChatStore = create((set, get) => ({
       if (guestId) params.append('guestId', guestId);
       if (conversationId) params.append('conversationId', conversationId);
       
-      const response = await fetch(`/api/chat?${params}`);
+      // Get session token for authentication
+      let headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (getToken && userId) {
+        try {
+          const token = await getToken();
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+        } catch (tokenError) {
+          console.error('Failed to get session token:', tokenError);
+        }
+      }
+      
+      const response = await fetch(`/api/chat?${params}`, {
+        headers
+      });
       if (response.ok) {
         const result = await response.json();
         const rawMessages = result.success && result.data ? result.data.messages : (Array.isArray(result) ? result : []);
@@ -405,7 +447,7 @@ export const useFeedbackStore = create((set, get) => ({
   entries: [],
   isLoading: false,
   
-  loadEntriesFromAPI: async (userId, guestId) => {
+  loadEntriesFromAPI: async (userId, guestId, getToken) => {
     if (!userId && !guestId) return;
     
     if (userId) {
@@ -415,7 +457,25 @@ export const useFeedbackStore = create((set, get) => ({
         const params = new URLSearchParams();
         if (guestId) params.append('guestId', guestId);
         
-        const response = await fetch(`/api/feedback?${params}`);
+        // Get session token for authentication
+        let headers = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (getToken) {
+          try {
+            const token = await getToken();
+            if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+            }
+          } catch (tokenError) {
+            console.error('Failed to get session token:', tokenError);
+          }
+        }
+        
+        const response = await fetch(`/api/feedback?${params}`, {
+          headers
+        });
         if (response.ok) {
           const result = await response.json();
           const entries = result.success ? result.data : (Array.isArray(result) ? result : []);
@@ -505,7 +565,7 @@ export const useExerciseStore = create((set, get) => ({
   sessions: [],
   isLoading: false,
   
-  loadSessionsFromAPI: async (userId, guestId) => {
+  loadSessionsFromAPI: async (userId, guestId, getToken) => {
     if (!userId && !guestId) return;
     
     set({ isLoading: true });
@@ -513,7 +573,25 @@ export const useExerciseStore = create((set, get) => ({
       const params = new URLSearchParams();
       if (guestId) params.append('guestId', guestId);
       
-      const response = await fetch(`/api/exercises?${params}`);
+      // Get session token for authentication
+      let headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (getToken && userId) {
+        try {
+          const token = await getToken();
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+        } catch (tokenError) {
+          console.error('Failed to get session token:', tokenError);
+        }
+      }
+      
+      const response = await fetch(`/api/exercises?${params}`, {
+        headers
+      });
       if (response.ok) {
         const result = await response.json();
         const sessions = result.success ? result.data : (Array.isArray(result) ? result : []);
@@ -612,7 +690,7 @@ export const useHabitStore = create(
       
       // Actions
       addHabit: async (habit) => {
-        const { user, isGuest, guestId } = useAppStore.getState();
+        const { user, isGuest, guestId, getToken } = useAppStore.getState();
         const userId = user?.id;
         
         const newHabit = {
@@ -630,26 +708,46 @@ export const useHabitStore = create(
         
         if (!isGuest && userId) {
           try {
+            // Get session token for authentication
+            let headers = {
+              'Content-Type': 'application/json',
+            };
+            
+            if (getToken) {
+              try {
+                console.log('Getting session token for addHabit...');
+                const token = await getToken();
+                console.log('Token received for addHabit:', token ? 'Token present' : 'No token');
+                if (token) {
+                  headers['Authorization'] = `Bearer ${token}`;
+                  console.log('Authorization header set for addHabit');
+                }
+              } catch (tokenError) {
+                console.error('Failed to get session token for addHabit:', tokenError);
+              }
+            }
+            
             const response = await fetch('/api/habits', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers,
               body: JSON.stringify(newHabit),
             });
             
             if (response.ok) {
               const savedHabit = await response.json();
+              console.log('Habit saved successfully:', savedHabit._id);
               // Update with server response if different
-              if (savedHabit.id !== newHabit.id) {
+              if (savedHabit._id !== newHabit.id) {
                 set(state => {
                   const currentHabits = Array.isArray(state.habits) ? state.habits : [];
                   return { 
-                    habits: currentHabits.map(h => h.id === newHabit.id ? savedHabit : h)
+                    habits: currentHabits.map(h => h.id === newHabit.id ? { ...savedHabit, id: savedHabit._id } : h)
                   };
                 });
               }
               return savedHabit;
             } else {
-              console.warn('Failed to save habit to database, keeping local state');
+              console.warn('Failed to save habit to database, response:', response.status, await response.text());
               return newHabit;
             }
           } catch (error) {
@@ -744,6 +842,13 @@ export const useHabitStore = create(
       },
       
       toggleHabitCompletion: async (habitId, date = null) => {
+        console.log('toggleHabitCompletion called with habitId:', habitId, 'date:', date);
+        
+        if (!habitId) {
+          console.error('habitId is missing or undefined!');
+          return;
+        }
+        
         const appState = useAppStore.getState();
         const { user, isGuest, guestId } = appState;
         
@@ -798,24 +903,51 @@ export const useHabitStore = create(
         
         if (!isGuest && userId) {
           try {
-            console.log('Saving habit completion to database:', newCompletion);
+            // Get session token for authentication
+            let headers = {
+              'Content-Type': 'application/json',
+            };
+            
+            const { getToken } = useAppStore.getState();
+            console.log('App state getToken function:', getToken ? 'Available' : 'Not available');
+            if (getToken) {
+              try {
+                console.log('Getting session token for habit completion...');
+                const token = await getToken();
+                console.log('Token received for habit completion:', token ? 'Token present' : 'No token');
+                if (token) {
+                  headers['Authorization'] = `Bearer ${token}`;
+                  console.log('Authorization header set for habit completion');
+                } else {
+                  console.warn('getToken returned null/undefined');
+                }
+              } catch (tokenError) {
+                console.error('Failed to get session token for habit completion:', tokenError);
+              }
+            } else {
+              console.warn('getToken function not found in app state');
+            }
+            
+            console.log('Saving habit completion to database for habitId:', habitId, 'date:', targetDate, 'completed:', newCompletionStatus);
+            const requestBody = {
+              habitId,
+              date: targetDate,
+              completed: newCompletionStatus
+            };
+            console.log('Request body being sent:', requestBody);
             const response = await fetch('/api/habit-completions', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(newCompletion),
+              headers,
+              body: JSON.stringify(requestBody),
             });
             
             if (!response.ok) {
-              const errorData = await response.json();
-              console.warn('Failed to save habit completion to database:', response.status, errorData);
-              // Don't revert on error for now, keep local state
+              console.error('Failed to save completion to database:', response.status, await response.text());
             } else {
-              const savedCompletion = await response.json();
-              console.log('Habit completion saved successfully:', savedCompletion);
+              console.log('Habit completion saved successfully');
             }
           } catch (error) {
-            console.error('Failed to save habit completion to database:', error);
-            // Don't revert on error for now, keep local state
+            console.error('Failed to save completion to database:', error);
           }
         }
         // For guests, the persistence middleware handles localStorage automatically
@@ -824,7 +956,7 @@ export const useHabitStore = create(
         get().updateQuestProgress();
       },
       
-      loadHabitsFromAPI: async (userId, guestId) => {
+      loadHabitsFromAPI: async (userId, guestId, getToken) => {
         // Only load from API for authenticated users
         if (!userId) {
           console.log('No userId provided, skipping API load');
@@ -833,14 +965,43 @@ export const useHabitStore = create(
         
         try {
           console.log('Loading habits from API for authenticated user:', userId);
-          const response = await fetch(`/api/habits?userId=${userId}`);
+          
+          // Get session token for authentication
+          let headers = {
+            'Content-Type': 'application/json',
+          };
+          
+          if (getToken) {
+            try {
+              console.log('Getting session token...');
+              const token = await getToken();
+              console.log('Token received:', token ? 'Token present' : 'No token');
+              console.log('Token preview:', token ? token.substring(0, 50) + '...' : 'null');
+              if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                console.log('Authorization header set');
+              }
+            } catch (tokenError) {
+              console.error('Failed to get session token:', tokenError);
+            }
+          } else {
+            console.log('No getToken function provided');
+          }
+          
+          console.log('Making API request with headers:', Object.keys(headers));
+          const response = await fetch(`/api/habits?userId=${userId}`, {
+            headers
+          });
+          
+          console.log('API response status:', response.status);
           if (response.ok) {
             const { habits, completions } = await response.json();
             const habitsArray = Array.isArray(habits) ? habits : [];
             console.log('Loaded habits from API:', habitsArray.length, 'habits and', Object.keys(completions || {}).length, 'completions');
             set({ habits: habitsArray, completions: completions || {} });
           } else {
-            console.error('Failed to load habits from API:', response.status);
+            const errorText = await response.text();
+            console.error('Failed to load habits from API:', response.status, errorText);
           }
         } catch (error) {
           console.error('Failed to load habits from API:', error);

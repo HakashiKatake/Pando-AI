@@ -13,7 +13,6 @@ import {
   ChevronRight,
   ChevronDown,
   Clock,
-  Droplets,
   Dumbbell,
   Plus,
   CheckCircle2,
@@ -262,7 +261,9 @@ const HabitTracker = () => {
     console.log('Current completions before toggle:', completions);
     
     try {
-      await toggleHabitCompletion(habitId);
+      const today = new Date().toISOString().split('T')[0];
+      console.log('Calling toggleHabitCompletion with date:', today);
+      await toggleHabitCompletion(habitId, today, !completions[`${habitId}-${today}`]);
       console.log('Habit toggled successfully');
       console.log('Current completions after toggle:', useHabitStore.getState().completions);
     } catch (error) {
@@ -659,7 +660,11 @@ const HabitTracker = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 sm:space-x-4 flex-1">
                           <motion.button
-                            onClick={() => handleToggleHabit(habit.id)}
+                            onClick={() => {
+                              console.log('Button clicked for habit:', habit);
+                              console.log('habit.id:', habit.id);
+                              handleToggleHabit(habit.id);
+                            }}
                             className="flex-shrink-0 transition-colors"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}

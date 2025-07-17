@@ -7,9 +7,47 @@ await connectToDatabase();
 
 export async function POST(request) {
   try {
-    const { userId: authUserId } = await auth();
+    console.log('🔧 Habit Completion API: Starting POST request');
+    
+    // Verify authentication - try both server-side and client-side methods
+    let authUserId = null;
+    
+    // Try server-side auth first
+    console.log('🔐 Trying server-side auth...');
+    const { userId } = auth();
+    authUserId = userId;
+    console.log('👤 Server-side auth result:', authUserId ? 'Success' : 'No user');
+    
+    // If server-side auth doesn't work, try client-side Bearer token
+    if (!authUserId) {
+      console.log('🎫 Server-side auth failed, trying Bearer token...');
+      const authHeader = request.headers.get('authorization');
+      console.log('🔑 Authorization header:', authHeader ? 'Present' : 'Missing');
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        console.log('🎯 Token extracted, length:', token.length);
+        try {
+          // Verify the JWT token using Clerk's verifyToken function
+          const { verifyToken } = await import('@clerk/nextjs/server');
+          console.log('🔍 Verifying token with Clerk...');
+          const verified = await verifyToken(token, {
+            secretKey: process.env.CLERK_SECRET_KEY,
+          });
+          authUserId = verified.sub;
+          console.log('✅ Token verification result:', authUserId ? 'Success' : 'Failed');
+        } catch (tokenError) {
+          console.error('❌ Token verification failed:', tokenError);
+        }
+      } else {
+        console.log('❌ No valid Bearer token found');
+      }
+    }
+    
+    console.log('🏁 Final authUserId:', authUserId);
     
     if (!authUserId) {
+      console.log('🚫 Authorization failed - returning 401');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
