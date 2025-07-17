@@ -1085,3 +1085,112 @@ export const useHabitStore = create(
     })
   )
 );
+
+// Global Music Store
+export const useMusicStore = create((set, get) => ({
+  // Current track info
+  currentTrack: null,
+  isPlaying: false,
+  isVisible: false,
+  
+  // Player state
+  currentTime: 0,
+  duration: 0,
+  volume: 75,
+  isRepeated: false,
+  isShuffled: false,
+  isLiked: false,
+  
+  // Playlist and tracks
+  playlist: [],
+  currentIndex: 0,
+  
+  // Actions
+  playTrack: (track) => {
+    const { currentTrack, isPlaying } = get();
+    
+    if (currentTrack?.id === track.id && isPlaying) {
+      // If same track is playing, pause it
+      set({ isPlaying: false });
+    } else {
+      // Play new track
+      set({ 
+        currentTrack: track, 
+        isPlaying: true, 
+        isVisible: true 
+      });
+    }
+  },
+  
+  togglePlayPause: () => {
+    const { isPlaying } = get();
+    set({ isPlaying: !isPlaying });
+  },
+  
+  stopMusic: () => {
+    set({ 
+      currentTrack: null, 
+      isPlaying: false, 
+      isVisible: false,
+      currentTime: 0 
+    });
+  },
+  
+  setCurrentTime: (time) => set({ currentTime: time }),
+  setDuration: (duration) => set({ duration }),
+  setVolume: (volume) => set({ volume }),
+  
+  toggleRepeat: () => {
+    const { isRepeated } = get();
+    set({ isRepeated: !isRepeated });
+  },
+  
+  toggleShuffle: () => {
+    const { isShuffled } = get();
+    set({ isShuffled: !isShuffled });
+  },
+  
+  toggleLike: () => {
+    const { isLiked } = get();
+    set({ isLiked: !isLiked });
+  },
+  
+  skipToNext: () => {
+    const { playlist, currentIndex, isShuffled } = get();
+    if (playlist.length === 0) return;
+    
+    let nextIndex;
+    if (isShuffled) {
+      nextIndex = Math.floor(Math.random() * playlist.length);
+    } else {
+      nextIndex = (currentIndex + 1) % playlist.length;
+    }
+    
+    const nextTrack = playlist[nextIndex];
+    set({ 
+      currentTrack: nextTrack, 
+      currentIndex: nextIndex,
+      isPlaying: true 
+    });
+  },
+  
+  skipToPrevious: () => {
+    const { playlist, currentIndex } = get();
+    if (playlist.length === 0) return;
+    
+    const prevIndex = currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
+    const prevTrack = playlist[prevIndex];
+    set({ 
+      currentTrack: prevTrack, 
+      currentIndex: prevIndex,
+      isPlaying: true 
+    });
+  },
+  
+  setPlaylist: (tracks) => {
+    set({ playlist: tracks });
+  },
+  
+  hidePlayer: () => set({ isVisible: false }),
+  showPlayer: () => set({ isVisible: true }),
+}));

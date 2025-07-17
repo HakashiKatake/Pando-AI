@@ -4,6 +4,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { Providers } from '../components/Providers';
 import { PageLayout } from '../components/Navigation';
 import { AuthDataManager } from '../components/AuthDataManager';
+import GlobalMusicPlayer from '../components/GlobalMusicPlayer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
             <PageLayout>
               {children}
             </PageLayout>
+            <GlobalMusicPlayer />
           </Providers>
         </body>
       </html>
