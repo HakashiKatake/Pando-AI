@@ -10,8 +10,12 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
+
+import Link from "next/link";
+
 import Header from '@/components/Header';
 import { useMusicStore } from '@/lib/store';
+
 
 const MoodMusic = () => {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -22,12 +26,8 @@ const MoodMusic = () => {
     setPlaylist 
   } = useMusicStore();
 
-  // Updated time to match your current timestamp
-  const currentDateTime = "06:32";
-  const currentDate = "Jul 14 - Jul 29";
-  const userName = "HakashiKatake";
 
-  // Category filters
+
   const categories = [
   {
     name: 'All',
@@ -357,6 +357,7 @@ const MoodMusic = () => {
   const handlePlayTrack = (track) => {
     playTrack(track);
   };
+  
 
   // Animation variants
   const containerVariants = {
@@ -395,7 +396,52 @@ const MoodMusic = () => {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F7F5FA" }}>
+
+      {/* Hidden audio element */}
+      <audio ref={audioRef} />
+
+      {/* Header */}
+      <motion.header
+        className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <span className="text-lg">🐼</span>
+            </div>
+            <h1 className="text-xl font-semibold" style={{ color: "#6E55A0" }}>
+              CalmConnect
+            </h1>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <Calendar className="w-4 h-4" />
+              <span>{currentTime}</span>
+              <ChevronDown className="w-4 h-4" />
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <Clock className="w-4 h-4" />
+             
+              <span>{currentTime}</span>
+              <ChevronDown className="w-4 h-4" />
+            </div>
+            <Link href="/emergency">
+            <Button className="bg-red-500 hover:bg-red-600 text-white">
+              SOS
+            </Button>
+            </Link>
+            
+          </div>
+        </div>
+      </motion.header>
+=======
       <Header />
+
 
       {/* Main Content */}
       <main className="pt-20 px-6 pb-12">
