@@ -65,6 +65,29 @@ const Dashboard = () => {
   } = useHabitStore()
   const dataInit = useDataInitialization()
 
+  const [currentTime, setCurrentTime] = useState("")
+  const [currentDate, setCurrentDate] = useState("")
+  
+    // Update time every second
+    useEffect(() => {
+      const updateTime = () => {
+        const now = new Date()
+        setCurrentTime(now.toLocaleTimeString('en-IN', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        }))
+        
+        // Format date as "Jul 17 - Jul 31" (current date to end of month)
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+        const startDateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        const endDateStr = endOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        setCurrentDate(`${startDateStr} - ${endDateStr}`)
+      }
+  
+      updateTime()
+      const interval = setInterval(updateTime, 1000)
+    })
   // All useEffect hooks - must be called in same order every time
   useEffect(() => {
     setTodaysQuote(getRandomQuote())
