@@ -20,7 +20,11 @@ export const metadata = {
     locale: 'en_US',
   },
   robots: 'index, follow',
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }) {
