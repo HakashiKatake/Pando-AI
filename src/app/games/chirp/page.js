@@ -30,8 +30,8 @@ export default function ChirpJumpGame() {
   const dataArrayRef = useRef(null);
   const isGameRunningRef = useRef(false);
   
-  // Game objects - using regular objects instead of refs for better updates
-  const [gameObjects, setGameObjects] = useState({
+  // Game objects ref - using ref for better performance
+  const gameObjectsRef = useRef({
     chicken: null,
     platforms: [],
     eggs: [],
@@ -42,12 +42,15 @@ export default function ChirpJumpGame() {
   const { addSession } = useExerciseStore();
   const dataInit = useDataInitialization();
 
-  // Game constants
+  // Game constants - ADJUSTED WITH BOUNDARY CHECKS
   const CANVAS_WIDTH = 800;
   const CANVAS_HEIGHT = 600;
   const GRAVITY = 0.8;
-  const JUMP_POWER = 20;
-  const VOICE_THRESHOLD = 30;
+  const JUMP_POWER = 18; // Reduced from 22 to prevent excessive jumping
+  const VOICE_THRESHOLD = 25;
+  const VOICE_MULTIPLIER = 3; // Reduced from 4 for better control
+  const TOP_BOUNDARY = 50; // Minimum Y position (top boundary)
+  const BOTTOM_BOUNDARY = CANVAS_HEIGHT + 100; // Maximum Y position before death
 
   // Load best score on mount
   useEffect(() => {
@@ -57,7 +60,7 @@ export default function ChirpJumpGame() {
     }
   }, []);
 
-  // Audio functions
+  // Audio functions - BALANCED SENSITIVITY
   const initAudio = async () => {
     try {
       setMicError('');
@@ -66,7 +69,8 @@ export default function ChirpJumpGame() {
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: false
+          autoGainControl: false,
+          sampleRate: 44100
         }
       });
 
@@ -80,7 +84,9 @@ export default function ChirpJumpGame() {
       analyserRef.current = audioContextRef.current.createAnalyser();
       const source = audioContextRef.current.createMediaStreamSource(stream);
       
+      // Balanced analyzer settings
       analyserRef.current.fftSize = 256;
+      analyserRef.current.smoothingTimeConstant = 0.5;
       const bufferLength = analyserRef.current.frequencyBinCount;
       dataArrayRef.current = new Uint8Array(bufferLength);
       
@@ -97,24 +103,36 @@ export default function ChirpJumpGame() {
     }
   };
 
+  // BALANCED VOICE LEVEL DETECTION
   const getVoiceLevel = useCallback(() => {
     if (!analyserRef.current || !dataArrayRef.current) return 0;
     
     analyserRef.current.getByteFrequencyData(dataArrayRef.current);
     
     let sum = 0;
-    for (let i = 0; i < dataArrayRef.current.length; i++) {
-      sum += dataArrayRef.current[i];
+    let max = 0;
+    
+    // Focus on mid-range frequencies where voice is clear
+    const startIndex = Math.floor(dataArrayRef.current.length * 0.2);
+    const endIndex = Math.floor(dataArrayRef.current.length * 0.6);
+    
+    for (let i = startIndex; i < endIndex; i++) {
+      const value = dataArrayRef.current[i];
+      sum += value;
+      max = Math.max(max, value);
     }
     
-    return sum / dataArrayRef.current.length;
+    const average = sum / (endIndex - startIndex);
+    
+    // Balanced calculation - more weight on average for stability
+    return (average * 0.7) + (max * 0.3);
   }, []);
 
   // Game functions
   const initGame = useCallback(() => {
     console.log('Initializing game...');
     
-    const newGameObjects = {
+    gameObjectsRef.current = {
       chicken: {
         x: 100,
         y: 300,
@@ -142,141 +160,137 @@ export default function ChirpJumpGame() {
       camera: { x: 0, y: 0 }
     };
     
-    setGameObjects(newGameObjects);
     setScore(0);
     setEggsCollected(0);
     
-    console.log('Game initialized with chicken at:', newGameObjects.chicken);
+    console.log('Game initialized with chicken at:', gameObjectsRef.current.chicken);
+    
+    // Draw initial frame
+    drawGame();
   }, []);
 
   const updateGame = useCallback(() => {
     if (!isGameRunningRef.current) return;
     
-    setGameObjects(prevObjects => {
-      const newObjects = { ...prevObjects };
-      
-      if (!newObjects.chicken) return prevObjects;
-      
-      // Update chicken animation frame
-      newObjects.chicken = { ...newObjects.chicken };
-      newObjects.chicken.animFrame++;
-      
-      // Apply gravity
-      if (!newObjects.chicken.onGround) {
-        newObjects.chicken.velocityY += GRAVITY;
-      }
+    const objects = gameObjectsRef.current;
+    
+    if (!objects.chicken) return;
+    
+    // Update chicken animation frame
+    objects.chicken.animFrame++;
+    
+    // Apply gravity
+    if (!objects.chicken.onGround) {
+      objects.chicken.velocityY += GRAVITY;
+    }
 
-      // Update position
-      newObjects.chicken.x += newObjects.chicken.velocityX;
-      newObjects.chicken.y += newObjects.chicken.velocityY;
+    // Update position
+    objects.chicken.x += objects.chicken.velocityX;
+    objects.chicken.y += objects.chicken.velocityY;
 
-      // Air resistance
-      newObjects.chicken.velocityX *= 0.95;
+    // BOUNDARY CHECKS - PREVENT GOING OFF TOP OF SCREEN
+    if (objects.chicken.y < TOP_BOUNDARY) {
+      objects.chicken.y = TOP_BOUNDARY;
+      objects.chicken.velocityY = Math.max(objects.chicken.velocityY, 0); // Stop upward velocity
+    }
 
-      // Check platform collisions
-      newObjects.chicken.onGround = false;
-      newObjects.platforms.forEach(platform => {
-        if (newObjects.chicken.x < platform.x + platform.width &&
-            newObjects.chicken.x + newObjects.chicken.width > platform.x &&
-            newObjects.chicken.y < platform.y + platform.height &&
-            newObjects.chicken.y + newObjects.chicken.height > platform.y) {
-          
-          if (newObjects.chicken.velocityY > 0 && newObjects.chicken.y < platform.y) {
-            newObjects.chicken.y = platform.y - newObjects.chicken.height;
-            newObjects.chicken.velocityY = 0;
-            newObjects.chicken.onGround = true;
-          }
-        }
-      });
+    // Air resistance
+    objects.chicken.velocityX *= 0.95;
 
-      // Check egg collisions
-      const eggsBeforeCollection = newObjects.eggs.length;
-      newObjects.eggs = newObjects.eggs.filter(egg => {
-        if (newObjects.chicken.x < egg.x + egg.width &&
-            newObjects.chicken.x + newObjects.chicken.width > egg.x &&
-            newObjects.chicken.y < egg.y + egg.height &&
-            newObjects.chicken.y + newObjects.chicken.height > egg.y) {
-          return false; // Remove this egg
-        }
-        return true;
-      });
-      
-      // Update score if eggs were collected
-      const eggsCollectedNow = eggsBeforeCollection - newObjects.eggs.length;
-      if (eggsCollectedNow > 0) {
-        setEggsCollected(prev => prev + eggsCollectedNow);
-        setScore(prev => prev + (eggsCollectedNow * 100));
-      }
-
-      // Check if fallen
-      if (newObjects.chicken.y > CANVAS_HEIGHT + 100) {
-        isGameRunningRef.current = false;
-        setGameState('gameOver');
-        return prevObjects;
-      }
-      
-      // Update camera to follow chicken
-      newObjects.camera = {
-        x: newObjects.chicken.x - CANVAS_WIDTH / 3,
-        y: newObjects.chicken.y - CANVAS_HEIGHT / 2
-      };
-      
-      // Update platforms
-      newObjects.platforms = newObjects.platforms.map(platform => {
-        const updatedPlatform = { ...platform };
+    // Check platform collisions
+    objects.chicken.onGround = false;
+    objects.platforms.forEach(platform => {
+      if (objects.chicken.x < platform.x + platform.width &&
+          objects.chicken.x + objects.chicken.width > platform.x &&
+          objects.chicken.y < platform.y + platform.height &&
+          objects.chicken.y + objects.chicken.height > platform.y) {
         
-        if (updatedPlatform.type === 'moving') {
-          updatedPlatform.oscillation += 0.05;
-          updatedPlatform.y = updatedPlatform.originalY + Math.sin(updatedPlatform.oscillation) * 30;
-        }
-        updatedPlatform.x -= 2;
-        
-        return updatedPlatform;
-      });
-      
-      // Update eggs
-      newObjects.eggs = newObjects.eggs.map(egg => ({
-        ...egg,
-        rotation: egg.rotation + 0.05,
-        x: egg.x - 2
-      }));
-      
-      // Remove off-screen objects
-      newObjects.platforms = newObjects.platforms.filter(p => p.x + p.width > newObjects.camera.x - 200);
-      newObjects.eggs = newObjects.eggs.filter(e => e.x + e.width > newObjects.camera.x - 200);
-      
-      // Generate new platforms
-      const rightmost = newObjects.platforms.reduce((max, p) => Math.max(max, p.x + p.width), 0);
-      
-      if (rightmost < newObjects.chicken.x + CANVAS_WIDTH * 2) {
-        const x = rightmost + 120 + Math.random() * 80;
-        const y = 200 + Math.random() * 250;
-        const width = 80 + Math.random() * 80;
-        const isMoving = Math.random() < 0.3;
-        
-        newObjects.platforms.push({
-          x,
-          y,
-          width,
-          height: 20,
-          type: isMoving ? 'moving' : 'normal',
-          oscillation: 0,
-          originalY: y
-        });
-        
-        if (Math.random() < 0.5) {
-          newObjects.eggs.push({
-            x: x + 20,
-            y: y - 30,
-            width: 20,
-            height: 25,
-            rotation: 0
-          });
+        if (objects.chicken.velocityY > 0 && objects.chicken.y < platform.y) {
+          objects.chicken.y = platform.y - objects.chicken.height;
+          objects.chicken.velocityY = 0;
+          objects.chicken.onGround = true;
         }
       }
-      
-      return newObjects;
     });
+
+    // Check egg collisions
+    const eggsBeforeCollection = objects.eggs.length;
+    objects.eggs = objects.eggs.filter(egg => {
+      if (objects.chicken.x < egg.x + egg.width &&
+          objects.chicken.x + objects.chicken.width > egg.x &&
+          objects.chicken.y < egg.y + egg.height &&
+          objects.chicken.y + objects.chicken.height > egg.y) {
+        return false; // Remove this egg
+      }
+      return true;
+    });
+    
+    // Update score if eggs were collected
+    const eggsCollectedNow = eggsBeforeCollection - objects.eggs.length;
+    if (eggsCollectedNow > 0) {
+      setEggsCollected(prev => prev + eggsCollectedNow);
+      setScore(prev => prev + (eggsCollectedNow * 100));
+    }
+
+    // Check if fallen below bottom boundary (game over)
+    if (objects.chicken.y > BOTTOM_BOUNDARY) {
+      isGameRunningRef.current = false;
+      setGameState('gameOver');
+      return;
+    }
+    
+    // Update camera to follow chicken with boundary consideration
+    objects.camera.x = objects.chicken.x - CANVAS_WIDTH / 3;
+    objects.camera.y = Math.min(objects.chicken.y - CANVAS_HEIGHT / 2, 0); // Don't go above screen
+    
+    // Update platforms
+    objects.platforms.forEach(platform => {
+      if (platform.type === 'moving') {
+        platform.oscillation += 0.05;
+        platform.y = platform.originalY + Math.sin(platform.oscillation) * 30;
+      }
+      platform.x -= 2;
+    });
+    
+    // Update eggs
+    objects.eggs.forEach(egg => {
+      egg.rotation += 0.05;
+      egg.x -= 2;
+    });
+    
+    // Remove off-screen objects
+    objects.platforms = objects.platforms.filter(p => p.x + p.width > objects.camera.x - 200);
+    objects.eggs = objects.eggs.filter(e => e.x + e.width > objects.camera.x - 200);
+    
+    // Generate new platforms
+    const rightmost = objects.platforms.reduce((max, p) => Math.max(max, p.x + p.width), 0);
+    
+    if (rightmost < objects.chicken.x + CANVAS_WIDTH * 2) {
+      const x = rightmost + 120 + Math.random() * 80;
+      const y = Math.max(TOP_BOUNDARY + 100, 200 + Math.random() * 250); // Ensure platforms aren't too high
+      const width = 80 + Math.random() * 80;
+      const isMoving = Math.random() < 0.3;
+      
+      objects.platforms.push({
+        x,
+        y,
+        width,
+        height: 20,
+        type: isMoving ? 'moving' : 'normal',
+        oscillation: 0,
+        originalY: y
+      });
+      
+      if (Math.random() < 0.5) {
+        objects.eggs.push({
+          x: x + 20,
+          y: y - 30,
+          width: 20,
+          height: 25,
+          rotation: 0
+        });
+      }
+    }
     
     // Increase score
     setScore(prev => prev + 1);
@@ -287,20 +301,25 @@ export default function ChirpJumpGame() {
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
+    const objects = gameObjectsRef.current;
     
-    // Clear canvas
+    // Clear canvas with gradient background
     const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
     gradient.addColorStop(0, '#87CEEB');
     gradient.addColorStop(0.5, '#F0F8FF');
     gradient.addColorStop(1, '#98FB98');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    // Draw top boundary indicator (subtle)
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, CANVAS_WIDTH, TOP_BOUNDARY);
     
     // Draw clouds
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     for (let i = 0; i < 6; i++) {
-      const x = (i * 200 - gameObjects.camera.x * 0.2) % (CANVAS_WIDTH + 100);
-      const y = 50 + (i % 3) * 40;
+      const x = (i * 200 - objects.camera.x * 0.2) % (CANVAS_WIDTH + 100);
+      const y = Math.max(TOP_BOUNDARY + 10, 50 + (i % 3) * 40); // Keep clouds below boundary
       
       if (x > -100 && x < CANVAS_WIDTH + 100) {
         ctx.beginPath();
@@ -312,9 +331,13 @@ export default function ChirpJumpGame() {
     }
     
     // Draw platforms
-    gameObjects.platforms.forEach(platform => {
-      const screenX = platform.x - gameObjects.camera.x;
-      const screenY = platform.y - gameObjects.camera.y;
+    objects.platforms.forEach(platform => {
+      const screenX = platform.x - objects.camera.x;
+      const screenY = platform.y - objects.camera.y;
+      
+      // Platform shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(screenX + 2, screenY + 2, platform.width, platform.height);
       
       // Platform
       ctx.fillStyle = platform.type === 'moving' ? '#FF6B6B' : '#4ECDC4';
@@ -326,13 +349,17 @@ export default function ChirpJumpGame() {
     });
     
     // Draw eggs
-    gameObjects.eggs.forEach(egg => {
-      const screenX = egg.x - gameObjects.camera.x;
-      const screenY = egg.y - gameObjects.camera.y;
+    objects.eggs.forEach(egg => {
+      const screenX = egg.x - objects.camera.x;
+      const screenY = egg.y - objects.camera.y;
       
       ctx.save();
       ctx.translate(screenX + egg.width / 2, screenY + egg.height / 2);
       ctx.rotate(egg.rotation);
+      
+      // Egg shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(-egg.width / 2 + 1, -egg.height / 2 + 1, egg.width, egg.height);
       
       // Egg
       ctx.fillStyle = '#FFD700';
@@ -346,15 +373,19 @@ export default function ChirpJumpGame() {
     });
     
     // Draw chicken
-    if (gameObjects.chicken) {
-      const chicken = gameObjects.chicken;
-      const screenX = chicken.x - gameObjects.camera.x;
-      const screenY = chicken.y - gameObjects.camera.y;
+    if (objects.chicken) {
+      const chicken = objects.chicken;
+      const screenX = chicken.x - objects.camera.x;
+      const screenY = chicken.y - objects.camera.y;
       
       ctx.save();
       ctx.translate(screenX, screenY);
 
       const bobOffset = chicken.onGround ? Math.sin(chicken.animFrame * 0.3) * 2 : 0;
+      
+      // Chicken shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(2, 37, 38, 8);
       
       // Body
       ctx.fillStyle = '#FFDD44';
@@ -392,34 +423,37 @@ export default function ChirpJumpGame() {
       
       ctx.restore();
     }
-  }, [gameObjects]);
+  }, []);
 
+  // BALANCED GAME LOOP WITH BOUNDARY CHECKS
   const gameLoop = useCallback(() => {
     if (!isGameRunningRef.current) return;
     
-    // Voice control
+    // Voice control with balanced sensitivity
     const currentVoiceLevel = getVoiceLevel();
     setVoiceLevel(currentVoiceLevel);
     
     if (currentVoiceLevel > VOICE_THRESHOLD) {
-      setGameObjects(prevObjects => {
-        if (!prevObjects.chicken) return prevObjects;
+      const objects = gameObjectsRef.current;
+      if (objects.chicken) {
+        // Balanced jump power calculation with boundary consideration
+        const rawJumpPower = (currentVoiceLevel - VOICE_THRESHOLD) * VOICE_MULTIPLIER;
+        const jumpPower = Math.min(rawJumpPower, JUMP_POWER);
         
-        const jumpPower = Math.min((currentVoiceLevel - VOICE_THRESHOLD) / 5, JUMP_POWER);
-        
-        if (prevObjects.chicken.onGround || prevObjects.chicken.velocityY > -5) {
-          return {
-            ...prevObjects,
-            chicken: {
-              ...prevObjects.chicken,
-              velocityY: -jumpPower,
-              onGround: false
+        // Standard jumping conditions
+        if (objects.chicken.onGround || objects.chicken.velocityY > -3) {
+          // Check if chicken is not too close to top boundary before allowing jump
+          if (objects.chicken.y > TOP_BOUNDARY + 50) {
+            objects.chicken.velocityY = -Math.max(jumpPower, 8); // Reduced minimum jump power
+            objects.chicken.onGround = false;
+            
+            // Slight horizontal momentum when jumping
+            if (objects.chicken.velocityX < 1) {
+              objects.chicken.velocityX += 0.3;
             }
-          };
+          }
         }
-        
-        return prevObjects;
-      });
+      }
     }
     
     updateGame();
@@ -476,7 +510,7 @@ export default function ChirpJumpGame() {
       };
 
       try {
-        await addSession(sessionData, dataInit.userId, dataInit.guestId, dataInit.getToken);
+        await addSession(sessionData, dataInit.userId, dataInit.guestId);
       } catch (error) {
         console.error('Failed to save session:', error);
       }
@@ -490,29 +524,23 @@ export default function ChirpJumpGame() {
     }
   }, [gameState, handleGameOver]);
 
-  // Keyboard controls
+  // Keyboard controls with boundary checks
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (gameState === 'playing' && isGameRunningRef.current) {
         if (e.code === 'Space') {
           e.preventDefault();
           
-          setGameObjects(prevObjects => {
-            if (!prevObjects.chicken) return prevObjects;
-            
-            if (prevObjects.chicken.onGround || prevObjects.chicken.velocityY > -5) {
-              return {
-                ...prevObjects,
-                chicken: {
-                  ...prevObjects.chicken,
-                  velocityY: -JUMP_POWER,
-                  onGround: false
-                }
-              };
+          const objects = gameObjectsRef.current;
+          if (objects.chicken) {
+            if (objects.chicken.onGround || objects.chicken.velocityY > -5) {
+              // Check if chicken is not too close to top boundary before allowing jump
+              if (objects.chicken.y > TOP_BOUNDARY + 50) {
+                objects.chicken.velocityY = -JUMP_POWER;
+                objects.chicken.onGround = false;
+              }
             }
-            
-            return prevObjects;
-          });
+          }
         }
       }
     };
@@ -640,6 +668,13 @@ export default function ChirpJumpGame() {
                 )}
               </div>
 
+              {/* Voice Level Debug Display */}
+              {isListening && (
+                <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-lg text-sm">
+                  Voice: {Math.round(voiceLevel)} / {VOICE_THRESHOLD}
+                </div>
+              )}
+
               {/* Game State Overlays */}
               {gameState === 'ready' && (
                 <div className="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center text-white text-center rounded-2xl">
@@ -653,9 +688,10 @@ export default function ChirpJumpGame() {
                     </h2>
                     <div className="space-y-2 mb-6 text-sm sm:text-base">
                       <p>🎤 Use your voice to control the chicken!</p>
-                      <p>🔊 Speak loudly to make the chicken jump</p>
+                      <p>🔊 Speak moderately loud to make the chicken jump</p>
                       <p>🥚 Collect golden eggs for bonus points!</p>
                       <p className="text-yellow-300">🎮 Backup: Press Space to jump</p>
+                      <p className="text-red-300 text-xs">⚠️ Don't jump too high - stay in bounds!</p>
                     </div>
                     
                     <motion.button
@@ -739,11 +775,11 @@ export default function ChirpJumpGame() {
                   <ul className="space-y-2 text-sm" style={{ color: '#8A6FBF' }}>
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
-                      Speak loudly to make the chicken jump
+                      Speak clearly and moderately loud to jump
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
-                      The louder you speak, the higher the jump
+                      Voice level needs to reach 25+ to trigger jump
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
@@ -751,7 +787,7 @@ export default function ChirpJumpGame() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
-                      Microphone icon shows voice activity
+                      Top boundary prevents excessive jumping
                     </li>
                   </ul>
                 </div>
@@ -772,7 +808,7 @@ export default function ChirpJumpGame() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#8A6FBF' }}></span>
-                      Survive as long as possible for high score
+                      Don't fall into the void below!
                     </li>
                   </ul>
                 </div>
@@ -780,8 +816,8 @@ export default function ChirpJumpGame() {
               
               <div className="mt-6 p-4 rounded-lg" style={{ backgroundColor: '#E3DEF1' }}>
                 <p className="text-sm" style={{ color: '#8A6FBF' }}>
-                  <strong>💡 Pro Tip:</strong> Try different sounds like "hey!", "woo!", or whistling to control your chicken. 
-                  The game responds to voice volume, so louder sounds create bigger jumps!
+                  <strong>🎯 Game Balance:</strong> The chicken now has a top boundary - you can't jump off the top of the screen! 
+                  Fall below the screen to end the game. Jump smart, not just high!
                 </p>
               </div>
             </div>
