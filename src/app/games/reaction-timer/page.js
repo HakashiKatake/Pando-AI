@@ -136,7 +136,7 @@ export default function ReactionTimerGame() {
     };
 
     try {
-      await addSession(sessionData, dataInit.userId, dataInit.guestId);
+      await addSession(sessionData, dataInit.userId, dataInit.guestId, dataInit.getToken);
       console.log('Reaction timer game session saved successfully');
     } catch (error) {
       console.error('Failed to save reaction timer game session:', error);

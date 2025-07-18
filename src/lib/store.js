@@ -560,13 +560,19 @@ export const useFeedbackStore = create((set, get) => ({
   clearData: () => set({ entries: [] }),
 }));
 
-// Exercise store
-export const useExerciseStore = create((set, get) => ({
-  sessions: [],
-  isLoading: false,
+// Exercise store with persistence
+export const useExerciseStore = create(
+  persist(
+    (set, get) => ({
+      sessions: [],
+      isLoading: false,
   
   loadSessionsFromAPI: async (userId, guestId, getToken) => {
-    if (!userId && !guestId) return;
+    // Skip API loading for guest users - they use localStorage persistence
+    if (!userId) {
+      console.log('Skipping API load for guest user, using localStorage persistence');
+      return;
+    }
     
     set({ isLoading: true });
     try {
@@ -603,7 +609,7 @@ export const useExerciseStore = create((set, get) => ({
     }
   },
   
-  addSession: async (sessionData, userId, guestId) => {
+  addSession: async (sessionData, userId, guestId, getToken) => {
     const newSession = {
       id: Date.now(),
       timestamp: new Date().toISOString(),
@@ -627,8 +633,10 @@ export const useExerciseStore = create((set, get) => ({
           console.log('Exercise session saved successfully:', result);
           // Add to local state immediately for UI responsiveness
           set(state => ({ sessions: [...state.sessions, newSession] }));
-          // Then reload from database to ensure consistency
-          get().loadSessionsFromAPI(userId, guestId);
+          // Then reload from database to ensure consistency (only for authenticated users)
+          if (userId) {
+            get().loadSessionsFromAPI(userId, guestId, getToken);
+          }
         } else {
           const errorData = await response.json();
           console.error('Failed to save exercise session to database:', response.status, errorData);
@@ -644,40 +652,32 @@ export const useExerciseStore = create((set, get) => ({
         });
       }
     } else {
-      // For guests, use local storage
-      set(state => {
-        const newSessions = [...state.sessions, newSession];
-        
-        // Save to localStorage for guests
-        if (guestId) {
-          localStorage.setItem('calm-connect-exercises', JSON.stringify(newSessions));
-        }
-        
-        return { sessions: newSessions };
-      });
-    }
-  },
-  
-  loadFromLocalStorage: () => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('calm-connect-exercises');
-      if (stored) {
-        const sessions = JSON.parse(stored);
-        set({ sessions });
-      }
+      // For guests, just add to state (persistence middleware handles localStorage)
+      set(state => ({
+        sessions: [...state.sessions, newSession]
+      }));
     }
   },
   
   getSessionsByType: (exerciseType) => {
     return get().sessions.filter(session => session.exerciseType === exerciseType);
   },
-  
+
   getTotalDuration: () => {
     return get().sessions.reduce((total, session) => total + (session.duration || 0), 0);
   },
-  
+
   clearData: () => set({ sessions: [] }),
-}));
+    }),
+    {
+      name: 'calm-connect-exercises',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        sessions: state.sessions,
+      })
+    }
+  )
+);
 
 // Habit tracking store
 export const useHabitStore = create(

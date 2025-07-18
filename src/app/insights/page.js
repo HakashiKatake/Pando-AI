@@ -55,11 +55,15 @@ export default function InsightsPage() {
 
   useEffect(() => {
     setIsHydrated(true);
-    if (dataInit.userId || dataInit.guestId) {
+    // Only load from API for authenticated users, guest data is handled by persistence middleware
+    if (dataInit.userId) {
       loadFeedbackEntries(dataInit.userId, dataInit.guestId);
-      loadExerciseSessions(dataInit.userId, dataInit.guestId);
+      loadExerciseSessions(dataInit.userId, dataInit.guestId, dataInit.getToken);
+    } else if (dataInit.guestId) {
+      // For guests, only load feedback entries (exercises are handled by persistence)
+      loadFeedbackEntries(dataInit.userId, dataInit.guestId);
     }
-  }, [dataInit.userId, dataInit.guestId, loadFeedbackEntries, loadExerciseSessions]);
+  }, [dataInit.userId, dataInit.guestId, dataInit.getToken, loadFeedbackEntries, loadExerciseSessions]);
 
   // Force re-render when exercise sessions change
   useEffect(() => {

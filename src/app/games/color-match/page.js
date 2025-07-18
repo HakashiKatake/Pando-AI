@@ -148,7 +148,7 @@ export default function ColorMatchGame() {
     };
 
     try {
-      await addSession(sessionData, dataInit.userId, dataInit.guestId);
+      await addSession(sessionData, dataInit.userId, dataInit.guestId, dataInit.getToken);
       console.log('Color match game session saved successfully');
     } catch (error) {
       console.error('Failed to save color match game session:', error);

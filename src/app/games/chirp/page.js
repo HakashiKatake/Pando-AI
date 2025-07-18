@@ -476,7 +476,7 @@ export default function ChirpJumpGame() {
       };
 
       try {
-        await addSession(sessionData, dataInit.userId, dataInit.guestId);
+        await addSession(sessionData, dataInit.userId, dataInit.guestId, dataInit.getToken);
       } catch (error) {
         console.error('Failed to save session:', error);
       }

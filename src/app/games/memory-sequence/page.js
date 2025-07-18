@@ -187,7 +187,7 @@ export default function MemorySequenceGame() {
         guestId: dataInit.guestId,
         dataInit
       });
-      await addSession(sessionData, dataInit.userId, dataInit.guestId);
+      await addSession(sessionData, dataInit.userId, dataInit.guestId, dataInit.getToken);
       console.log('Memory sequence game session saved successfully');
     } catch (error) {
       console.error('Failed to save memory sequence game session:', error);

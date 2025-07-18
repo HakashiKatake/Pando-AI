@@ -578,7 +578,7 @@ export default function WellnessLanding() {
               width={32}
               height={32}
             />
-            <span className="text-xl font-semibold">CalmConnect</span>
+            <span className="text-xl font-semibold">PandoAI</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <Link
@@ -775,7 +775,7 @@ export default function WellnessLanding() {
                 transition={{ duration: 0.5 }}
                 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6"
               >
-                Go Deeper with WellnessAI
+                Go Deeper with PandoAI
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -783,7 +783,7 @@ export default function WellnessLanding() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="text-xl text-gray-600 mb-8"
               >
-                Your compassionate AI companion offers personalized check-ins, thoughtful prompts, and real-time support to help you reflect, grow, and navigate your mental wellness journey with confidence.
+                Your compassionate AI companion Pando offers personalized check-ins, thoughtful prompts, and real-time support to help you reflect, grow, and navigate your mental wellness journey with confidence.
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -960,7 +960,7 @@ export default function WellnessLanding() {
 
             {/* Right side - Branding */}
             <div className="text-right mb-0 m-10 mt-0">
-              <h3 className="text-2xl font-bold pr-51 pb-7">WellnessAI</h3>
+              <h3 className="text-2xl font-bold pr-51 pb-7">PandoAI</h3>
               <p className="text-gray-100 mb-4 pr-30">Your space to breathe, feel, and heal.</p>
               <p className="text-gray-200">An anonymous mental wellness companion built just for students.</p>
             </div>
@@ -970,7 +970,7 @@ export default function WellnessLanding() {
           <div className="border-t border-gray-500 pt-8">
             <div className="ml-10 mr-10 flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex flex-col md:flex-row items-center gap-4">
-                <p className="text-gray-200 text-sm">© 2025 WellnessAI. All rights reserved.</p>
+                <p className="text-gray-200 text-sm">© 2025 PandoAI. All rights reserved.</p>
                 <p className="text-gray-200 text-sm">Made with 💙 for students, by people who care.</p>
               </div>
               <div className="flex gap-6">
