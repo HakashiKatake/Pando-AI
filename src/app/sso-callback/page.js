@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useClerk } from '@clerk/nextjs';
 
-export default function SSOCallback() {
+function SSOCallbackContent() {
   const { isLoaded, isSignedIn } = useAuth();
   const { handleRedirectCallback } = useClerk();
   const router = useRouter();
@@ -47,5 +47,20 @@ export default function SSOCallback() {
         <p style={{ color: '#6E55A0' }}>Completing sign up...</p>
       </div>
     </div>
+  );
+}
+
+export default function SSOCallback() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#8A6FBF' }}></div>
+          <p style={{ color: '#6E55A0' }}>Loading...</p>
+        </div>
+      </div>
+    }>
+      <SSOCallbackContent />
+    </Suspense>
   );
 }
