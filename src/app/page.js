@@ -6,21 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "../lib/store";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import {
-  MessageCircle,
-  Heart,
-  Music,
-  BookOpen,
-  Gamepad2,
-  Brain,
-  ArrowRight,
-  Menu,
-  X,
-  Globe,
-  Shield,
-  Clock,
-  Users,
-} from "lucide-react";
+import {MessageCircle, Heart, Music, BookOpen, Gamepad2, Brain, ArrowRight, Menu, X, Globe, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useAnimation } from "framer-motion";
@@ -264,7 +250,7 @@ function HeroCards() {
 export default function WellnessLanding() {
   const { isSignedIn, user, isLoaded } = useUser();
   const router = useRouter();
-  const { guestId, isOnboarded, initializeGuest } = useAppStore();
+  const { guestId, isOnboarded, initializeGuest, setOnboarded } = useAppStore();
   const [isStartingAsGuest, setIsStartingAsGuest] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -272,9 +258,7 @@ export default function WellnessLanding() {
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
-        const hasOrganization =
-          user?.organizationMemberships &&
-          user.organizationMemberships.length > 0;
+        const hasOrganization =user?.organizationMemberships && user.organizationMemberships.length > 0;
 
         if (hasOrganization) {
           router.push("/org/dashboard");
@@ -283,7 +267,6 @@ export default function WellnessLanding() {
         }
       } else {
         initializeGuest();
-
         if (guestId && isOnboarded) {
           router.push("/chat");
         }
@@ -329,8 +312,10 @@ export default function WellnessLanding() {
   const features = [
     {
       icon: MessageCircle,
-      title: "Anonymous Chat with WellnessAI",
-      description: "Let your thoughts out in a safe, judgment-free zone. Chat with our AI companion anonymously — whenever you need someone to listen and support you.",
+      title: "Anonymous Chat with PandoAI",
+      description:
+        "Let your thoughts out in a safe, judgment-free zone. Chat with our AI companion anonymously — whenever you need someone to listen and support you.",
+      color: "bg-purple-100",
     },
     {
       icon: Heart,
@@ -932,7 +917,7 @@ export default function WellnessLanding() {
               <p className="text-lg leading-relaxed text-center italic" style={{ color: '#6E55A0' }}>
                 Mental health struggles are more common than we think — especially among students.
                 Depression, anxiety, and loneliness affect millions every year, but many stay silent, afraid, or unsupported.
-                That's why we built WellnessAI — to give students a safe, anonymous space to express, reflect, and heal —
+                That's why we built PandoAI — to give students a safe, anonymous space to express, reflect, and heal —
                 anytime, anywhere.
               </p>
             </motion.div>
