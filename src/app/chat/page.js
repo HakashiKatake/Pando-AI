@@ -56,7 +56,7 @@ export default function ChatPage() {
     
     let greetingMessage = `Good ${timeOfDay}, ${userName}! 🐼 How are you feeling today?`;
     
-    // Customize based on communication style if available
+   
     if (preferences?.communicationStyle === 'casual') {
       greetingMessage = `Hey ${userName}! How's it going today?`;
     } else if (preferences?.communicationStyle === 'professional') {
@@ -69,7 +69,7 @@ export default function ChatPage() {
       setLoading(true);
       
       if (dataInit.userId) {
-        // For authenticated users
+        
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

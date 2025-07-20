@@ -304,7 +304,7 @@ const JournalEntries = () => {
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
                 <span className="text-lg">🐼</span>
               </div>
-              <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
+              <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>PandoAI</h1>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -428,7 +428,7 @@ const JournalEntries = () => {
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
               <span className="text-lg">🐼</span>
             </div>
-            <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>CalmConnect</h1>
+            <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>PandoAI</h1>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm text-gray-500">

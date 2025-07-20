@@ -163,7 +163,7 @@ export default function OrganizationOnboardingPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Welcome to{' '}
             <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              CalmConnect
+              PandoAI
             </span>
           </h1>
           <p className="text-lg text-gray-600">
@@ -327,7 +327,7 @@ export default function OrganizationOnboardingPage() {
                     <textarea
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                       rows={4}
-                      placeholder="Tell us more about your organization and how you plan to use CalmConnect..."
+                      placeholder="Tell us more about your organization and how you plan to use PandoAI..."
                       value={formData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
                     />

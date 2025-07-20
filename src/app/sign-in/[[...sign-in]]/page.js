@@ -69,7 +69,7 @@ function SignInContent() {
             setError('')
           } catch (verificationError) {
             console.error('Email code verification failed:', verificationError)
-            // Try email link strategy as fallback
+            
             try {
               await signIn.prepareEmailAddressVerification({ strategy: 'email_link' })
               setError('Please check your email for a verification link.')
@@ -87,7 +87,7 @@ function SignInContent() {
     } catch (err) {
       console.error('Sign in error:', err)
       
-      // Handle specific Clerk errors
+     
       if (err.errors && err.errors.length > 0) {
         const errorMessage = err.errors[0].message
         

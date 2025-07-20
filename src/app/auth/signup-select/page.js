@@ -35,7 +35,7 @@ export default function SignUpSelectPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Join{' '}
             <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              CalmConnect
+              PandoAI
             </span>
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">

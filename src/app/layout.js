@@ -9,12 +9,12 @@ import GlobalMusicPlayer from '../components/GlobalMusicPlayer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'CalmConnect - Your AI Mental Wellness Companion',
+  title: 'PandoAI - Your AI Mental Wellness Companion',
   description: 'A compassionate AI-powered wellness platform supporting your mental health journey with personalized guidance, mood tracking, and mindfulness exercises.',
   keywords: 'mental health, wellness, AI companion, mood tracking, mindfulness, anxiety support',
-  authors: [{ name: 'CalmConnect Team' }],
+  authors: [{ name: 'PandoAI Team' }],
   openGraph: {
-    title: 'CalmConnect - Your AI Mental Wellness Companion',
+    title: 'PandoAI - Your AI Mental Wellness Companion',
     description: 'Supporting your mental health journey with AI-powered guidance and personalized wellness tools.',
     type: 'website',
     locale: 'en_US',
