@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
-import { Building, Users, GraduationCap, ArrowRight, MapPin, Phone, Mail } from 'lucide-react';
+import { Building, Users, GraduationCap, ArrowRight, MapPin, Phone, Mail, ArrowLeft } from 'lucide-react';
 
 export default function OrganizationOnboardingPage() {
   const { user, isLoaded } = useUser();
@@ -38,10 +40,10 @@ export default function OrganizationOnboardingPage() {
   // Redirect if not loaded or not signed in
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
         <div className="text-center">
-          <div className="spinner mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#8A6FBF' }}></div>
+          <p style={{ color: '#8A6FBF' }}>Loading...</p>
         </div>
       </div>
     );
@@ -151,235 +153,413 @@ export default function OrganizationOnboardingPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to{' '}
-            <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              PandoAI
-            </span>
-          </h1>
-          <p className="text-lg text-gray-600">
-            Let's set up your organization profile to get started
-          </p>
-        </motion.div>
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Step {currentStep} of 3</span>
-            <span className="text-sm text-gray-600">{Math.round((currentStep / 3) * 100)}% Complete</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / 3) * 100}%` }}
-            ></div>
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+
+  return (
+    <motion.div 
+      className="min-h-screen flex flex-col"
+      style={{ backgroundColor: '#F7F5FA' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header - MOBILE RESPONSIVE */}
+      <motion.header 
+        className="border-b"
+        style={{ backgroundColor: 'white', borderColor: '#E3DEF1' }}
+        variants={itemVariants}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: '#E3DEF1' }}
+              >
+                <Image
+                  src="/logo.svg"
+                  alt="PandoAI Logo"
+                  width={20}
+                  height={20}
+                  className="sm:w-6 sm:h-6"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <div 
+                  className="w-5 h-5 sm:w-6 sm:h-6 rounded"
+                  style={{ backgroundColor: '#8A6FBF', display: 'none' }}
+                />
+              </div>
+              <div>
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                  Organization Setup
+                </h1>
+                <p className="mt-1 text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                  Let's get your organization profile ready
+                </p>
+              </div>
+            </div>
           </div>
         </div>
+      </motion.header>
 
-        <Card className="p-8">
-          <CardContent className="p-0">
-            {/* Step 1: Basic Information */}
-            {currentStep === 1 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <motion.div
+            className="text-center mb-6 sm:mb-8"
+            variants={itemVariants}
+          >
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" style={{ color: '#6E55A0' }}>
+              Welcome to{' '}
+              <span 
+                className="bg-clip-text text-transparent"
+                style={{ 
+                  background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)',
+                  WebkitBackgroundClip: 'text'
+                }}
               >
-                <div className="text-center space-y-2">
-                  <Building className="w-12 h-12 text-purple-600 mx-auto" />
-                  <h2 className="text-2xl font-bold text-gray-900">Organization Details</h2>
-                  <p className="text-gray-600">Tell us about your organization</p>
-                </div>
+                PandoAI
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg" style={{ color: '#8A6FBF' }}>
+              Let's set up your organization profile to get started
+            </p>
+          </motion.div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Organization Name *
-                    </label>
-                    <Input
-                      placeholder="Enter your organization name"
-                      value={formData.organizationName}
-                      onChange={(e) => handleInputChange('organizationName', e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Organization Type *
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {organizationTypes.map((type) => {
-                        const IconComponent = type.icon;
-                        return (
-                          <button
-                            key={type.value}
-                            onClick={() => handleInputChange('organizationType', type.value)}
-                            className={`flex items-center p-3 rounded-lg border transition-all duration-200 ${
-                              formData.organizationType === type.value
-                                ? 'border-purple-300 bg-purple-50 text-purple-700'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                          >
-                            <IconComponent className="w-5 h-5 mr-3" />
-                            <span>{type.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 2: Contact Information */}
-            {currentStep === 2 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <div className="text-center space-y-2">
-                  <MapPin className="w-12 h-12 text-purple-600 mx-auto" />
-                  <h2 className="text-2xl font-bold text-gray-900">Contact Information</h2>
-                  <p className="text-gray-600">How can we reach you?</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Address *
-                    </label>
-                    <Input
-                      placeholder="Enter your organization's address"
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number
-                    </label>
-                    <Input
-                      placeholder="Enter phone number (optional)"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Contact Email *
-                    </label>
-                    <Input
-                      type="email"
-                      placeholder="Enter contact email"
-                      value={formData.contactEmail}
-                      onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Estimated Number of Students
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="e.g., 500"
-                      value={formData.studentCount}
-                      onChange={(e) => handleInputChange('studentCount', e.target.value)}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 3: Additional Information */}
-            {currentStep === 3 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <div className="text-center space-y-2">
-                  <Users className="w-12 h-12 text-purple-600 mx-auto" />
-                  <h2 className="text-2xl font-bold text-gray-900">Almost Done!</h2>
-                  <p className="text-gray-600">Any additional information?</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description (Optional)
-                    </label>
-                    <textarea
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                      rows={4}
-                      placeholder="Tell us more about your organization and how you plan to use PandoAI..."
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                    />
-                  </div>
-
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <h3 className="font-medium text-purple-900 mb-2">What's Next?</h3>
-                    <ul className="text-sm text-purple-700 space-y-1">
-                      <li>• Create your first classroom</li>
-                      <li>• Generate invitation codes for students</li>
-                      <li>• Set up wellness monitoring</li>
-                      <li>• Access student analytics dashboard</li>
-                    </ul>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={currentStep === 1}
-                className="disabled:opacity-50"
-              >
-                Back
-              </Button>
-
-              {currentStep < 3 ? (
-                <Button
-                  onClick={handleNext}
-                  disabled={!isStepValid()}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white disabled:opacity-50"
-                >
-                  Next
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Creating...' : 'Complete Setup'}
-                  {!isSubmitting && <ArrowRight className="w-4 h-4 ml-2" />}
-                </Button>
-              )}
+          {/* Progress Bar - MOBILE RESPONSIVE */}
+          <motion.div className="mb-6 sm:mb-8" variants={itemVariants}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                Step {currentStep} of 3
+              </span>
+              <span className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                {Math.round((currentStep / 3) * 100)}% Complete
+              </span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="h-2 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${(currentStep / 3) * 100}%`,
+                  background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                }}
+              ></div>
+            </div>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card className="p-6 sm:p-8 border-2" style={{ borderColor: '#E3DEF1' }}>
+              <CardContent className="p-0">
+                {/* Step 1: Basic Information - MOBILE RESPONSIVE */}
+                {currentStep === 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="space-y-4 sm:space-y-6"
+                  >
+                    <div className="text-center space-y-2">
+                      <Building className="w-10 h-10 sm:w-12 sm:h-12 mx-auto" style={{ color: '#6E55A0' }} />
+                      <h3 className="text-xl sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                        Organization Details
+                      </h3>
+                      <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                        Tell us about your organization
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
+                          Organization Name *
+                        </label>
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            placeholder="Enter your organization name"
+                            value={formData.organizationName}
+                            onChange={(e) => handleInputChange('organizationName', e.target.value)}
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
+                          Organization Type *
+                        </label>
+                        <div className="grid grid-cols-1 gap-2">
+                          {organizationTypes.map((type) => {
+                            const IconComponent = type.icon;
+                            return (
+                              <motion.button
+                                key={type.value}
+                                onClick={() => handleInputChange('organizationType', type.value)}
+                                className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 text-sm sm:text-base ${
+                                  formData.organizationType === type.value
+                                    ? 'text-white'
+                                    : ''
+                                }`}
+                                style={{
+                                  borderColor: formData.organizationType === type.value ? '#8A6FBF' : '#E3DEF1',
+                                  backgroundColor: formData.organizationType === type.value ? '#8A6FBF' : 'white',
+                                  color: formData.organizationType === type.value ? 'white' : '#6E55A0'
+                                }}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 mr-3" />
+                                <span>{type.label}</span>
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 2: Contact Information - MOBILE RESPONSIVE */}
+                {currentStep === 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="space-y-4 sm:space-y-6"
+                  >
+                    <div className="text-center space-y-2">
+                      <MapPin className="w-10 h-10 sm:w-12 sm:h-12 mx-auto" style={{ color: '#6E55A0' }} />
+                      <h3 className="text-xl sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                        Contact Information
+                      </h3>
+                      <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                        How can we reach you?
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
+                          Address *
+                        </label>
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            placeholder="Enter your organization's address"
+                            value={formData.address}
+                            onChange={(e) => handleInputChange('address', e.target.value)}
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
+                          Phone Number
+                        </label>
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            placeholder="Enter phone number (optional)"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
+                          Contact Email *
+                        </label>
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            type="email"
+                            placeholder="Enter contact email"
+                            value={formData.contactEmail}
+                            onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
+                          Estimated Number of Students
+                        </label>
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 500"
+                            value={formData.studentCount}
+                            onChange={(e) => handleInputChange('studentCount', e.target.value)}
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 3: Additional Information - MOBILE RESPONSIVE */}
+                {currentStep === 3 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="space-y-4 sm:space-y-6"
+                  >
+                    <div className="text-center space-y-2">
+                      <Users className="w-10 h-10 sm:w-12 sm:h-12 mx-auto" style={{ color: '#6E55A0' }} />
+                      <h3 className="text-xl sm:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                        Almost Done!
+                      </h3>
+                      <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                        Any additional information?
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
+                          Description (Optional)
+                        </label>
+                        <motion.textarea
+                          className="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 resize-none transition-all duration-200 text-sm sm:text-base"
+                          style={{ 
+                            borderColor: '#E3DEF1',
+                            color: '#6E55A0'
+                          }}
+                          rows={4}
+                          placeholder="Tell us more about your organization and how you plan to use PandoAI..."
+                          value={formData.description}
+                          onChange={(e) => handleInputChange('description', e.target.value)}
+                          whileFocus={{ 
+                            borderColor: '#8A6FBF',
+                            boxShadow: '0 0 0 3px rgba(138, 111, 191, 0.1)'
+                          }}
+                        />
+                      </div>
+
+                      <div 
+                        className="p-3 sm:p-4 rounded-lg"
+                        style={{ backgroundColor: '#F7F5FA' }}
+                      >
+                        <h3 className="font-medium mb-2 text-sm sm:text-base" style={{ color: '#6E55A0' }}>
+                          What's Next?
+                        </h3>
+                        <ul className="text-xs sm:text-sm space-y-1" style={{ color: '#8A6FBF' }}>
+                          <li>• Create your first classroom</li>
+                          <li>• Generate invitation codes for students</li>
+                          <li>• Set up wellness monitoring</li>
+                          <li>• Access student analytics dashboard</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Navigation Buttons - MOBILE RESPONSIVE */}
+                <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-6 sm:mt-8">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={currentStep === 1}
+                      className="w-full sm:w-auto border-2 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                      style={{ 
+                        borderColor: '#E3DEF1',
+                        color: '#8A6FBF'
+                      }}
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Back
+                    </Button>
+                  </motion.div>
+
+                  {currentStep < 3 ? (
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        onClick={handleNext}
+                        disabled={!isStepValid()}
+                        className="w-full sm:w-auto transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                        }}
+                      >
+                        Next
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </motion.div>
+                  ) : (
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="w-full sm:w-auto transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                        }}
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                            Creating...
+                          </div>
+                        ) : (
+                          <>
+                            Complete Setup
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

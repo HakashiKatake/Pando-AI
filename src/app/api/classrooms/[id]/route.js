@@ -13,9 +13,12 @@ export async function GET(request, { params }) {
 
     await connectDB();
     
+    // Await params before accessing its properties
+    const { id } = await params;
+    
     const classroom = await Classroom.findOne({
-      _id: params.id,
-      teacherId: userId
+      _id: id,
+      organizationId: userId
     });
 
     if (!classroom) {
@@ -46,8 +49,11 @@ export async function PUT(request, { params }) {
 
     await connectDB();
     
+    // Await params before accessing its properties
+    const { id } = await params;
+    
     const classroom = await Classroom.findOneAndUpdate(
-      { _id: params.id, teacherId: userId },
+      { _id: id, organizationId: userId },
       { name, subject, description, updatedAt: new Date() },
       { new: true }
     );
@@ -77,9 +83,12 @@ export async function DELETE(request, { params }) {
 
     await connectDB();
     
+    // Await params before accessing its properties
+    const { id } = await params;
+    
     const classroom = await Classroom.findOneAndDelete({
-      _id: params.id,
-      teacherId: userId
+      _id: id,
+      organizationId: userId
     });
 
     if (!classroom) {

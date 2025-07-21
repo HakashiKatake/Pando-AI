@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -54,7 +55,7 @@ export default function OrganizationSettings() {
     reportVisibility: 'admin-only',
     
     // Theme settings
-    primaryColor: '#7c3aed',
+    primaryColor: '#8A6FBF',
     theme: 'light',
     
     // Security settings
@@ -98,75 +99,167 @@ export default function OrganizationSettings() {
     { id: 'appearance', label: 'Appearance', icon: Palette },
   ];
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/org/dashboard">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Organization Settings</h1>
-                <p className="text-gray-600 mt-1">Manage your organization preferences and configuration</p>
+    <motion.div 
+      className="min-h-screen"
+      style={{ backgroundColor: '#F7F5FA' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header - MOBILE RESPONSIVE */}
+      <motion.header 
+        className="border-b"
+        style={{ backgroundColor: 'white', borderColor: '#E3DEF1' }}
+        variants={itemVariants}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/org/dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#8A6FBF'
+                    }}
+                  >
+                    <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    Back to Dashboard
+                  </Button>
+                </Link>
+              </motion.div>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: '#E3DEF1' }}
+                >
+                  <Image
+                    src="/logo.svg"
+                    alt="PandoAI Logo"
+                    width={20}
+                    height={20}
+                    className="sm:w-6 sm:h-6"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div 
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded"
+                    style={{ backgroundColor: '#8A6FBF', display: 'none' }}
+                  />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                    Organization Settings
+                  </h1>
+                  <p className="mt-1 text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                    Manage your organization preferences and configuration
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               {saved && (
-                <div className="flex items-center gap-2 text-green-600">
+                <motion.div 
+                  className="flex items-center gap-2 text-green-600"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <CheckCircle className="w-4 h-4" />
                   <span className="text-sm">Settings saved!</span>
-                </div>
+                </motion.div>
               )}
-              <Button
-                onClick={handleSave}
-                disabled={loading}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-              >
-                {loading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                ) : (
-                  <Save className="w-4 h-4 mr-2" />
-                )}
-                Save Changes
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="w-full sm:w-auto transition-all duration-200 text-sm sm:text-base"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                  }}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      Saving...
+                    </div>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+          {/* Sidebar - MOBILE RESPONSIVE */}
           <div className="lg:col-span-1">
-            <Card>
-              <CardContent className="p-6">
-                <nav className="space-y-2">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
-                        activeTab === tab.id
-                          ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <tab.icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  ))}
-                </nav>
-              </CardContent>
-            </Card>
+            <motion.div variants={itemVariants}>
+              <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+                <CardContent className="p-4 sm:p-6">
+                  <nav className="space-y-2">
+                    {tabs.map((tab) => (
+                      <motion.button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-all duration-200 text-sm sm:text-base ${
+                          activeTab === tab.id
+                            ? 'text-white border'
+                            : 'hover:bg-gray-100'
+                        }`}
+                        style={{
+                          backgroundColor: activeTab === tab.id ? '#8A6FBF' : 'transparent',
+                          borderColor: activeTab === tab.id ? '#6E55A0' : 'transparent',
+                          color: activeTab === tab.id ? 'white' : '#8A6FBF'
+                        }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <tab.icon className="w-4 h-4" />
+                        <span className="hidden sm:inline">{tab.label}</span>
+                        <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+                      </motion.button>
+                    ))}
+                  </nav>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content - MOBILE RESPONSIVE */}
           <div className="lg:col-span-3">
             {/* General Settings */}
             {activeTab === 'general' && (
@@ -175,86 +268,133 @@ export default function OrganizationSettings() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <Card>
+                <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
                   <CardHeader>
-                    <CardTitle>General Information</CardTitle>
+                    <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                      General Information
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CardContent className="space-y-4 sm:space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                           Organization Name *
                         </label>
-                        <Input
-                          value={settings.organizationName}
-                          onChange={(e) => setSettings(prev => ({ ...prev, organizationName: e.target.value }))}
-                          placeholder="Your Organization Name"
-                        />
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            value={settings.organizationName}
+                            onChange={(e) => setSettings(prev => ({ ...prev, organizationName: e.target.value }))}
+                            placeholder="Your Organization Name"
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                           Contact Email *
                         </label>
-                        <Input
-                          type="email"
-                          value={settings.organizationEmail}
-                          onChange={(e) => setSettings(prev => ({ ...prev, organizationEmail: e.target.value }))}
-                          placeholder="contact@organization.com"
-                        />
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            type="email"
+                            value={settings.organizationEmail}
+                            onChange={(e) => setSettings(prev => ({ ...prev, organizationEmail: e.target.value }))}
+                            placeholder="contact@organization.com"
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                           Phone Number
                         </label>
-                        <Input
-                          type="tel"
-                          value={settings.organizationPhone}
-                          onChange={(e) => setSettings(prev => ({ ...prev, organizationPhone: e.target.value }))}
-                          placeholder="+1 (555) 123-4567"
-                        />
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            type="tel"
+                            value={settings.organizationPhone}
+                            onChange={(e) => setSettings(prev => ({ ...prev, organizationPhone: e.target.value }))}
+                            placeholder="+1 (555) 123-4567"
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                           Website
                         </label>
-                        <Input
-                          type="url"
-                          value={settings.website}
-                          onChange={(e) => setSettings(prev => ({ ...prev, website: e.target.value }))}
-                          placeholder="https://www.organization.com"
-                        />
+                        <motion.div whileFocus={{ scale: 1.02 }}>
+                          <Input
+                            type="url"
+                            value={settings.website}
+                            onChange={(e) => setSettings(prev => ({ ...prev, website: e.target.value }))}
+                            placeholder="https://www.organization.com"
+                            className="border-2 transition-all duration-200 text-sm sm:text-base"
+                            style={{ 
+                              borderColor: '#E3DEF1',
+                              color: '#6E55A0'
+                            }}
+                          />
+                        </motion.div>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Address
                       </label>
-                      <Input
-                        value={settings.organizationAddress}
-                        onChange={(e) => setSettings(prev => ({ ...prev, organizationAddress: e.target.value }))}
-                        placeholder="123 Main St, City, State 12345"
-                      />
+                      <motion.div whileFocus={{ scale: 1.02 }}>
+                        <Input
+                          value={settings.organizationAddress}
+                          onChange={(e) => setSettings(prev => ({ ...prev, organizationAddress: e.target.value }))}
+                          placeholder="123 Main St, City, State 12345"
+                          className="border-2 transition-all duration-200 text-sm sm:text-base"
+                          style={{ 
+                            borderColor: '#E3DEF1',
+                            color: '#6E55A0'
+                          }}
+                        />
+                      </motion.div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Description
                       </label>
-                      <textarea
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                      <motion.textarea
+                        className="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 resize-none transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }}
                         rows={4}
                         value={settings.description}
                         onChange={(e) => setSettings(prev => ({ ...prev, description: e.target.value }))}
                         placeholder="Brief description of your organization and its mission..."
                         maxLength={500}
+                        whileFocus={{ 
+                          borderColor: '#8A6FBF',
+                          boxShadow: '0 0 0 3px rgba(138, 111, 191, 0.1)'
+                        }}
                       />
-                      <p className="text-xs text-gray-500 mt-1">{settings.description.length}/500 characters</p>
+                      <p className="text-xs mt-1" style={{ color: '#8A6FBF' }}>
+                        {settings.description.length}/500 characters
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -268,11 +408,13 @@ export default function OrganizationSettings() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <Card>
+                <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
                   <CardHeader>
-                    <CardTitle>Notification Preferences</CardTitle>
+                    <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                      Notification Preferences
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 sm:space-y-6">
                     {[
                       {
                         key: 'emailNotifications',
@@ -295,21 +437,35 @@ export default function OrganizationSettings() {
                         description: 'Get weekly summary reports of classroom activity and wellness trends'
                       }
                     ].map((notification) => (
-                      <div key={notification.key} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{notification.label}</h4>
-                          <p className="text-sm text-gray-600">{notification.description}</p>
+                      <motion.div 
+                        key={notification.key} 
+                        className="flex items-center justify-between p-3 sm:p-4 border-2 rounded-lg"
+                        style={{ borderColor: '#E3DEF1' }}
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm sm:text-base" style={{ color: '#6E55A0' }}>
+                            {notification.label}
+                          </h4>
+                          <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                            {notification.description}
+                          </p>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
+                        <label className="relative inline-flex items-center cursor-pointer ml-3">
                           <input
                             type="checkbox"
                             checked={settings[notification.key]}
                             onChange={(e) => setSettings(prev => ({ ...prev, [notification.key]: e.target.checked }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                          <div 
+                            className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
+                            style={{
+                              backgroundColor: settings[notification.key] ? '#8A6FBF' : '#E5E7EB'
+                            }}
+                          ></div>
                         </label>
-                      </div>
+                      </motion.div>
                     ))}
                   </CardContent>
                 </Card>
@@ -322,21 +478,27 @@ export default function OrganizationSettings() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6"
               >
-                <Card>
+                <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
                   <CardHeader>
-                    <CardTitle>Privacy Settings</CardTitle>
+                    <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                      Privacy Settings
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 sm:space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Data Retention Period
                       </label>
                       <select
                         value={settings.dataRetention}
                         onChange={(e) => setSettings(prev => ({ ...prev, dataRetention: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }}
                       >
                         <option value="1-year">1 Year</option>
                         <option value="2-years">2 Years</option>
@@ -347,13 +509,17 @@ export default function OrganizationSettings() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Report Anonymity Level
                       </label>
                       <select
                         value={settings.anonymityLevel}
                         onChange={(e) => setSettings(prev => ({ ...prev, anonymityLevel: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }}
                       >
                         <option value="high">High - No identifying information stored</option>
                         <option value="medium">Medium - Limited metadata stored</option>
@@ -362,13 +528,17 @@ export default function OrganizationSettings() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Report Visibility
                       </label>
                       <select
                         value={settings.reportVisibility}
                         onChange={(e) => setSettings(prev => ({ ...prev, reportVisibility: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }}
                       >
                         <option value="admin-only">Admin Only</option>
                         <option value="teachers">Teachers & Admin</option>
@@ -378,35 +548,54 @@ export default function OrganizationSettings() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
                   <CardHeader>
-                    <CardTitle>Security Settings</CardTitle>
+                    <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                      Security Settings
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">Two-Factor Authentication</h4>
-                        <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
+                  <CardContent className="space-y-4 sm:space-y-6">
+                    <motion.div 
+                      className="flex items-center justify-between p-3 sm:p-4 border-2 rounded-lg"
+                      style={{ borderColor: '#E3DEF1' }}
+                      whileHover={{ scale: 1.01 }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm sm:text-base" style={{ color: '#6E55A0' }}>
+                          Two-Factor Authentication
+                        </h4>
+                        <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                          Add an extra layer of security to your account
+                        </p>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label className="relative inline-flex items-center cursor-pointer ml-3">
                         <input
                           type="checkbox"
                           checked={settings.twoFactorAuth}
                           onChange={(e) => setSettings(prev => ({ ...prev, twoFactorAuth: e.target.checked }))}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        <div 
+                          className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
+                          style={{
+                            backgroundColor: settings.twoFactorAuth ? '#8A6FBF' : '#E5E7EB'
+                          }}
+                        ></div>
                       </label>
-                    </div>
+                    </motion.div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Session Timeout
                       </label>
                       <select
                         value={settings.sessionTimeout}
                         onChange={(e) => setSettings(prev => ({ ...prev, sessionTimeout: e.target.value }))}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }}
                       >
                         <option value="1-hour">1 Hour</option>
                         <option value="4-hours">4 Hours</option>
@@ -427,55 +616,67 @@ export default function OrganizationSettings() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <Card>
+                <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
                   <CardHeader>
-                    <CardTitle>Appearance Preferences</CardTitle>
+                    <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                      Appearance Preferences
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 sm:space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Theme
                       </label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {[
                           { value: 'light', label: 'Light', preview: 'bg-white border-2' },
                           { value: 'dark', label: 'Dark', preview: 'bg-gray-900 border-2' },
                           { value: 'auto', label: 'Auto', preview: 'bg-gradient-to-r from-white to-gray-900 border-2' }
                         ].map((theme) => (
-                          <div
+                          <motion.div
                             key={theme.value}
-                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                            className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all ${
                               settings.theme === theme.value
-                                ? 'border-purple-500 bg-purple-50'
-                                : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-purple-500'
+                                : 'hover:border-gray-300'
                             }`}
+                            style={{
+                              borderColor: settings.theme === theme.value ? '#8A6FBF' : '#E3DEF1',
+                              backgroundColor: settings.theme === theme.value ? '#F7F5FA' : 'white'
+                            }}
                             onClick={() => setSettings(prev => ({ ...prev, theme: theme.value }))}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                           >
-                            <div className={`w-full h-8 rounded mb-2 ${theme.preview}`}></div>
-                            <p className="text-sm font-medium text-center">{theme.label}</p>
-                          </div>
+                            <div className={`w-full h-6 sm:h-8 rounded mb-2 ${theme.preview}`}></div>
+                            <p className="text-sm font-medium text-center" style={{ color: '#6E55A0' }}>
+                              {theme.label}
+                            </p>
+                          </motion.div>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                         Primary Color
                       </label>
-                      <div className="grid grid-cols-6 gap-3">
+                      <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
                         {[
-                          '#7c3aed', '#2563eb', '#059669', '#dc2626', 
+                          '#8A6FBF', '#2563eb', '#059669', '#dc2626', 
                           '#ea580c', '#ca8a04', '#9333ea', '#0891b2'
                         ].map((color) => (
-                          <div
+                          <motion.div
                             key={color}
-                            className={`w-12 h-12 rounded-lg cursor-pointer border-4 transition-all ${
+                            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg cursor-pointer border-4 transition-all ${
                               settings.primaryColor === color
-                                ? 'border-gray-400 scale-110'
+                                ? 'border-gray-400'
                                 : 'border-gray-200 hover:border-gray-300'
                             }`}
                             style={{ backgroundColor: color }}
                             onClick={() => setSettings(prev => ({ ...prev, primaryColor: color }))}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
                           />
                         ))}
                       </div>
@@ -487,6 +688,6 @@ export default function OrganizationSettings() {
           </div>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }

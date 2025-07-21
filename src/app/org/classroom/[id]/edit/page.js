@@ -5,6 +5,7 @@ import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -132,26 +133,54 @@ export default function EditClassroomPage() {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#8A6FBF' }}></div>
       </div>
     );
   }
 
   if (error && !classroom.name) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="p-8 text-center max-w-md">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#F7F5FA' }}>
+        <Card className="p-6 sm:p-8 text-center max-w-md w-full border-2" style={{ borderColor: '#E3DEF1' }}>
           <CardContent className="p-0">
-            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Classroom Not Found</h2>
-            <p className="text-gray-600 mb-4">
+            <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" style={{ color: '#8A6FBF' }} />
+            <h2 className="text-lg sm:text-xl font-bold mb-2" style={{ color: '#6E55A0' }}>Classroom Not Found</h2>
+            <p className="mb-4 text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
               The classroom you're trying to edit doesn't exist or you don't have permission to edit it.
             </p>
             <Link href="/org/dashboard">
-              <Button className="w-full">Back to Dashboard</Button>
+              <Button 
+                className="w-full"
+                style={{ 
+                  background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                }}
+              >
+                Back to Dashboard
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -161,22 +190,34 @@ export default function EditClassroomPage() {
 
   if (saved) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl">
-          <CardContent className="p-8 text-center">
+      <div 
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{ 
+          background: 'linear-gradient(135deg, #F7F5FA 0%, #E3DEF1 50%, #F7F5FA 100%)'
+        }}
+      >
+        <Card className="w-full max-w-2xl border-2" style={{ borderColor: '#E3DEF1' }}>
+          <CardContent className="p-6 sm:p-8 text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-10 h-10 text-white" />
+              <div 
+                className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full flex items-center justify-center"
+                style={{ 
+                  background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)'
+                }}
+              >
+                <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
               
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-gray-900">Classroom Updated!</h1>
-                <p className="text-gray-600">
+                <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                  Classroom Updated!
+                </h1>
+                <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
                   Your classroom has been successfully updated. Redirecting you to the classroom details...
                 </p>
               </div>
@@ -188,124 +229,210 @@ export default function EditClassroomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href={`/org/classroom/${params.id}`}>
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Classroom
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Edit Classroom</h1>
-                <p className="text-gray-600 mt-1">Update your classroom information</p>
+    <motion.div 
+      className="min-h-screen"
+      style={{ backgroundColor: '#F7F5FA' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header - MOBILE RESPONSIVE */}
+      <motion.header 
+        className="border-b"
+        style={{ backgroundColor: 'white', borderColor: '#E3DEF1' }}
+        variants={itemVariants}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href={`/org/classroom/${params.id}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#8A6FBF'
+                    }}
+                  >
+                    <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    Back to Classroom
+                  </Button>
+                </Link>
+              </motion.div>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: '#E3DEF1' }}
+                >
+                  <Image
+                    src="/logo.svg"
+                    alt="PandoAI Logo"
+                    width={20}
+                    height={20}
+                    className="sm:w-6 sm:h-6"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div 
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded"
+                    style={{ backgroundColor: '#8A6FBF', display: 'none' }}
+                  />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                    Edit Classroom
+                  </h1>
+                  <p className="mt-1 text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                    Update your classroom information
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={deleteClassroom}
-                className="border-red-300 text-red-700 hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Classroom
-              </Button>
+            <div className="flex items-center">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={deleteClassroom}
+                  className="border-2 transition-all duration-200 border-red-300 text-red-700 hover:bg-red-50 text-xs sm:text-sm w-full sm:w-auto"
+                >
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                  <span className="hidden sm:inline">Delete Classroom</span>
+                  <span className="sm:hidden">Delete</span>
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Card>
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <motion.div variants={itemVariants}>
+          <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Edit className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
                 Classroom Information
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                  <motion.div 
+                    className="p-3 border rounded-lg flex items-center gap-2"
+                    style={{ backgroundColor: '#FEF2F2', borderColor: '#FCA5A5' }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
                     <span className="text-sm text-red-700">{error}</span>
-                  </div>
+                  </motion.div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                       Classroom Name *
                     </label>
-                    <Input
-                      value={classroom.name}
-                      onChange={(e) => setClassroom(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Psychology 101"
-                      required
-                      maxLength={100}
-                    />
+                    <motion.div whileFocus={{ scale: 1.02 }}>
+                      <Input
+                        value={classroom.name}
+                        onChange={(e) => setClassroom(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., Psychology 101"
+                        required
+                        maxLength={100}
+                        className="border-2 transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }}
+                      />
+                    </motion.div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                       Subject *
                     </label>
-                    <Input
-                      value={classroom.subject}
-                      onChange={(e) => setClassroom(prev => ({ ...prev, subject: e.target.value }))}
-                      placeholder="e.g., Psychology"
-                      required
-                      maxLength={50}
-                    />
+                    <motion.div whileFocus={{ scale: 1.02 }}>
+                      <Input
+                        value={classroom.subject}
+                        onChange={(e) => setClassroom(prev => ({ ...prev, subject: e.target.value }))}
+                        placeholder="e.g., Psychology"
+                        required
+                        maxLength={50}
+                        className="border-2 transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#6E55A0'
+                        }}
+                      />
+                    </motion.div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                     Description
                   </label>
-                  <textarea
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  <motion.textarea
+                    className="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 resize-none transition-all duration-200 text-sm sm:text-base"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#6E55A0'
+                    }}
                     rows={4}
                     value={classroom.description}
                     onChange={(e) => setClassroom(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Brief description of your classroom and what students can expect..."
                     maxLength={500}
+                    whileFocus={{ 
+                      borderColor: '#8A6FBF',
+                      boxShadow: '0 0 0 3px rgba(138, 111, 191, 0.1)'
+                    }}
                   />
-                  <p className="text-xs text-gray-500 mt-1">{classroom.description.length}/500 characters</p>
+                  <p className="text-xs mt-1" style={{ color: '#8A6FBF' }}>
+                    {classroom.description.length}/500 characters
+                  </p>
                 </div>
 
-                {/* Classroom Code (Read-only) */}
+                {/* Classroom Code (Read-only) - MOBILE RESPONSIVE */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                     Classroom Code
                   </label>
-                  <div className="p-3 bg-gray-50 border border-gray-300 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <code className="text-lg font-mono font-bold text-gray-900">
+                  <div 
+                    className="p-3 border-2 rounded-lg"
+                    style={{ backgroundColor: '#F7F5FA', borderColor: '#E3DEF1' }}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <code className="text-base sm:text-lg font-mono font-bold" style={{ color: '#6E55A0' }}>
                         {classroom.code}
                       </code>
-                      <span className="text-sm text-gray-500">Share this code with students to join</span>
+                      <span className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                        Share this code with students to join
+                      </span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs mt-1" style={{ color: '#8A6FBF' }}>
                     Classroom codes cannot be changed. If you need a new code, you'll need to create a new classroom.
                   </p>
                 </div>
 
-                {/* Additional Info */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-900 mb-2">Important Notes</h3>
-                  <ul className="text-sm text-blue-700 space-y-1">
+                {/* Additional Info - MOBILE RESPONSIVE */}
+                <div 
+                  className="p-3 sm:p-4 rounded-lg"
+                  style={{ backgroundColor: '#F0F9FF' }}
+                >
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base" style={{ color: '#1E40AF' }}>
+                    Important Notes
+                  </h3>
+                  <ul className="text-xs sm:text-sm space-y-1" style={{ color: '#1D4ED8' }}>
                     <li>• Changes will be visible to all students in this classroom</li>
                     <li>• The classroom code cannot be modified</li>
                     <li>• Student data and reports will remain unchanged</li>
@@ -313,35 +440,57 @@ export default function EditClassroomPage() {
                   </ul>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                  <Link href={`/org/classroom/${params.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full">
-                      Cancel
-                    </Button>
-                  </Link>
-                  <Button
-                    type="submit"
-                    disabled={saving || !classroom.name.trim() || !classroom.subject.trim()}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white disabled:opacity-50"
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
+                  <motion.div 
+                    className="flex-1"
+                    whileHover={{ scale: 1.02 }} 
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {saving ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                        Saving...
-                      </div>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </>
-                    )}
-                  </Button>
+                    <Link href={`/org/classroom/${params.id}`} className="block">
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-2 transition-all duration-200 text-sm sm:text-base"
+                        style={{ 
+                          borderColor: '#E3DEF1',
+                          color: '#8A6FBF'
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </Link>
+                  </motion.div>
+                  <motion.div 
+                    className="flex-1"
+                    whileHover={{ scale: 1.02 }} 
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      type="submit"
+                      disabled={saving || !classroom.name.trim() || !classroom.subject.trim()}
+                      className="w-full transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                      style={{ 
+                        background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                      }}
+                    >
+                      {saving ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                          <span className="text-sm sm:text-base">Saving...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                          <span className="text-sm sm:text-base">Save Changes</span>
+                        </>
+                      )}
+                    </Button>
+                  </motion.div>
                 </div>
               </form>
             </CardContent>
           </Card>
         </motion.div>
       </main>
-    </div>
+    </motion.div>
   );
 }

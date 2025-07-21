@@ -181,109 +181,203 @@ export default function OrganizationDashboard() {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="spinner"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#8A6FBF' }}></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+    <motion.div 
+      className="min-h-screen"
+      style={{ backgroundColor: '#F7F5FA' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header - MOBILE RESPONSIVE */}
+      <motion.header 
+        className="border-b"
+        style={{ backgroundColor: 'white', borderColor: '#E3DEF1' }}
+        variants={itemVariants}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Organization Dashboard</h1>
-              <p className="text-gray-600 mt-1">Monitor student wellness and manage classrooms</p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                Organization Dashboard
+              </h1>
+              <p className="mt-1 text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                Monitor student wellness and manage classrooms
+              </p>
             </div>
-            <div className="flex gap-3">
-              <Link href="/org/notifications">
-                <Button
-                  variant="outline"
-                  className="relative border-orange-300 text-orange-700 hover:bg-orange-50"
-                >
-                  <Bell className="w-4 h-4 mr-2" />
-                  Notifications
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    3
-                  </span>
-                </Button>
-              </Link>
-              <Link href="/org/reports">
-                <Button
-                  variant="outline"
-                  className="border-red-300 text-red-700 hover:bg-red-50"
-                >
-                  <Shield className="w-4 h-4 mr-2" />
-                  View Reports
-                </Button>
-              </Link>
-              <Link href="/org/settings">
-                <Button
-                  variant="outline"
-                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </Button>
-              </Link>
-              <Link href="/org/create-classroom">
-                <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Classroom
-                </Button>
-              </Link>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/org/notifications">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="relative border-2 transition-all duration-200 text-xs sm:text-sm"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#8A6FBF'
+                    }}
+                  >
+                    <Bell className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Notifications</span>
+                    <span className="sm:hidden">Alerts</span>
+                    <span 
+                      className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 text-white text-xs rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: '#EF4444' }}
+                    >
+                      3
+                    </span>
+                  </Button>
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/org/reports">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#8A6FBF'
+                    }}
+                  >
+                    <Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">View Reports</span>
+                    <span className="sm:hidden">Reports</span>
+                  </Button>
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/org/settings">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#8A6FBF'
+                    }}
+                  >
+                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden lg:inline">Settings</span>
+                    <span className="lg:hidden">Config</span>
+                  </Button>
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/org/create-classroom">
+                  <Button 
+                    size="sm"
+                    className="transition-all duration-200 text-xs sm:text-sm"
+                    style={{ 
+                      background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                    }}
+                  >
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Create Classroom</span>
+                    <span className="sm:hidden">Create</span>
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Time Range Selector */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-          <div className="flex gap-2">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Time Range Selector - MOBILE RESPONSIVE */}
+        <motion.div 
+          className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6"
+          variants={itemVariants}
+        >
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#6E55A0' }}>
+            Dashboard Overview
+          </h2>
+          <div className="flex gap-2 overflow-x-auto">
             {[
               { value: 'week', label: 'This Week' },
               { value: 'month', label: 'This Month' },
               { value: 'year', label: 'This Year' }
             ].map((option) => (
-              <Button
+              <motion.div
                 key={option.value}
-                variant={timeRange === option.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange(option.value)}
-                className={timeRange === option.value ? 'bg-purple-600 text-white' : ''}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {option.label}
-              </Button>
+                <Button
+                  variant={timeRange === option.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange(option.value)}
+                  className={timeRange === option.value 
+                    ? 'transition-all duration-200 text-xs sm:text-sm whitespace-nowrap'
+                    : 'border-2 transition-all duration-200 text-xs sm:text-sm whitespace-nowrap'
+                  }
+                  style={timeRange === option.value 
+                    ? { background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)' }
+                    : { borderColor: '#E3DEF1', color: '#8A6FBF' }
+                  }
+                >
+                  {option.label}
+                </Button>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Enhanced Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Analytics Cards - MOBILE RESPONSIVE */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="p-6 hover:shadow-lg transition-shadow">
+            <Card className="p-3 sm:p-6 hover:shadow-lg transition-all duration-300 border-2" style={{ borderColor: '#E3DEF1' }}>
               <CardContent className="p-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Total Students</p>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.totalStudents}</p>
-                    <div className="flex items-center mt-2">
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+{analytics.weeklyGrowth}% this week</span>
+                <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Total Students</p>
+                    <p className="text-lg sm:text-2xl lg:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                      {analytics.totalStudents}
+                    </p>
+                    <div className="flex items-center mt-1 sm:mt-2">
+                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1" />
+                      <span className="text-xs sm:text-sm text-green-600">+{analytics.weeklyGrowth}%</span>
                     </div>
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Users className="w-6 h-6 text-blue-600" />
+                  <div 
+                    className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center self-center sm:self-auto"
+                    style={{ backgroundColor: '#E3DEF1' }}
+                  >
+                    <Users className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: '#6E55A0' }} />
                   </div>
                 </div>
               </CardContent>
@@ -294,22 +388,28 @@ export default function OrganizationDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="p-6 hover:shadow-lg transition-shadow">
+            <Card className="p-3 sm:p-6 hover:shadow-lg transition-all duration-300 border-2" style={{ borderColor: '#E3DEF1' }}>
               <CardContent className="p-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Active Students</p>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.activeStudents}</p>
-                    <div className="flex items-center mt-2">
-                      <Activity className="w-4 h-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">
-                        {analytics.totalStudents > 0 ? Math.round((analytics.activeStudents / analytics.totalStudents) * 100) : 0}% engagement
+                <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Active Students</p>
+                    <p className="text-lg sm:text-2xl lg:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                      {analytics.activeStudents}
+                    </p>
+                    <div className="flex items-center mt-1 sm:mt-2">
+                      <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1" />
+                      <span className="text-xs sm:text-sm text-green-600">
+                        {analytics.totalStudents > 0 ? Math.round((analytics.activeStudents / analytics.totalStudents) * 100) : 0}%
                       </span>
                     </div>
                   </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
+                  <div 
+                    className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center self-center sm:self-auto"
+                    style={{ backgroundColor: '#E3DEF1' }}
+                  >
+                    <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: '#6E55A0' }} />
                   </div>
                 </div>
               </CardContent>
@@ -320,21 +420,27 @@ export default function OrganizationDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="p-6 hover:shadow-lg transition-shadow">
+            <Card className="p-3 sm:p-6 hover:shadow-lg transition-all duration-300 border-2" style={{ borderColor: '#E3DEF1' }}>
               <CardContent className="p-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Wellness Score</p>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.averageWellness}/10</p>
-                    <div className="flex items-center mt-2">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Wellness Score</p>
+                    <p className="text-lg sm:text-2xl lg:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                      {analytics.averageWellness}/10
+                    </p>
+                    <div className="flex items-center mt-1 sm:mt-2">
                       <PandaLogo/>
-                      <span className="text-sm text-purple-600">
+                      <span className="text-xs sm:text-sm ml-1" style={{ color: '#8A6FBF' }}>
                         {analytics.averageWellness >= 8 ? 'Excellent' : analytics.averageWellness >= 6 ? 'Good' : 'Needs attention'}
                       </span>
                     </div>
                   </div>
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <div 
+                    className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center self-center sm:self-auto"
+                    style={{ backgroundColor: '#E3DEF1' }}
+                  >
                     <PandaLogo/>
                   </div>
                 </div>
@@ -346,29 +452,35 @@ export default function OrganizationDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Card className="p-6 hover:shadow-lg transition-shadow">
+            <Card className="p-3 sm:p-6 hover:shadow-lg transition-all duration-300 border-2" style={{ borderColor: '#E3DEF1' }}>
               <CardContent className="p-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Reports</p>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.totalReports}</p>
-                    <div className="flex items-center mt-2">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Reports</p>
+                    <p className="text-lg sm:text-2xl lg:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                      {analytics.totalReports}
+                    </p>
+                    <div className="flex items-center mt-1 sm:mt-2">
                       {analytics.pendingReports > 0 ? (
                         <>
-                          <AlertTriangle className="w-4 h-4 text-red-500 mr-1" />
-                          <span className="text-sm text-red-600">{analytics.pendingReports} pending</span>
+                          <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 mr-1" />
+                          <span className="text-xs sm:text-sm text-red-600">{analytics.pendingReports} pending</span>
                         </>
                       ) : (
                         <>
-                          <Check className="w-4 h-4 text-green-500 mr-1" />
-                          <span className="text-sm text-green-600">All reviewed</span>
+                          <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1" />
+                          <span className="text-xs sm:text-sm text-green-600">All reviewed</span>
                         </>
                       )}
                     </div>
                   </div>
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <Shield className="w-6 h-6 text-red-600" />
+                  <div 
+                    className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center self-center sm:self-auto"
+                    style={{ backgroundColor: '#E3DEF1' }}
+                  >
+                    <Shield className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: '#6E55A0' }} />
                   </div>
                 </div>
               </CardContent>
@@ -376,89 +488,149 @@ export default function OrganizationDashboard() {
           </motion.div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content Grid - MOBILE RESPONSIVE */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Classrooms List */}
-          <div className="lg:col-span-2">
-            <Card>
+          <motion.div 
+            className="lg:col-span-2"
+            variants={itemVariants}
+          >
+            <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Your Classrooms ({classrooms.length})</CardTitle>
-                  <Link href="/org/create-classroom">
-                    <Button size="sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Classroom
-                    </Button>
-                  </Link>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                    Your Classrooms ({classrooms.length})
+                  </CardTitle>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link href="/org/create-classroom">
+                      <Button 
+                        size="sm"
+                        className="transition-all duration-200 w-full sm:w-auto text-xs sm:text-sm"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                        }}
+                      >
+                        <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        Add Classroom
+                      </Button>
+                    </Link>
+                  </motion.div>
                 </div>
               </CardHeader>
               <CardContent>
                 {classrooms.length === 0 ? (
-                  <div className="text-center py-12">
-                    <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No classrooms yet</h3>
-                    <p className="text-gray-600 mb-4">Create your first classroom to start monitoring student wellness.</p>
-                    <Link href="/org/create-classroom">
-                      <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Classroom
-                      </Button>
-                    </Link>
+                  <div className="text-center py-8 sm:py-12">
+                    <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" style={{ color: '#8A6FBF' }} />
+                    <h3 className="text-base sm:text-lg font-medium mb-2" style={{ color: '#6E55A0' }}>
+                      No classrooms yet
+                    </h3>
+                    <p className="mb-4 text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                      Create your first classroom to start monitoring student wellness.
+                    </p>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Link href="/org/create-classroom">
+                        <Button 
+                          className="text-sm sm:text-base"
+                          style={{ 
+                            background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                          }}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Classroom
+                        </Button>
+                      </Link>
+                    </motion.div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {classrooms.map((classroom, index) => (
                       <motion.div
                         key={classroom._id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4, delay: index * 0.1 }}
-                        className="p-4 border rounded-lg hover:shadow-md transition-all relative"
+                        className="p-3 sm:p-4 border-2 rounded-lg hover:shadow-md transition-all relative"
+                        style={{ borderColor: '#E3DEF1' }}
+                        whileHover={{ scale: 1.01 }}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <h3 className="font-semibold text-gray-900">{classroom.name}</h3>
-                              <Badge variant="secondary">{classroom.subject}</Badge>
+                        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-sm sm:text-base truncate" style={{ color: '#6E55A0' }}>
+                                {classroom.name}
+                              </h3>
+                              <Badge 
+                                variant="secondary"
+                                className="text-xs"
+                                style={{ backgroundColor: '#E3DEF1', color: '#6E55A0' }}
+                              >
+                                {classroom.subject}
+                              </Badge>
                               {classroom.studentCount > 0 && (
-                                <Badge className="bg-green-100 text-green-800">
+                                <Badge 
+                                  className="text-xs"
+                                  style={{ 
+                                    backgroundColor: '#D1FAE5',
+                                    color: '#065F46'
+                                  }}
+                                >
                                   {classroom.studentCount} students
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">{classroom.description}</p>
+                            <p className="text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2" style={{ color: '#8A6FBF' }}>
+                              {classroom.description}
+                            </p>
                             
-                            <div className="flex items-center gap-4 mt-3">
+                            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0">
                               <div className="flex items-center gap-2">
-                                <code className="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
+                                <code 
+                                  className="px-2 py-1 rounded text-xs sm:text-sm font-mono"
+                                  style={{ backgroundColor: '#F7F5FA', color: '#6E55A0' }}
+                                >
                                   {classroom.code}
                                 </code>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => copyClassroomCode(classroom.code)}
-                                >
-                                  {copiedCode === classroom.code ? (
-                                    <Check className="w-4 h-4 text-green-600" />
-                                  ) : (
-                                    <Copy className="w-4 h-4" />
-                                  )}
-                                </Button>
+                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyClassroomCode(classroom.code)}
+                                    style={{ color: '#8A6FBF' }}
+                                    className="p-1"
+                                  >
+                                    {copiedCode === classroom.code ? (
+                                      <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                                    ) : (
+                                      <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    )}
+                                  </Button>
+                                </motion.div>
                               </div>
                               
-                              <div className="text-sm text-gray-500">
+                              <div className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
                                 Created {new Date(classroom.createdAt).toLocaleDateString()}
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <Link href={`/org/classroom/${classroom._id}`}>
-                              <Button variant="outline" size="sm">
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Details
-                              </Button>
-                            </Link>
+                          <div className="flex items-center gap-2 self-start sm:self-center">
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Link href={`/org/classroom/${classroom._id}`}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                                  style={{ 
+                                    borderColor: '#E3DEF1',
+                                    color: '#8A6FBF'
+                                  }}
+                                >
+                                  <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                  <span className="hidden sm:inline">View Details</span>
+                                  <span className="sm:hidden">View</span>
+                                </Button>
+                              </Link>
+                            </motion.div>
                             
                             <div className="relative">
                               <Button
@@ -467,29 +639,38 @@ export default function OrganizationDashboard() {
                                 onClick={() => setShowClassroomMenu(
                                   showClassroomMenu === classroom._id ? null : classroom._id
                                 )}
+                                style={{ color: '#8A6FBF' }}
+                                className="p-1 sm:p-2"
                               >
-                                <MoreVertical className="w-4 h-4" />
+                                <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4" />
                               </Button>
                               
                               {showClassroomMenu === classroom._id && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                                <motion.div 
+                                  className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-md shadow-lg z-10 border-2"
+                                  style={{ borderColor: '#E3DEF1' }}
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ duration: 0.2 }}
+                                >
                                   <div className="py-1">
                                     <Link
                                       href={`/org/classroom/${classroom._id}/edit`}
-                                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm hover:bg-gray-50 transition-colors"
+                                      style={{ color: '#8A6FBF' }}
                                     >
-                                      <Edit className="w-4 h-4 mr-2" />
+                                      <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                                       Edit Classroom
                                     </Link>
                                     <button
                                       onClick={() => deleteClassroom(classroom._id)}
-                                      className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                      className="flex items-center w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-700 hover:bg-red-50 transition-colors"
                                     >
-                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                                       Delete Classroom
                                     </button>
                                   </div>
-                                </div>
+                                </motion.div>
                               )}
                             </div>
                           </div>
@@ -500,107 +681,152 @@ export default function OrganizationDashboard() {
                 )}
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
 
-          {/* Recent Activity Sidebar */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        activity.color.includes('green') ? 'bg-green-100' :
-                        activity.color.includes('red') ? 'bg-red-100' :
-                        activity.color.includes('purple') ? 'bg-purple-100' :
-                        activity.color.includes('blue') ? 'bg-blue-100' :
-                        'bg-indigo-100'
-                      }`}>
-                        <activity.icon className={`w-4 h-4 ${activity.color}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                        <p className="text-sm text-gray-600">{activity.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                      </div>
+          {/* Recent Activity Sidebar - MOBILE RESPONSIVE */}
+          <div className="space-y-4 sm:space-y-6">
+            <motion.div variants={itemVariants}>
+              <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                    Recent Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 sm:space-y-4">
+                    {recentActivity.map((activity) => (
+                      <motion.div 
+                        key={activity.id} 
+                        className="flex items-start gap-2 sm:gap-3"
+                        whileHover={{ x: 5 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div 
+                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: '#E3DEF1' }}
+                        >
+                          <activity.icon className="w-3 h-3 sm:w-4 sm:h-4" style={{ color: '#6E55A0' }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-medium" style={{ color: '#6E55A0' }}>
+                            {activity.title}
+                          </p>
+                          <p className="text-xs sm:text-sm line-clamp-2" style={{ color: '#8A6FBF' }}>
+                            {activity.description}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: '#8A6FBF' }}>
+                            {activity.time}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Quick Stats - MOBILE RESPONSIVE */}
+            <motion.div variants={itemVariants}>
+              <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                    Quick Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Total Activities</span>
+                      <span className="font-semibold text-sm sm:text-base" style={{ color: '#6E55A0' }}>
+                        {analytics.totalActivities}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Avg. Session Time</span>
+                      <span className="font-semibold text-sm sm:text-base" style={{ color: '#6E55A0' }}>12 min</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Completion Rate</span>
+                      <span className="font-semibold text-green-600 text-sm sm:text-base">87%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>Response Time</span>
+                      <span className="font-semibold text-sm sm:text-base" style={{ color: '#6E55A0' }}>
+                        &lt; 2 hours
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Total Activities</span>
-                    <span className="font-semibold">{analytics.totalActivities}</span>
+            {/* Quick Actions - MOBILE RESPONSIVE */}
+            <motion.div variants={itemVariants}>
+              <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-lg" style={{ color: '#6E55A0' }}>
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 sm:space-y-3">
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Link href="/org/analytics">
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start border-2 transition-all duration-200 text-xs sm:text-sm"
+                          style={{ 
+                            borderColor: '#E3DEF1',
+                            color: '#8A6FBF'
+                          }}
+                        >
+                          <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                          <span className="hidden sm:inline">View Full Analytics</span>
+                          <span className="sm:hidden">Analytics</span>
+                        </Button>
+                      </Link>
+                    </motion.div>
+                    
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Link href="/org/reports">
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start border-2 transition-all duration-200 text-xs sm:text-sm"
+                          style={{ 
+                            borderColor: '#E3DEF1',
+                            color: '#8A6FBF'
+                          }}
+                        >
+                          <Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                          <span className="hidden sm:inline">Review Reports</span>
+                          <span className="sm:hidden">Reports</span>
+                        </Button>
+                      </Link>
+                    </motion.div>
+                    
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Link href="/org/create-classroom">
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start border-2 transition-all duration-200 text-xs sm:text-sm"
+                          style={{ 
+                            borderColor: '#E3DEF1',
+                            color: '#8A6FBF'
+                          }}
+                        >
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                          <span className="hidden sm:inline">Create Classroom</span>
+                          <span className="sm:hidden">Create</span>
+                        </Button>
+                      </Link>
+                    </motion.div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Avg. Session Time</span>
-                    <span className="font-semibold">12 min</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Completion Rate</span>
-                    <span className="font-semibold text-green-600">87%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Response Time</span>
-                    <span className="font-semibold">&lt; 2 hours</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Link href="/org/analytics">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start border-purple-300 text-purple-700 hover:bg-purple-50"
-                    >
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      View Full Analytics
-                    </Button>
-                  </Link>
-                  
-                  <Link href="/org/reports">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start border-red-300 text-red-700 hover:bg-red-50"
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Review Reports
-                    </Button>
-                  </Link>
-                  
-                  <Link href="/org/create-classroom">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start border-blue-300 text-blue-700 hover:bg-blue-50"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Classroom
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }

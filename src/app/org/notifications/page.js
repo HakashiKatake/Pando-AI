@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -172,21 +173,21 @@ export default function NotificationsPage() {
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'urgent': return <AlertTriangle className="w-5 h-5 text-red-600" />;
-      case 'wellness': return <Heart className="w-5 h-5 text-pink-600" />;
-      case 'student': return <Users className="w-5 h-5 text-blue-600" />;
-      case 'system': return <Settings className="w-5 h-5 text-gray-600" />;
-      case 'reminder': return <Clock className="w-5 h-5 text-orange-600" />;
-      default: return <Bell className="w-5 h-5 text-purple-600" />;
+      case 'urgent': return <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />;
+      case 'wellness': return <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />;
+      case 'student': return <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />;
+      case 'system': return <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />;
+      case 'reminder': return <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />;
+      default: return <Bell className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#6E55A0' }} />;
     }
   };
 
   const getNotificationBadge = (type, severity) => {
     if (type === 'urgent' || severity === 'high') {
-      return <Badge className="bg-red-100 text-red-800">Urgent</Badge>;
+      return <Badge className="bg-red-100 text-red-800 text-xs">Urgent</Badge>;
     }
     if (severity === 'medium') {
-      return <Badge className="bg-orange-100 text-orange-800">Important</Badge>;
+      return <Badge className="bg-orange-100 text-orange-800 text-xs">Important</Badge>;
     }
     return null;
   };
@@ -206,139 +207,258 @@ export default function NotificationsPage() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
   const urgentCount = notifications.filter(n => n.severity === 'high' || n.type === 'urgent').length;
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#8A6FBF' }}></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/org/dashboard">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
-                <p className="text-gray-600 mt-1">Stay updated with student wellness alerts and system notifications</p>
+    <motion.div 
+      className="min-h-screen"
+      style={{ backgroundColor: '#F7F5FA' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header - MOBILE RESPONSIVE */}
+      <motion.header 
+        className="border-b"
+        style={{ backgroundColor: 'white', borderColor: '#E3DEF1' }}
+        variants={itemVariants}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/org/dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#8A6FBF'
+                    }}
+                  >
+                    <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    Back to Dashboard
+                  </Button>
+                </Link>
+              </motion.div>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: '#E3DEF1' }}
+                >
+                  <Image
+                    src="/logo.svg"
+                    alt="PandoAI Logo"
+                    width={20}
+                    height={20}
+                    className="sm:w-6 sm:h-6"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div 
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded"
+                    style={{ backgroundColor: '#8A6FBF', display: 'none' }}
+                  />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                    Notifications
+                  </h1>
+                  <p className="mt-1 text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                    Stay updated with student wellness alerts and system notifications
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={markAllAsRead}
-                disabled={unreadCount === 0}
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Mark All Read
-              </Button>
-              <Button
-                variant="outline"
-                onClick={loadNotifications}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={markAllAsRead}
+                  disabled={unreadCount === 0}
+                  className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                  style={{ 
+                    borderColor: '#E3DEF1',
+                    color: '#8A6FBF'
+                  }}
+                >
+                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Mark All Read</span>
+                  <span className="sm:hidden">Mark All</span>
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadNotifications}
+                  className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                  style={{ 
+                    borderColor: '#E3DEF1',
+                    color: '#8A6FBF'
+                  }}
+                >
+                  <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Refresh</span>
+                  <span className="sm:hidden">Sync</span>
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Notifications</p>
-                  <p className="text-3xl font-bold text-gray-900">{notifications.length}</p>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Stats Cards - MOBILE RESPONSIVE */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <motion.div variants={itemVariants} whileHover={{ scale: 1.02 }}>
+            <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium" style={{ color: '#8A6FBF' }}>
+                      Total Notifications
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#6E55A0' }}>
+                      {notifications.length}
+                    </p>
+                  </div>
+                  <Bell className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#6E55A0' }} />
                 </div>
-                <Bell className="w-8 h-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Unread</p>
-                  <p className="text-3xl font-bold text-blue-600">{unreadCount}</p>
+          <motion.div variants={itemVariants} whileHover={{ scale: 1.02 }}>
+            <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium" style={{ color: '#8A6FBF' }}>
+                      Unread
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-bold text-blue-600">{unreadCount}</p>
+                  </div>
+                  <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                 </div>
-                <MessageSquare className="w-8 h-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Urgent</p>
-                  <p className="text-3xl font-bold text-red-600">{urgentCount}</p>
+          <motion.div variants={itemVariants} whileHover={{ scale: 1.02 }}>
+            <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium" style={{ color: '#8A6FBF' }}>
+                      Urgent
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-bold text-red-600">{urgentCount}</p>
+                  </div>
+                  <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
                 </div>
-                <AlertTriangle className="w-8 h-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+        {/* Filters - MOBILE RESPONSIVE */}
+        <motion.div variants={itemVariants}>
+          <Card className="mb-4 sm:mb-6 border-2" style={{ borderColor: '#E3DEF1' }}>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col gap-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-3 h-3 w-3 sm:h-4 sm:w-4" style={{ color: '#8A6FBF' }} />
                   <input
                     type="text"
                     placeholder="Search notifications..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-8 sm:pl-10 pr-4 py-2 border-2 rounded-lg focus:ring-2 focus:outline-none transition-all duration-200 text-sm sm:text-base"
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      color: '#6E55A0'
+                    }}
                   />
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  {['all', 'unread', 'urgent', 'wellness', 'student', 'system'].map((filterOption) => (
+                    <motion.div
+                      key={filterOption}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant={filter === filterOption ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFilter(filterOption)}
+                        className={filter === filterOption 
+                          ? 'transition-all duration-200 text-xs sm:text-sm'
+                          : 'border-2 transition-all duration-200 text-xs sm:text-sm'
+                        }
+                        style={filter === filterOption 
+                          ? { background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)' }
+                          : { borderColor: '#E3DEF1', color: '#8A6FBF' }
+                        }
+                      >
+                        {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                      </Button>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-2">
-                {['all', 'unread', 'urgent', 'wellness', 'student', 'system'].map((filterOption) => (
-                  <Button
-                    key={filterOption}
-                    variant={filter === filterOption ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFilter(filterOption)}
-                    className={filter === filterOption ? 'bg-purple-600 text-white' : ''}
-                  >
-                    {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        {/* Notifications List */}
-        <div className="space-y-4">
+        {/* Notifications List - MOBILE RESPONSIVE */}
+        <div className="space-y-3 sm:space-y-4">
           <AnimatePresence>
             {filteredNotifications.length === 0 ? (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Notifications</h3>
-                  <p className="text-gray-600">
-                    {filter === 'all' ? 'You have no notifications at this time.' : `No ${filter} notifications found.`}
-                  </p>
-                </CardContent>
-              </Card>
+              <motion.div variants={itemVariants}>
+                <Card className="border-2" style={{ borderColor: '#E3DEF1' }}>
+                  <CardContent className="p-8 sm:p-12 text-center">
+                    <Bell className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" style={{ color: '#8A6FBF' }} />
+                    <h3 className="text-base sm:text-lg font-medium mb-2" style={{ color: '#6E55A0' }}>
+                      No Notifications
+                    </h3>
+                    <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
+                      {filter === 'all' ? 'You have no notifications at this time.' : `No ${filter} notifications found.`}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ) : (
               filteredNotifications.map((notification) => (
                 <motion.div
@@ -348,71 +468,114 @@ export default function NotificationsPage() {
                   exit={{ opacity: 0, x: -100 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className={`hover:shadow-md transition-shadow ${!notification.isRead ? 'border-l-4 border-l-purple-600 bg-purple-50/30' : ''}`}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0">
+                  <Card 
+                    className={`hover:shadow-md transition-shadow border-2 ${
+                      !notification.isRead 
+                        ? 'border-l-4 border-l-purple-600' 
+                        : ''
+                    }`}
+                    style={{ 
+                      borderColor: '#E3DEF1',
+                      backgroundColor: !notification.isRead ? '#F7F5FA' : 'white'
+                    }}
+                  >
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="flex-shrink-0 mt-1">
                           {getNotificationIcon(notification.type)}
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className={`text-lg font-semibold ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <h3 className={`text-sm sm:text-lg font-semibold break-words ${
+                                  !notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                                }`} style={{ color: !notification.isRead ? '#6E55A0' : '#8A6FBF' }}>
                                   {notification.title}
                                 </h3>
                                 {getNotificationBadge(notification.type, notification.severity)}
                                 {!notification.isRead && (
-                                  <div className="w-2 h-2 bg-purple-600 rounded-full" />
+                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#6E55A0' }} />
                                 )}
                               </div>
                               
-                              <p className="text-gray-700 mb-3">{notification.message}</p>
+                              <p className="text-sm sm:text-base mb-3 break-words" style={{ color: '#8A6FBF' }}>
+                                {notification.message}
+                              </p>
                               
-                              <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
                                 <span>{formatTimeAgo(notification.createdAt)}</span>
                                 {notification.studentName && (
-                                  <span>Student: {notification.studentName}</span>
+                                  <span className="break-words">Student: {notification.studentName}</span>
                                 )}
                                 {notification.classroomName && (
-                                  <span>Classroom: {notification.classroomName}</span>
+                                  <span className="break-words">Classroom: {notification.classroomName}</span>
                                 )}
                               </div>
                             </div>
                             
                             <div className="flex items-center gap-2 flex-shrink-0">
                               {!notification.isRead && (
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => markAsRead(notification.id)}
+                                    className="border-2 transition-all duration-200 text-xs sm:text-sm"
+                                    style={{ 
+                                      borderColor: '#E3DEF1',
+                                      color: '#8A6FBF'
+                                    }}
+                                  >
+                                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                                    <span className="hidden sm:inline">Mark Read</span>
+                                    <span className="sm:hidden">Read</span>
+                                  </Button>
+                                </motion.div>
+                              )}
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => markAsRead(notification.id)}
+                                  onClick={() => deleteNotification(notification.id)}
+                                  className="text-red-600 hover:bg-red-50 border-2 transition-all duration-200"
+                                  style={{ borderColor: '#FCA5A5' }}
                                 >
-                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                  Mark Read
+                                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                                 </Button>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => deleteNotification(notification.id)}
-                                className="text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              </motion.div>
                             </div>
                           </div>
                           
                           {notification.actionRequired && (
-                            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                              <p className="text-sm text-yellow-800 font-medium">Action Required</p>
-                              <div className="flex gap-2 mt-2">
-                                <Button size="sm" className="bg-purple-600 text-white">
-                                  Take Action
-                                </Button>
-                                <Button size="sm" variant="outline">
-                                  View Details
-                                </Button>
+                            <div className="mt-4 p-3 border rounded-lg" style={{ backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }}>
+                              <p className="text-sm font-medium" style={{ color: '#92400E' }}>Action Required</p>
+                              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Button 
+                                    size="sm" 
+                                    className="transition-all duration-200 text-xs sm:text-sm w-full sm:w-auto"
+                                    style={{ 
+                                      background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                                    }}
+                                  >
+                                    Take Action
+                                  </Button>
+                                </motion.div>
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    className="border-2 transition-all duration-200 text-xs sm:text-sm w-full sm:w-auto"
+                                    style={{ 
+                                      borderColor: '#E3DEF1',
+                                      color: '#8A6FBF'
+                                    }}
+                                  >
+                                    View Details
+                                  </Button>
+                                </motion.div>
                               </div>
                             </div>
                           )}
@@ -426,6 +589,6 @@ export default function NotificationsPage() {
           </AnimatePresence>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }
