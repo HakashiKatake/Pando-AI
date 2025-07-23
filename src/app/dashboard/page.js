@@ -906,8 +906,8 @@ function MoodModal({ onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(247,245,250,0.6)', backdropFilter: 'blur(6px)' }}>
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#6E55A0' }}>How are you feeling?</h2>
           <p className="text-gray-600">Track your mood to understand your patterns</p>

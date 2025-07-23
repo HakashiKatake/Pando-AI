@@ -434,16 +434,26 @@ export default function ExercisesPage() {
                   whileHover="hover"
                   className={`${exercise.bgColor} rounded-3xl overflow-hidden shadow-sm`}
                 >
-                  {/* Exercise Image/Illustration */}
+                  {/* Exercise Card Image */}
                   <div className="h-48 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: '#E3DEF1' }}>
-                    {/* Placeholder illustration */}
-                    <div className="text-8xl">{exercise.illustration}</div>
-                    
+                    <img
+                      src={
+                        exercise.id === 'breathing-basic' ? '/asset/card1.png' :
+                        exercise.id === 'breathing-advanced' ? '/asset/card2.png' :
+                        exercise.id === 'body-scan' ? '/asset/card3.png' :
+                        exercise.id === 'mindful-walking' ? '/asset/card5.png' :
+                        exercise.id === 'focus-training' ? '/asset/card6.jpg' :
+                        exercise.id === 'progressive-relaxation' ? '/asset/card7.webp' :
+                        ''
+                      }
+                      alt={exercise.title}
+                      className="w-full h-full object-cover"
+                      style={{ maxHeight: '180px' }}
+                    />
                     {/* Decorative elements */}
                     <div className="absolute top-4 left-4 w-3 h-3 bg-white/30 rounded-full"></div>
                     <div className="absolute top-8 right-8 w-2 h-2 bg-white/20 rounded-full"></div>
                     <div className="absolute bottom-6 left-8 w-4 h-4 bg-white/25 rounded-full"></div>
-                    
                     {/* Completed indicator */}
                     {completedExercises.has(exercise.id) && (
                       <div className="absolute top-4 right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
