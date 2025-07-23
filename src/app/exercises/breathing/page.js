@@ -368,7 +368,11 @@ export default function BreathingExercisePage() {
               ease: "easeInOut"
             }}
           >
-            <div className="text-4xl">🐼</div>
+            <img 
+              src={currentPhaseName === 'inhale' ? '/asset/panda-inhale.png' : '/asset/panda-exhale.png'}
+              alt={`Panda ${currentPhaseName === 'inhale' ? 'inhaling' : 'exhaling'}`}
+              className="w-24 h-24 object-contain"
+            />
           </motion.div>
 
           {/* Phase Display */}

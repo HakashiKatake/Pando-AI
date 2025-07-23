@@ -142,56 +142,80 @@ const GlobalMusicPlayer = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 px-4 py-3"
+          className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
         >
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            {/* Track Info */}
-            <div className="flex items-center space-x-4 flex-1 min-w-0">
-              <div 
-                className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex-shrink-0"
-                style={{
-                  backgroundImage: currentTrack.bgImage ? `url(${currentTrack.bgImage})` : undefined,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              />
-              <div className="min-w-0 flex-1">
-                <h4 className="font-medium text-gray-900 truncate text-sm">
-                  {currentTrack.title}
-                </h4>
-                <p className="text-gray-500 truncate text-xs">
-                  {currentTrack.artist}
-                </p>
+          {/* Mobile Layout */}
+          <div className="sm:hidden px-3 py-2">
+            {/* Top Row: Track Info + Close */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <div 
+                  className="w-8 h-8 rounded-md bg-gradient-to-br from-purple-400 to-pink-400 flex-shrink-0"
+                  style={{
+                    backgroundImage: currentTrack.bgImage ? `url(${currentTrack.bgImage})` : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                />
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-medium text-gray-900 truncate text-xs">
+                    {currentTrack.title}
+                  </h4>
+                  <p className="text-gray-500 truncate text-xs">
+                    {currentTrack.artist}
+                  </p>
+                </div>
               </div>
-            </div>
-
-            {/* Controls */}
-            <div className="flex items-center space-x-2 mx-4">
+              
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={toggleShuffle}
-                className={`p-2 rounded-full transition-colors ${
-                  isShuffled ? 'text-purple-600 bg-purple-100' : 'text-gray-400 hover:text-gray-600'
-                }`}
+                onClick={stopMusic}
+                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <Shuffle className="w-4 h-4" />
+                <X className="w-4 h-4" />
               </motion.button>
+            </div>
 
+            {/* Progress Bar */}
+            <div className="flex items-center space-x-2 mb-2">
+              <span className="text-xs text-gray-500 w-8 text-right">
+                {formatTime(currentTime)}
+              </span>
+              
+              <div 
+                className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden cursor-pointer"
+                onClick={handleSeek}
+              >
+                <div 
+                  className="h-full bg-purple-600 rounded-full transition-all"
+                  style={{ 
+                    width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%' 
+                  }}
+                />
+              </div>
+              
+              <span className="text-xs text-gray-500 w-8">
+                {formatTime(duration)}
+              </span>
+            </div>
+
+            {/* Controls Row */}
+            <div className="flex items-center justify-center space-x-4">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={skipToPrevious}
                 className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
-                <SkipBack className="w-5 h-5" />
+                <SkipBack className="w-4 h-4" />
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={togglePlayPause}
-                className="p-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
+                className="p-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
               >
                 {isPlaying ? (
                   <Pause className="w-5 h-5" />
@@ -206,46 +230,9 @@ const GlobalMusicPlayer = () => {
                 onClick={skipToNext}
                 className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
-                <SkipForward className="w-5 h-5" />
+                <SkipForward className="w-4 h-4" />
               </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={toggleRepeat}
-                className={`p-2 rounded-full transition-colors ${
-                  isRepeated ? 'text-purple-600 bg-purple-100' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <Repeat className="w-4 h-4" />
-              </motion.button>
-            </div>
-
-            {/* Progress Bar and Time */}
-            <div className="flex items-center space-x-3 flex-1 min-w-0">
-              <span className="text-xs text-gray-500 w-10 text-right">
-                {formatTime(currentTime)}
-              </span>
-              
-              <div 
-                className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden cursor-pointer"
-                onClick={handleSeek}
-              >
-                <div 
-                  className="h-full bg-purple-600 rounded-full transition-all"
-                  style={{ 
-                    width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%' 
-                  }}
-                />
-              </div>
-              
-              <span className="text-xs text-gray-500 w-10">
-                {formatTime(duration)}
-              </span>
-            </div>
-
-            {/* Right Controls */}
-            <div className="flex items-center space-x-2 ml-4">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -256,27 +243,145 @@ const GlobalMusicPlayer = () => {
               >
                 <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
               </motion.button>
+            </div>
+          </div>
 
-              <div className="flex items-center space-x-2">
-                <Volume2 className="w-4 h-4 text-gray-400" />
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={(e) => setVolume(parseInt(e.target.value))}
-                  className="w-16 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+          {/* Desktop Layout */}
+          <div className="hidden sm:block px-4 py-3">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              {/* Track Info */}
+              <div className="flex items-center space-x-4 flex-1 min-w-0">
+                <div 
+                  className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex-shrink-0"
+                  style={{
+                    backgroundImage: currentTrack.bgImage ? `url(${currentTrack.bgImage})` : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
                 />
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-medium text-gray-900 truncate text-sm">
+                    {currentTrack.title}
+                  </h4>
+                  <p className="text-gray-500 truncate text-xs">
+                    {currentTrack.artist}
+                  </p>
+                </div>
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={stopMusic}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </motion.button>
+              {/* Controls */}
+              <div className="flex items-center space-x-2 mx-4">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggleShuffle}
+                  className={`p-2 rounded-full transition-colors ${
+                    isShuffled ? 'text-purple-600 bg-purple-100' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Shuffle className="w-4 h-4" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={skipToPrevious}
+                  className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  <SkipBack className="w-5 h-5" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={togglePlayPause}
+                  className="p-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-5 h-5" />
+                  ) : (
+                    <Play className="w-5 h-5 ml-0.5" />
+                  )}
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={skipToNext}
+                  className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  <SkipForward className="w-5 h-5" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggleRepeat}
+                  className={`p-2 rounded-full transition-colors ${
+                    isRepeated ? 'text-purple-600 bg-purple-100' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Repeat className="w-4 h-4" />
+                </motion.button>
+              </div>
+
+              {/* Progress Bar and Time */}
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <span className="text-xs text-gray-500 w-10 text-right">
+                  {formatTime(currentTime)}
+                </span>
+                
+                <div 
+                  className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden cursor-pointer"
+                  onClick={handleSeek}
+                >
+                  <div 
+                    className="h-full bg-purple-600 rounded-full transition-all"
+                    style={{ 
+                      width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%' 
+                    }}
+                  />
+                </div>
+                
+                <span className="text-xs text-gray-500 w-10">
+                  {formatTime(duration)}
+                </span>
+              </div>
+
+              {/* Right Controls */}
+              <div className="flex items-center space-x-2 ml-4">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggleLike}
+                  className={`p-2 rounded-full transition-colors ${
+                    isLiked ? 'text-red-500 bg-red-100' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                </motion.button>
+
+                <div className="flex items-center space-x-2">
+                  <Volume2 className="w-4 h-4 text-gray-400" />
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={volume}
+                    onChange={(e) => setVolume(parseInt(e.target.value))}
+                    className="w-16 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={stopMusic}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </motion.button>
+              </div>
             </div>
           </div>
         </motion.div>

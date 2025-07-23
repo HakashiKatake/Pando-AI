@@ -84,18 +84,7 @@ const exercises = [
     illustration: '🚶‍♀️',
     bgColor: 'bg-green-50'
   },
-  {
-    id: 'loving-kindness',
-    title: 'Loving Kindness',
-    description: 'Meditation practice to cultivate compassion and positive emotions',
-    duration: 12,
-    difficulty: 'intermediate',
-    category: 'mindfulness',
-    benefits: ['Increases compassion', 'Reduces negative emotions', 'Improves relationships'],
-    route: '/exercises/loving-kindness',
-    illustration: '💖',
-    bgColor: 'bg-pink-50'
-  },
+  
   {
     id: 'focus-training',
     title: 'Focus Training',
@@ -120,18 +109,7 @@ const exercises = [
     illustration: '😌',
     bgColor: 'bg-blue-50'
   },
-  {
-    id: 'visualization',
-    title: 'Guided Visualization',
-    description: 'Mental imagery exercises for relaxation and goal achievement',
-    duration: 15,
-    difficulty: 'intermediate',
-    category: 'mindfulness',
-    benefits: ['Enhances creativity', 'Reduces stress', 'Improves motivation'],
-    route: '/exercises/visualization',
-    illustration: '🌅',
-    bgColor: 'bg-indigo-50'
-  }
+  
 ];
 
 export default function ExercisesPage() {
