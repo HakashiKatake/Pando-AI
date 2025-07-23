@@ -1,6 +1,9 @@
+
 'use client';
+import Header from '@/components/Header';
 
 import { useState, useEffect, useRef } from 'react';
+import MoodModal from './MoodModal';
 import { useUser } from '@clerk/nextjs';
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore, useChatStore } from '../../lib/store';
@@ -12,18 +15,17 @@ import {
   Calendar, Clock, ChevronDown, Play, Pause, Volume2, Mic, MicOff
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import Header from '@/components/Header';
-
 export default function ChatPage() {
   const { user } = useUser();
   const { guestId, preferences } = useAppStore();
   const { messages, addMessage, setLoading, isLoading, startNewConversation } = useChatStore();
   const dataInit = useDataInitialization();
-
+  const { todaysMood, addMood } = require('../../lib/store').useMoodStore();
   const [input, setInput] = useState('');
   const [privacyMode, setPrivacyMode] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [hasAutoGreeted, setHasAutoGreeted] = useState(false);
+  const [showMoodModal, setShowMoodModal] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -43,6 +45,12 @@ export default function ChatPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (!todaysMood && dataInit.isReady && (dataInit.userId || dataInit.guestId)) {
+      setShowMoodModal(true);
+    }
+  }, [todaysMood, dataInit.isReady, dataInit.userId, dataInit.guestId]);
 
   // Speech Recognition setup
   const {
@@ -82,11 +90,11 @@ export default function ChatPage() {
 
   // Auto-greeting effect
   useEffect(() => {
-    if (dataInit.isReady && (dataInit.userId || dataInit.guestId) && conversationId && !hasAutoGreeted && messages.length === 0) {
+    if (dataInit.isReady && (dataInit.userId || dataInit.guestId) && conversationId && !hasAutoGreeted && messages.length === 0 && !showMoodModal) {
       setHasAutoGreeted(true);
       sendAutoGreeting();
     }
-  }, [dataInit.isReady, dataInit.userId, dataInit.guestId, conversationId, hasAutoGreeted, messages.length]);
+  }, [dataInit.isReady, dataInit.userId, dataInit.guestId, conversationId, hasAutoGreeted, messages.length, showMoodModal]);
 
   useEffect(() => {
     scrollToBottom();
@@ -265,6 +273,16 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+      {/* Mood Check-in Modal */}
+      {showMoodModal && (
+        <MoodModal
+          onClose={() => setShowMoodModal(false)}
+          onSave={(moodData) => {
+            addMood(moodData, dataInit.userId, dataInit.guestId);
+            setShowMoodModal(false);
+          }}
+        />
+      )}
       {/* Animated Background Gradients */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
