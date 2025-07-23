@@ -31,7 +31,7 @@ import {
 } from "lucide-react"
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
-import PandaLogo from "./PandaLogo"
+
 
 // Navigation items mapping from old to new
 const navigationItems = [
@@ -139,7 +139,7 @@ const Navigation = () => {
           {!isCollapsed ? (
             <Link href="/dashboard" className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0">
-                <PandaLogo/>
+                <img src="/logo.svg" alt="Logo" className="w-7 h-7" />
               </div>
               <h1 className="text-lg sm:text-xl font-semibold truncate" style={{ color: '#6E55A0' }}>
                 PandoAI
@@ -148,7 +148,7 @@ const Navigation = () => {
           ) : (
             <Link href="/dashboard" className="flex justify-center">
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-                <PandaLogo/>
+                <img src="/logo.svg" alt="Logo" className="w-7 h-7" />
               </div>
             </Link>
           )}
