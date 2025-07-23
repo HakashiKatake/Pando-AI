@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
 
 import Header from '@/components/Header';
+import { motion } from 'framer-motion';
 import {
   BarChart,
   Bar,
@@ -47,6 +48,26 @@ import { useRouter } from 'next/navigation'
 import { getRandomQuote, getMoodData, isToday } from '../../lib/utils'
 
 const Dashboard = () => {
+  // Animation variants for consistency
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
   // All state hooks first - must be called in same order every time
   const [showMoodModal, setShowMoodModal] = useState(false)
   const [todaysQuote, setTodaysQuote] = useState('')
@@ -396,7 +417,13 @@ const Dashboard = () => {
   ]
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+    <motion.div
+      className="min-h-screen"
+      style={{ backgroundColor: '#F7F5FA' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header - Fixed at top */}
       <header className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30">
         <div className="flex items-center justify-between">
@@ -443,30 +470,39 @@ const Dashboard = () => {
       {/* Main Content - No sidebar, starts below header */}
       <main className="pt-20 p-6 space-y-6">
         {/* Welcome Section */}
-        <div>
+        <motion.div variants={itemVariants}>
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-gray-500 text-sm">Dashboard</p>
-              <h1 className="text-3xl font-bold" style={{ color: '#6E55A0' }}>
+              <motion.h1 
+                className="text-3xl font-bold" 
+                style={{ color: '#6E55A0' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
                 Hi, {userName}!
-              </h1>
+              </motion.h1>
             </div>
           </div>
+        </motion.div>
 
           {/* Today's Inspiration */}
-          <Card className="border-0 mb-6 overflow-hidden" style={{ background: 'linear-gradient(135deg, #FAE9ED 0%, #C4ABF5 50%, #D7D5EC 100%)' }}>
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-2" style={{ color: '#6E55A0' }}>
-                Today's Inspiration
-              </h3>
-              <p style={{ color: '#6E55A0' }}>
-                "{todaysQuote}"
-              </p>
-            </CardContent>
-          </Card>
+          <motion.div variants={itemVariants}>
+            <Card className="border-0 mb-6 overflow-hidden" style={{ background: 'linear-gradient(135deg, #FAE9ED 0%, #C4ABF5 50%, #D7D5EC 100%)' }}>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-2" style={{ color: '#6E55A0' }}>
+                  Today's Inspiration
+                </h3>
+                <p style={{ color: '#6E55A0' }}>
+                  "{todaysQuote}"
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {/* Today's Mood Card */}
             <Card 
               className="border-0 text-white overflow-hidden cursor-pointer" 
@@ -542,11 +578,10 @@ const Dashboard = () => {
                 <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </motion.div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Mood Chart */}
           <Card className="bg-white border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -627,10 +662,10 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Meditation */}
           <Card className="bg-white border border-gray-200" style={{ backgroundColor: '#E3DEF1' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-4">
@@ -867,20 +902,23 @@ const Dashboard = () => {
               </Link>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </main>
 
       {/* Mood Modal */}
       {showMoodModal && (
-        <MoodModal 
-          onClose={() => setShowMoodModal(false)}
-          onSave={(moodData) => {
-            addMood(moodData, dataInit.userId, dataInit.guestId);
-            setShowMoodModal(false);
-          }}
-        />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <MoodModal 
+            onClose={() => setShowMoodModal(false)}
+            onSave={(moodData) => {
+              addMood(moodData, dataInit.userId, dataInit.guestId);
+              setShowMoodModal(false);
+            }}
+          />
+        </motion.div>
       )}
-    </div>
+   
+  </motion.div>
   )
 }
 
@@ -906,8 +944,20 @@ function MoodModal({ onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+    <motion.div 
+      className="fixed inset-0 flex items-center justify-center p-4 z-50" 
+      style={{ background: 'rgba(247,245,250,0.6)', backdropFilter: 'blur(6px)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#6E55A0' }}>How are you feeling?</h2>
           <p className="text-gray-600">Track your mood to understand your patterns</p>
@@ -962,8 +1012,11 @@ function MoodModal({ onClose, onSave }) {
             Save Mood
           </button>
         </div>
-      </div>
-    </div>
+      
+      
+      </motion.div>
+    </motion.div>
+
   );
 }
 

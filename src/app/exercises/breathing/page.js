@@ -232,7 +232,10 @@ export default function BreathingExercisePage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+    <div className="min-h-screen relative" style={{ background: 'url(/asset/card1.png) center/cover no-repeat' }}>
+      {/* Overlay for readability */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(247,245,250,0.85)', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: 2 }}>
       {/* Header */}
       <motion.header 
         className="px-6 py-4"
@@ -487,6 +490,7 @@ export default function BreathingExercisePage() {
           </motion.div>
         </motion.div>
       </motion.div>
+      </div>
     </div>
   );
 }
