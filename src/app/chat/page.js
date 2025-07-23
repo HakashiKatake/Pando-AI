@@ -19,12 +19,30 @@ export default function ChatPage() {
   const { guestId, preferences } = useAppStore();
   const { messages, addMessage, setLoading, isLoading, startNewConversation } = useChatStore();
   const dataInit = useDataInitialization();
-  
+
   const [input, setInput] = useState('');
   const [privacyMode, setPrivacyMode] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [hasAutoGreeted, setHasAutoGreeted] = useState(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Focus input bar on any key press (unless modal is open or input is already focused)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Only focus if not already focused and not inside a modal
+      if (
+        document.activeElement !== inputRef.current &&
+        !document.querySelector('.framer-modal, .modal, [role="dialog"]') &&
+        !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey &&
+        e.key.length === 1 // Only for character keys
+      ) {
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Speech Recognition setup
   const {
@@ -502,6 +520,7 @@ export default function ChatPage() {
               <div className="flex items-end space-x-2 sm:space-x-3">
                 <div className="flex-1 relative">
                   <motion.textarea
+                    ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
