@@ -872,7 +872,7 @@ const Dashboard = () => {
               </Link>
 
               {/* Mood Music */}
-              <Link href="/music" className="block">
+              <Link href="/mood" className="block">
                 <div className="flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#E0F2FE' }}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0EA5E9' }}>
                     <Music className="w-5 h-5 text-white" />
@@ -882,7 +882,7 @@ const Dashboard = () => {
               </Link>
 
               {/* Journal */}
-              <Link href="/journal" className="block">
+              <Link href="/feedback" className="block">
                 <div className="flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#FEF3C7' }}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F59E0B' }}>
                     <PenTool className="w-5 h-5 text-white" />

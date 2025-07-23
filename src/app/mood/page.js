@@ -492,29 +492,7 @@ const MoodMusic = () => {
                 {/* Overlay for gradient only, more transparent for clearer image */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-200/10 to-gray-300/20 pointer-events-none" />
 
-                  {/* Play button overlay */}
-                  <div className="absolute top-4 right-4 z-10">
-                    <motion.button
-                      onClick={() => handlePlayTrack(track)}
-                      className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      {currentTrack?.id === track.id && isPlaying ? (
-                        <Pause
-                          className="w-5 h-5"
-                          style={{ color: "#8A6FBF" }}
-                          fill="currentColor"
-                        />
-                      ) : (
-                        <Play
-                          className="w-5 h-5 ml-0.5"
-                          style={{ color: "#8A6FBF" }}
-                          fill="currentColor"
-                        />
-                      )}
-                    </motion.button>
-                  </div>
+                  {/* Removed top-right play button overlay */}
                 </div>
 
                 {/* Track Info */}
@@ -535,25 +513,20 @@ const MoodMusic = () => {
                       onClick={() => handlePlayTrack(track)}
                       className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
                       style={{ backgroundColor: "#E3DEF1" }}
-                      whileHover={{
-                        scale: 1.1,
-                        backgroundColor: "#8A6FBF",
-                      }}
+                      whileHover={{ scale: 1.1, backgroundColor: "#8A6FBF" }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      {currentTrack?.id === track.id && isPlaying ? (
-                        <Pause
-                          className="w-5 h-5"
-                          style={{ color: "#8A6FBF" }}
-                          fill="currentColor"
-                        />
-                      ) : (
-                        <Play
-                          className="w-5 h-5 ml-0.5"
-                          style={{ color: "#8A6FBF" }}
-                          fill="currentColor"
-                        />
-                      )}
+                      <motion.div
+                        animate={{ color: '#8A6FBF' }}
+                        whileHover={{ color: '#fff' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {currentTrack?.id === track.id && isPlaying ? (
+                          <Pause className="w-5 h-5" fill="currentColor" />
+                        ) : (
+                          <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
+                        )}
+                      </motion.div>
                     </motion.button>
                   </div>
 

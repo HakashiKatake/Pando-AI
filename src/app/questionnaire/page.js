@@ -139,7 +139,6 @@ export default function QuestionnairePage() {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              
               <Image
                 src="/logo.svg"
                 alt="PandoAI Logo"
@@ -147,7 +146,6 @@ export default function QuestionnairePage() {
                 height={24}
                 className="sm:w-6 sm:h-6"
                 onError={(e) => {
-                  
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'block';
                 }}
@@ -161,9 +159,10 @@ export default function QuestionnairePage() {
               PandoAI
             </span>
           </Link>
-          
-          <div className="text-sm" style={{ color: '#8A6FBF' }}>
-            Step {currentStep + 1} of {steps.length}
+          <div className="flex items-center gap-4">
+            <div className="text-sm" style={{ color: '#8A6FBF' }}>
+              Step {currentStep + 1} of {steps.length}
+            </div>
           </div>
         </div>
       </motion.nav>
@@ -237,20 +236,34 @@ export default function QuestionnairePage() {
                 <div></div>
               )}
 
-              <motion.button
-                onClick={handleNext}
-                className="text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
-                style={{ 
-                  background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="text-sm sm:text-base">
-                  {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
-                </span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </motion.button>
+              <div className="flex items-center gap-2">
+                <motion.button
+                  onClick={handleNext}
+                  className="text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="text-sm sm:text-base">
+                    {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
+                  </span>
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                </motion.button>
+                <motion.button
+                  onClick={handleComplete}
+                  className="text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #E3DEF1 0%, #8A6FBF 100%)',
+                  }}
+                  whileHover={{ scale: 1.05, backgroundColor: '#8A6FBF', color: 'white' }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Skip questionnaire and start chatting"
+                >
+                  <span className="text-sm sm:text-base">Skip</span>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </div>
