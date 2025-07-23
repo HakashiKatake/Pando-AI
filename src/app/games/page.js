@@ -389,6 +389,52 @@ const WellnessGames = () => {
                           </div>
                         </div>
                       )}
+                      {game.id === 'chirp-jump' && (
+                        // Chirp Jump - Chicken with platforms and clouds
+                        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                          {/* Background clouds */}
+                          <div className="absolute inset-0">
+                            <div className="absolute top-8 left-8 w-12 h-8 bg-white opacity-80 rounded-full"></div>
+                            <div className="absolute top-6 left-12 w-16 h-10 bg-white opacity-60 rounded-full"></div>
+                            <div className="absolute top-12 right-12 w-10 h-6 bg-white opacity-70 rounded-full"></div>
+                            <div className="absolute top-4 right-16 w-14 h-8 bg-white opacity-50 rounded-full"></div>
+                          </div>
+                          
+                          {/* Platforms */}
+                          <div className="absolute bottom-16 left-4 w-16 h-3 bg-teal-400 rounded shadow-lg"></div>
+                          <div className="absolute bottom-24 right-6 w-20 h-3 bg-teal-400 rounded shadow-lg"></div>
+                          <div className="absolute bottom-32 left-8 w-14 h-3 bg-red-400 rounded shadow-lg"></div>
+                          
+                          {/* Golden eggs */}
+                          <div className="absolute bottom-20 left-8 w-3 h-4 bg-yellow-400 rounded-full shadow-md"></div>
+                          <div className="absolute bottom-28 right-10 w-3 h-4 bg-yellow-400 rounded-full shadow-md"></div>
+                          
+                          {/* Main chicken image */}
+                          <div className="relative z-10 flex items-center justify-center">
+                            <img 
+                              src="/asset/chicken.png" 
+                              alt="Chirp Jump Chicken"
+                              className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-lg"
+                              style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }}
+                            />
+                          </div>
+                          
+                          {/* Microphone indicator */}
+                          <div className="absolute top-4 right-4 w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg">
+                            <Mic className="w-4 h-4 text-gray-600" />
+                          </div>
+                          
+                          {/* Voice waves animation effect */}
+                          <div className="absolute bottom-8 right-8">
+                            <div className="flex items-center space-x-1">
+                              <div className="w-1 bg-white opacity-60 rounded-full animate-pulse" style={{ height: '8px', animationDelay: '0ms' }}></div>
+                              <div className="w-1 bg-white opacity-80 rounded-full animate-pulse" style={{ height: '12px', animationDelay: '100ms' }}></div>
+                              <div className="w-1 bg-white opacity-60 rounded-full animate-pulse" style={{ height: '6px', animationDelay: '200ms' }}></div>
+                              <div className="w-1 bg-white opacity-90 rounded-full animate-pulse" style={{ height: '10px', animationDelay: '300ms' }}></div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Game Title Overlay */}

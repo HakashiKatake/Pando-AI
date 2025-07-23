@@ -29,6 +29,7 @@ export default function ChirpJumpGame() {
   const streamRef = useRef(null);
   const dataArrayRef = useRef(null);
   const isGameRunningRef = useRef(false);
+  const chickenImageRef = useRef(null);
   
   // Game objects ref - using ref for better performance
   const gameObjectsRef = useRef({
@@ -58,6 +59,15 @@ export default function ChirpJumpGame() {
       const stored = localStorage.getItem('chirp-jump-best-score');
       if (stored) setBestScore(parseInt(stored));
     }
+  }, []);
+
+  // Load chicken image
+  useEffect(() => {
+    const image = new Image();
+    image.onload = () => {
+      chickenImageRef.current = image;
+    };
+    image.src = '/asset/chicken.png';
   }, []);
 
   // Audio functions - BALANCED SENSITIVITY
@@ -373,7 +383,7 @@ export default function ChirpJumpGame() {
     });
     
     // Draw chicken
-    if (objects.chicken) {
+    if (objects.chicken && chickenImageRef.current) {
       const chicken = objects.chicken;
       const screenX = chicken.x - objects.camera.x;
       const screenY = chicken.y - objects.camera.y;
@@ -387,39 +397,14 @@ export default function ChirpJumpGame() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
       ctx.fillRect(2, 37, 38, 8);
       
-      // Body
-      ctx.fillStyle = '#FFDD44';
-      ctx.fillRect(5, 15 + bobOffset, 30, 20);
-      
-      // Head
-      ctx.fillRect(0, 5 + bobOffset, 25, 20);
-      
-      // Beak
-      ctx.fillStyle = '#FF8C00';
-      ctx.fillRect(25, 12 + bobOffset, 8, 6);
-      
-      // Eye
-      ctx.fillStyle = '#000';
-      ctx.fillRect(18, 8 + bobOffset, 4, 4);
-      ctx.fillStyle = '#FFF';
-      ctx.fillRect(19, 9 + bobOffset, 2, 2);
-      
-      // Comb
-      ctx.fillStyle = '#FF4444';
-      ctx.fillRect(8, 0 + bobOffset, 4, 8);
-      ctx.fillRect(12, 2 + bobOffset, 4, 6);
-      
-      // Wings
-      const wingFlap = chicken.onGround ? Math.sin(chicken.animFrame * 0.4) * 3 : 5;
-      ctx.fillStyle = '#FFCC33';
-      ctx.fillRect(10, 12 + bobOffset + wingFlap, 15, 8);
-      
-      // Legs (only when on ground)
-      if (chicken.onGround) {
-        ctx.fillStyle = '#FF8C00';
-        ctx.fillRect(8, 35, 3, 8);
-        ctx.fillRect(20, 35, 3, 8);
-      }
+      // Draw chicken image with bob animation
+      ctx.drawImage(
+        chickenImageRef.current,
+        0,
+        bobOffset,
+        chicken.width,
+        chicken.height
+      );
       
       ctx.restore();
     }

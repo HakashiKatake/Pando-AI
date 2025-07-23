@@ -5,10 +5,11 @@ import { useUser } from '@clerk/nextjs';
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore, useChatStore } from '../../lib/store';
 import { useDataInitialization } from '../../lib/useDataInitialization';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { 
   Send, Shield, ShieldOff, Bot, User, 
   AlertTriangle, Heart, RefreshCw, MoreVertical,
-  Calendar, Clock, ChevronDown
+  Calendar, Clock, ChevronDown, Play, Pause, Volume2, Mic, MicOff
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Header from '@/components/Header';
@@ -24,6 +25,34 @@ export default function ChatPage() {
   const [conversationId, setConversationId] = useState(null);
   const [hasAutoGreeted, setHasAutoGreeted] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Speech Recognition setup
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition
+  } = useSpeechRecognition();
+
+  // Update input when speech recognition transcript changes
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript]);
+
+  const startListening = () => {
+    resetTranscript();
+    setInput('');
+    SpeechRecognition.startListening({ 
+      continuous: true,
+      language: 'en-US'
+    });
+  };
+
+  const stopListening = () => {
+    SpeechRecognition.stopListening();
+  };
 
   useEffect(() => {
     if (!conversationId) {
@@ -294,7 +323,11 @@ export default function ChatPage() {
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <span className="text-lg sm:text-2xl">🐼</span>
+                  <img 
+                    src="/asset/panda-heart.png" 
+                    alt="Pando - Your wellness companion"
+                    className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+                  />
                   <motion.div
                     className="absolute inset-0 rounded-full"
                     style={{
@@ -410,7 +443,11 @@ export default function ChatPage() {
                       background: 'linear-gradient(45deg, #8A6FBF, #6E55A0)'
                     }}
                   >
-                    <span className="text-xs sm:text-sm">🐼</span>
+                    <img 
+                      src="/asset/panda-heart.png" 
+                      alt="Pando"
+                      className="w-4 h-4 sm:w-5 sm:h-5 object-contain"
+                    />
                     <motion.div
                       className="absolute inset-0 rounded-full"
                       style={{
@@ -471,7 +508,7 @@ export default function ChatPage() {
                     placeholder={`Hi ${preferences.name || 'friend'}! Pando is here to listen 🐼`}
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl sm:rounded-2xl focus:outline-none resize-none transition-all duration-200 bg-white text-sm sm:text-base"
                     style={{
-                      borderColor: '#E3DEF1',
+                      borderColor: listening ? '#8A6FBF' : '#E3DEF1',
                       color: '#6E55A0',
                       minHeight: '40px',
                       maxHeight: '100px'
@@ -483,6 +520,31 @@ export default function ChatPage() {
                       transition: { duration: 0.2 }
                     }}
                   />
+                  
+                  {/* Voice Input Button */}
+                  {browserSupportsSpeechRecognition && (
+                    <motion.button
+                      onClick={listening ? stopListening : startListening}
+                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-all duration-200 ${
+                        listening 
+                          ? 'text-white' 
+                          : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                      style={{
+                        backgroundColor: listening ? '#8A6FBF' : 'transparent'
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      title={listening ? 'Stop voice input' : 'Start voice input'}
+                      disabled={isLoading}
+                    >
+                      {listening ? (
+                        <MicOff className="w-4 h-4" />
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
+                    </motion.button>
+                  )}
                 </div>
                 
                 <motion.button
@@ -529,9 +591,22 @@ export default function ChatPage() {
                       <span className="sm:hidden">Private</span>
                     </span>
                   )}
+                  {listening && (
+                    <span className="flex items-center space-x-1 text-purple-600">
+                      <Mic className="w-2 h-2 sm:w-3 sm:h-3 animate-pulse" />
+                      <span>Listening...</span>
+                    </span>
+                  )}
                 </span>
-                <span className="hidden sm:inline">Press Enter to send, Shift+Enter for new line</span>
-                <span className="sm:hidden">Enter to send</span>
+                <span className="hidden sm:inline">
+                  {browserSupportsSpeechRecognition 
+                    ? "Press Enter to send, click mic for voice input" 
+                    : "Press Enter to send, Shift+Enter for new line"
+                  }
+                </span>
+                <span className="sm:hidden">
+                  {browserSupportsSpeechRecognition ? "Enter to send, mic for voice" : "Enter to send"}
+                </span>
               </div>
             </motion.div>
           </div>
@@ -566,7 +641,11 @@ function WelcomeMessage({ userName }) {
         whileHover={{ scale: 1.1 }}
         transition={{ duration: 0.3 }}
       >
-        <span className="text-xl sm:text-2xl">🐼</span>
+        <img 
+          src="/asset/panda-heart.png" 
+          alt="Pando"
+          className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+        />
         <motion.div
           className="absolute inset-0 rounded-full"
           style={{
@@ -647,6 +726,97 @@ function WelcomeMessage({ userName }) {
 function MessageBubble({ message, isUser }) {
   const isCrisis = message.messageType === 'crisis_support';
   const isConcern = message.triggerAnalysis?.level === 'medium';
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const speechRef = useRef(null);
+
+  useEffect(() => {
+    // Check if speech synthesis is supported
+    const isSupported = typeof window !== 'undefined' && 
+                       'speechSynthesis' in window && 
+                       'SpeechSynthesisUtterance' in window;
+    
+    setSpeechSupported(isSupported);
+    
+    if (isSupported) {
+      console.log('Speech synthesis is supported');
+      
+      // Try to load voices immediately
+      const voices = window.speechSynthesis.getVoices();
+      console.log('Initial voices loaded:', voices.length);
+      
+      // Listen for voices to be loaded (Chrome requires this)
+      const handleVoicesChanged = () => {
+        const updatedVoices = window.speechSynthesis.getVoices();
+        console.log('Voices updated:', updatedVoices.length);
+      };
+      
+      window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+      
+      // Cleanup function
+      return () => {
+        window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+        if (speechRef.current) {
+          window.speechSynthesis.cancel();
+        }
+      };
+    } else {
+      console.log('Speech synthesis not supported');
+    }
+  }, []);
+
+  const handleTextToSpeech = () => {
+    if (!speechSupported) {
+      alert('Text-to-speech is not supported in this browser');
+      return;
+    }
+
+    if (isPlaying) {
+      // Stop current speech - simple like breathing page
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+      speechRef.current = null;
+      return;
+    }
+
+    // Cancel any ongoing speech first
+    window.speechSynthesis.cancel();
+
+    // Clean the message text
+    const textToSpeak = message.message
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
+      .replace(/• /g, '') // Remove bullet points
+      .replace(/\n/g, ' ') // Replace newlines with spaces
+      .replace(/[😊😔😢😄😃😀😁😆😅😂🤣😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾🐼]/g, '') // Remove emojis including panda
+      .replace(/[^\w\s.,!?'-]/g, '') // Remove special characters
+      .replace(/\s+/g, ' ') // Clean up spaces
+      .trim();
+
+    if (!textToSpeak || textToSpeak.length < 3) {
+      console.log('Text too short after cleaning');
+      return;
+    }
+
+    // Create utterance - exactly like breathing page approach
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    utterance.volume = 0.7;
+    
+    // Simple event handlers
+    utterance.onstart = () => setIsPlaying(true);
+    utterance.onend = () => {
+      setIsPlaying(false);
+      speechRef.current = null;
+    };
+    utterance.onerror = () => {
+      setIsPlaying(false);
+      speechRef.current = null;
+    };
+
+    speechRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
 
   return (
     <motion.div 
@@ -668,7 +838,11 @@ function MessageBubble({ message, isUser }) {
         {isUser ? (
           <User className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
         ) : (
-          <span className="text-xs sm:text-sm">🐼</span>
+          <img 
+            src="/asset/panda-heart.png" 
+            alt="Pando"
+            className="w-4 h-4 sm:w-5 sm:h-5 object-contain"
+          />
         )}
         {!isUser && (
           <motion.div
@@ -756,10 +930,47 @@ function MessageBubble({ message, isUser }) {
           </div>
         </motion.div>
         
-        <div className={`mt-1 text-xs flex items-center gap-1 sm:gap-2 ${isUser ? 'justify-end' : ''}`} style={{ color: '#8A6FBF' }}>
-          <span>{new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-          {message.privacy && (
-            <Shield className="w-2 h-2 sm:w-3 sm:h-3" />
+        <div className={`mt-1 text-xs flex items-center ${isUser ? 'justify-end' : 'justify-between'}`} style={{ color: '#8A6FBF' }}>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span>{new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            {message.privacy && (
+              <Shield className="w-2 h-2 sm:w-3 sm:h-3" />
+            )}
+          </div>
+          
+          {/* Text-to-Speech button for bot messages */}
+          {!isUser && (
+            <motion.button
+              onClick={handleTextToSpeech}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all duration-200 flex-shrink-0 ${
+                speechSupported 
+                  ? 'hover:bg-gray-200 cursor-pointer' 
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
+              style={{ 
+                color: isPlaying ? '#6E55A0' : '#8A6FBF',
+                backgroundColor: isPlaying ? '#E3DEF1' : 'transparent',
+                minWidth: '44px',
+                minHeight: '32px'
+              }}
+              whileHover={{ scale: speechSupported ? 1.05 : 1 }}
+              whileTap={{ scale: speechSupported ? 0.95 : 1 }}
+              title={
+                !speechSupported 
+                  ? "Text-to-speech not supported in this browser" 
+                  : isPlaying 
+                    ? "Stop speech" 
+                    : "Listen to message"
+              }
+              disabled={!speechSupported}
+            >
+              {isPlaying ? (
+                <Pause className="w-3 h-3" />
+              ) : (
+                <Play className="w-3 h-3" />
+              )}
+              <Volume2 className="w-3 h-3" />
+            </motion.button>
           )}
         </div>
       </div>

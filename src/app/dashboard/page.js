@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useUser } from '@clerk/nextjs'
-import { useAppStore, useMoodStore, useChatStore, useHabitStore } from '../../lib/store'
+import { useAppStore, useMoodStore, useChatStore, useHabitStore, useMusicStore } from '../../lib/store'
 import { useDataInitialization } from '../../lib/useDataInitialization'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
@@ -43,6 +43,7 @@ import {
   CheckSquare
 } from "lucide-react"
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { getRandomQuote, getMoodData, isToday } from '../../lib/utils'
 
 const Dashboard = () => {
@@ -67,6 +68,8 @@ const Dashboard = () => {
     generateDailyQuests,
     updateQuestProgress 
   } = useHabitStore()
+  const { playTrack, setPlaylist } = useMusicStore()
+  const router = useRouter()
   const dataInit = useDataInitialization()
 
   const [currentTime, setCurrentTime] = useState("")
@@ -342,6 +345,30 @@ const Dashboard = () => {
     }
   }
 
+  // Handle meditation play button
+  const handleMeditationPlay = () => {
+    // Define meditation track
+    const meditationTrack = {
+      id: 'meditation-1',
+      title: "Good vibes, good life",
+      artist: "Positive thinking",
+      category: "Chill",
+      bgColor: "bg-purple-300",
+      audioUrl: "/music/1.mp3",
+      bgImage: "/music_bg/img1.jpeg",
+      duration: 1620, // 27 minutes
+    }
+    
+    // Set up playlist with meditation track
+    setPlaylist([meditationTrack])
+    
+    // Start playing the track
+    playTrack(meditationTrack)
+    
+    // Navigate to mood music page
+    router.push('/mood')
+  }
+
   // Use real data or fallback to default, with local state override
   const baseHabits = todaysHabits.length > 0 ? todaysHabits : defaultHabits
   const baseQuests = todaysQuests.length > 0 ? todaysQuests : defaultQuests
@@ -614,8 +641,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex flex-col items-center space-y-6">
-                <div className="w-full h-48 bg-transparent flex items-center justify-center relative">
-                  <div className="text-6xl">🧘‍♀️</div>
+                <div className="w-full h-48 bg-transparent flex items-center justify-center relative overflow-hidden rounded-lg">
+                  <img 
+                    src="/meditation.png" 
+                    alt="Meditation illustration" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 
                 <div className="flex items-center justify-between w-full">
@@ -630,6 +661,7 @@ const Dashboard = () => {
                     style={{ backgroundColor: '#8A6FBF' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#6E55A0'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#8A6FBF'}
+                    onClick={handleMeditationPlay}
                   >
                     <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
                   </Button>
