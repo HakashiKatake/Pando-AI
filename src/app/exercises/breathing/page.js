@@ -15,10 +15,10 @@ export default function BreathingExercisePage() {
   const [selectedTechnique, setSelectedTechnique] = useState('4-7-8');
   const [startTime, setStartTime] = useState(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
-  
+
   const intervalRef = useRef(null);
   const audioContextRef = useRef(null);
-  
+
   const { addSession } = useExerciseStore();
   const dataInit = useDataInitialization();
 
@@ -77,17 +77,12 @@ export default function BreathingExercisePage() {
   // Audio synthesis for voice guidance
   const speakPhase = (phaseName) => {
     if (!audioEnabled || !window.speechSynthesis) return;
-    
-    // Cancel any ongoing speech
     window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(phaseName === 'inhale' ? 'Inhale' : 
-                                                   phaseName === 'exhale' ? 'Exhale' :
-                                                   phaseName === 'hold' ? 'Hold' : 'Pause');
+    const utterance = new window.SpeechSynthesisUtterance(phaseName === 'inhale' ? 'Inhale' :
+      phaseName === 'exhale' ? 'Exhale' : phaseName === 'hold' ? 'Hold' : 'Pause');
     utterance.rate = 0.8;
     utterance.pitch = 1;
     utterance.volume = 0.7;
-    
     window.speechSynthesis.speak(utterance);
   };
 
@@ -96,27 +91,19 @@ export default function BreathingExercisePage() {
       intervalRef.current = setInterval(() => {
         setCount(prevCount => {
           if (prevCount >= currentPhaseCount - 1) {
-            // Move to next phase
             const nextPhaseIndex = (phaseIndex + 1) % phaseNames.length;
-            
             if (nextPhaseIndex === 0) {
-              // Completed a full cycle
               setCycle(prevCycle => {
                 const newCycle = prevCycle + 1;
                 if (newCycle >= currentTechnique.cycles) {
-                  // Exercise complete - will be handled in useEffect
-                  return newCycle; // Return the completed cycle count
+                  return newCycle;
                 }
                 return newCycle;
               });
             }
-            
             setPhaseIndex(nextPhaseIndex);
-            
-            // Speak the new phase
             const newPhaseName = phaseNames[nextPhaseIndex];
             speakPhase(newPhaseName);
-            
             return 0;
           }
           return prevCount + 1;
@@ -125,14 +112,11 @@ export default function BreathingExercisePage() {
     } else {
       clearInterval(intervalRef.current);
     }
-
     return () => clearInterval(intervalRef.current);
   }, [isActive, currentPhaseCount, phaseIndex, phaseNames.length, currentTechnique.cycles, audioEnabled]);
 
-  // Handle exercise completion
   useEffect(() => {
     if (cycle >= currentTechnique.cycles && isActive) {
-      // Exercise complete
       setIsActive(false);
       setPhaseIndex(0);
       setCycle(0);
@@ -146,8 +130,6 @@ export default function BreathingExercisePage() {
     setCount(0);
     setCycle(0);
     setStartTime(new Date());
-    
-    // Speak the initial phase
     speakPhase(phaseNames[0]);
   };
 
@@ -184,7 +166,6 @@ export default function BreathingExercisePage() {
   const saveCompletedSession = async () => {
     const endTime = new Date();
     const duration = startTime ? Math.round((endTime - startTime) / 1000) : 0;
-    
     const sessionData = {
       exerciseType: 'breathing',
       technique: selectedTechnique,
@@ -192,7 +173,6 @@ export default function BreathingExercisePage() {
       completedCycles: currentTechnique.cycles,
       timestamp: endTime.toISOString(),
     };
-
     try {
       await addSession(sessionData, dataInit.userId, dataInit.guestId, dataInit.getToken);
       console.log('Breathing session saved successfully');
@@ -233,263 +213,259 @@ export default function BreathingExercisePage() {
 
   return (
     <div className="min-h-screen relative" style={{ background: 'url(/asset/card1.png) center/cover no-repeat' }}>
-      {/* Overlay for readability */}
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(247,245,250,0.85)', zIndex: 1 }} />
       <div style={{ position: 'relative', zIndex: 2 }}>
-      {/* Header */}
-      <motion.header 
-        className="px-6 py-4"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link 
-            href="/dashboard"
-            className="flex items-center space-x-2 transition-colors duration-200"
-            style={{ color: '#8A6FBF' }}
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Dashboard</span>
-          </Link>
-          
-          <motion.button
-            onClick={() => setAudioEnabled(!audioEnabled)}
-            className={`p-2 rounded-lg transition-all duration-200 ${
-              audioEnabled ? 'text-white' : 'text-gray-400'
-            }`}
-            style={{ 
-              backgroundColor: audioEnabled ? '#8A6FBF' : '#E3DEF1'
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Volume2 className="w-5 h-5" />
-          </motion.button>
-        </div>
-      </motion.header>
+        {/* Header */}
+        <motion.header
+          className="px-4 sm:px-6 py-3 sm:py-4"
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <Link
+              href="/dashboard"
+              className="flex items-center space-x-2 transition-colors duration-200"
+              style={{ color: '#8A6FBF' }}
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
+            </Link>
 
-      <motion.div 
-        className="max-w-4xl mx-auto px-6 py-8"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Header Section */}
-        <motion.div variants={itemVariants} className="text-center mb-8">
-          {/* Lungs Icon */}
-          <motion.div 
-            className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#FFB5B5' }}
-            animate={{ 
-              scale: isActive && currentPhaseName === 'inhale' ? [1, 1.1, 1] : 1,
-            }}
-            transition={{ 
-              duration: isActive ? currentPhaseCount : 0,
-              repeat: isActive && currentPhaseName === 'inhale' ? Infinity : 0,
-              ease: "easeInOut"
-            }}
-          >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 3C10.9 3 10 3.9 10 5V7.5C10 8.33 9.33 9 8.5 9H6C4.9 9 4 9.9 4 11V18C4 19.1 4.9 20 6 20H8.5C9.33 20 10 19.33 10 18.5V16C10 15.45 10.45 15 11 15H13C13.55 15 14 15.45 14 16V18.5C14 19.33 14.67 20 15.5 20H18C19.1 20 20 19.1 20 18V11C20 9.9 19.1 9 18 9H15.5C14.67 9 14 8.33 14 7.5V5C14 3.9 13.1 3 12 3Z"
-                fill="white"
-              />
-            </svg>
-          </motion.div>
-          
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#6E55A0' }}>
-            Breathing Exercises
-          </h1>
-          <p className="text-sm" style={{ color: '#8A6FBF' }}>
-            Find your calm through mindful breathing
-          </p>
-        </motion.div>
-
-        {/* Technique Selector */}
-        <motion.div variants={cardVariants} className="bg-white rounded-2xl shadow-sm border p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-4" style={{ color: '#6E55A0' }}>
-            Choose Your Technique
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(techniques).map(([key, technique]) => (
-              <motion.button
-                key={key}
-                onClick={() => {
-                  setSelectedTechnique(key);
-                  stopExercise();
-                }}
-                className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                  selectedTechnique === key
-                    ? 'border-2'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-                style={{
-                  borderColor: selectedTechnique === key ? '#8A6FBF' : undefined,
-                  backgroundColor: selectedTechnique === key ? '#E3DEF1' : undefined
-                }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <h3 className="font-semibold mb-1" style={{ color: '#6E55A0' }}>
-                  {technique.name}
-                </h3>
-                <p className="text-sm mb-2" style={{ color: '#8A6FBF' }}>
-                  {technique.description}
-                </p>
-                <div className="text-xs" style={{ color: '#8A6FBF' }}>
-                  {technique.cycles} cycles • {technique.pattern}
-                </div>
-              </motion.button>
-            ))}
+            <motion.button
+              onClick={() => setAudioEnabled(!audioEnabled)}
+              className={`p-2 rounded-lg transition-all duration-200 ${audioEnabled ? 'text-white' : 'text-gray-400'}`}
+              style={{
+                backgroundColor: audioEnabled ? '#8A6FBF' : '#E3DEF1'
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Volume2 className="w-5 h-5" />
+            </motion.button>
           </div>
-        </motion.div>
+        </motion.header>
 
-        {/* Main Exercise Area */}
-        <motion.div variants={cardVariants} className="bg-white rounded-2xl shadow-sm border p-8 text-center">
-          <motion.div variants={itemVariants} className="mb-6">
-            <h3 className="text-xl font-semibold mb-2" style={{ color: '#6E55A0' }}>
-              {currentTechnique.name}
-            </h3>
-            <p style={{ color: '#8A6FBF' }}>
-              {currentTechnique.description}
-            </p>
-          </motion.div>
-
-          {/* Panda Placeholder */}
-          <motion.div 
-            className="w-32 h-32 mx-auto mb-6 rounded-2xl flex items-center justify-center"
-            style={{ backgroundColor: '#E3DEF1' }}
-            animate={{ 
-              scale: isActive && currentPhaseName === 'inhale' ? [1, 1.15, 1] : 
-                     isActive && currentPhaseName === 'exhale' ? [1, 0.85, 1] : 1,
-            }}
-            transition={{ 
-              duration: isActive ? currentPhaseCount : 0,
-              repeat: isActive ? Infinity : 0,
-              ease: "easeInOut"
-            }}
-          >
-            <img 
-              src={currentPhaseName === 'inhale' ? '/asset/panda-inhale.png' : '/asset/panda-exhale.png'}
-              alt={`Panda ${currentPhaseName === 'inhale' ? 'inhaling' : 'exhaling'}`}
-              className="w-24 h-24 object-contain"
-            />
-          </motion.div>
-
-          {/* Phase Display */}
-          <AnimatePresence mode="wait">
+        <motion.div
+          className="max-w-4xl mx-auto px-2 sm:px-6 py-6 sm:py-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Header Section */}
+          <motion.div variants={itemVariants} className="text-center mb-8">
+            {/* Lungs Icon */}
             <motion.div
-              key={currentPhaseName}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="mb-4"
+              className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: '#FFB5B5' }}
+              animate={{ scale: isActive && currentPhaseName === 'inhale' ? [1, 1.1, 1] : 1 }}
+              transition={{
+                duration: isActive ? currentPhaseCount : 0,
+                repeat: isActive && currentPhaseName === 'inhale' ? Infinity : 0,
+                ease: "easeInOut"
+              }}
             >
-              <div className="inline-block px-4 py-2 rounded-full text-sm font-medium capitalize mb-2"
-                   style={{ 
-                     backgroundColor: '#E3DEF1',
-                     color: '#6E55A0'
-                   }}>
-                {currentPhaseName === 'inhale' ? 'Inhale' :
-                 currentPhaseName === 'exhale' ? 'Exhale' :
-                 currentPhaseName === 'hold' ? 'Hold' : 'Pause'}
-              </div>
-              
-              <motion.div 
-                className="text-4xl font-bold mb-2"
-                style={{ color: '#6E55A0' }}
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              >
-                {currentPhaseCount - count}
-              </motion.div>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3C10.9 3 10 3.9 10 5V7.5C10 8.33 9.33 9 8.5 9H6C4.9 9 4 9.9 4 11V18C4 19.1 4.9 20 6 20H8.5C9.33 20 10 19.33 10 18.5V16C10 15.45 10.45 15 11 15H13C13.55 15 14 15.45 14 16V18.5C14 19.33 14.67 20 15.5 20H18C19.1 20 20 19.1 20 18V11C20 9.9 19.1 9 18 9H15.5C14.67 9 14 8.33 14 7.5V5C14 3.9 13.1 3 12 3Z"
+                  fill="white"
+                />
+              </svg>
             </motion.div>
-          </AnimatePresence>
-
-          {/* Instruction */}
-          <motion.div variants={itemVariants} className="mb-6">
-            <p className="text-lg mb-2" style={{ color: '#6E55A0' }}>
-              {getPhaseInstruction(currentPhaseName)}
-            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#6E55A0' }}>
+              Breathing Exercises
+            </h1>
             <p className="text-sm" style={{ color: '#8A6FBF' }}>
-              Cycle {cycle + 1} of {currentTechnique.cycles}
+              Find your calm through mindful breathing
             </p>
           </motion.div>
 
-          {/* Progress Bar */}
-          <motion.div variants={itemVariants} className="w-full bg-gray-200 rounded-full h-3 mb-8">
-            <motion.div 
-              className="h-3 rounded-full transition-all duration-300"
-              style={{ 
-                width: `${overallProgress}%`,
-                background: 'linear-gradient(90deg, #8A6FBF 0%, #6E55A0 100%)'
-              }}
-              initial={{ width: 0 }}
-              animate={{ width: `${overallProgress}%` }}
-            />
+          {/* Technique Selector */}
+          <motion.div variants={cardVariants} className="bg-white rounded-2xl shadow-sm border p-4 sm:p-6 mb-8">
+            <h2 className="text-base sm:text-lg font-semibold mb-4" style={{ color: '#6E55A0' }}>
+              Choose Your Technique
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {Object.entries(techniques).map(([key, technique]) => (
+                <motion.button
+                  key={key}
+                  onClick={() => {
+                    setSelectedTechnique(key);
+                    stopExercise();
+                  }}
+                  className={`p-3 sm:p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                    selectedTechnique === key
+                      ? 'border-2'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                  style={{
+                    borderColor: selectedTechnique === key ? '#8A6FBF' : undefined,
+                    backgroundColor: selectedTechnique === key ? '#E3DEF1' : undefined
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <h3 className="font-semibold mb-1" style={{ color: '#6E55A0' }}>
+                    {technique.name}
+                  </h3>
+                  <p className="text-xs sm:text-sm mb-2" style={{ color: '#8A6FBF' }}>
+                    {technique.description}
+                  </p>
+                  <div className="text-xs" style={{ color: '#8A6FBF' }}>
+                    {technique.cycles} cycles • {technique.pattern}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
           </motion.div>
 
-          {/* Controls */}
-          <motion.div variants={itemVariants} className="flex items-center justify-center space-x-4">
-            {!isActive ? (
+          {/* Main Exercise Area */}
+          <motion.div variants={cardVariants} className="bg-white rounded-2xl shadow-sm border p-4 sm:p-8 text-center">
+            <motion.div variants={itemVariants} className="mb-6">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: '#6E55A0' }}>
+                {currentTechnique.name}
+              </h3>
+              <p className="text-xs sm:text-base" style={{ color: '#8A6FBF' }}>
+                {currentTechnique.description}
+              </p>
+            </motion.div>
+
+            {/* Panda Placeholder */}
+            <motion.div
+              className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-6 rounded-2xl flex items-center justify-center"
+              style={{ backgroundColor: '#E3DEF1' }}
+              animate={{
+                scale: isActive && currentPhaseName === 'inhale' ? [1, 1.15, 1] :
+                  isActive && currentPhaseName === 'exhale' ? [1, 0.85, 1] : 1,
+              }}
+              transition={{
+                duration: isActive ? currentPhaseCount : 0,
+                repeat: isActive ? Infinity : 0,
+                ease: "easeInOut"
+              }}
+            >
+              <img
+                src={currentPhaseName === 'inhale' ? '/asset/panda-inhale.png' : '/asset/panda-exhale.png'}
+                alt={`Panda ${currentPhaseName === 'inhale' ? 'inhaling' : 'exhaling'}`}
+                className="w-16 h-16 sm:w-24 sm:h-24 object-contain"
+              />
+            </motion.div>
+
+            {/* Phase Display */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentPhaseName}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-4"
+              >
+                <div className="inline-block px-4 py-2 rounded-full text-xs sm:text-sm font-medium capitalize mb-2"
+                  style={{
+                    backgroundColor: '#E3DEF1',
+                    color: '#6E55A0'
+                  }}>
+                  {currentPhaseName === 'inhale' ? 'Inhale' :
+                    currentPhaseName === 'exhale' ? 'Exhale' :
+                      currentPhaseName === 'hold' ? 'Hold' : 'Pause'}
+                </div>
+                <motion.div
+                  className="text-3xl sm:text-4xl font-bold mb-2"
+                  style={{ color: '#6E55A0' }}
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  {currentPhaseCount - count}
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Instruction */}
+            <motion.div variants={itemVariants} className="mb-6">
+              <p className="text-base sm:text-lg mb-2" style={{ color: '#6E55A0' }}>
+                {getPhaseInstruction(currentPhaseName)}
+              </p>
+              <p className="text-xs sm:text-sm" style={{ color: '#8A6FBF' }}>
+                Cycle {cycle + 1} of {currentTechnique.cycles}
+              </p>
+            </motion.div>
+
+            {/* Progress Bar */}
+            <motion.div variants={itemVariants} className="w-full bg-gray-200 rounded-full h-3 mb-8">
+              <motion.div
+                className="h-3 rounded-full transition-all duration-300"
+                style={{
+                  width: `${overallProgress}%`,
+                  background: 'linear-gradient(90deg, #8A6FBF 0%, #6E55A0 100%)'
+                }}
+                initial={{ width: 0 }}
+                animate={{ width: `${overallProgress}%` }}
+              />
+            </motion.div>
+
+            {/* Controls */}
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-wrap gap-3 sm:gap-4 justify-center"
+            >
+              {!isActive ? (
+                <motion.button
+                  onClick={startExercise}
+                  className="flex-1 min-w-[110px] sm:min-w-[150px] text-white px-4 py-3 rounded-full font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
+                  style={{
+                    background: 'linear-gradient(135deg, #10B981 0%, #22C55E 100%)'
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Play className="w-5 h-5" />
+                  <span>Start</span>
+                </motion.button>
+              ) : (
+                <motion.button
+                  onClick={pauseExercise}
+                  className="flex-1 min-w-[110px] sm:min-w-[150px] text-white px-4 py-3 rounded-full font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
+                  style={{
+                    background: 'linear-gradient(135deg, #F59E0B 0%, #EAB308 100%)'
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Pause className="w-5 h-5" />
+                  <span>Pause</span>
+                </motion.button>
+              )}
+
               <motion.button
-                onClick={startExercise}
-                className="text-white px-8 py-3 rounded-full font-semibold transition-all duration-200 flex items-center space-x-2"
-                style={{ 
-                  background: 'linear-gradient(135deg, #10B981 0%, #22C55E 100%)'
+                onClick={stopExercise}
+                className="flex-1 min-w-[110px] sm:min-w-[150px] text-white px-4 py-3 rounded-full font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
+                style={{
+                  background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Play className="w-5 h-5" />
-                <span>Start</span>
+                <Square className="w-5 h-5" />
+                <span>Stop</span>
               </motion.button>
-            ) : (
+
               <motion.button
-                onClick={pauseExercise}
-                className="text-white px-8 py-3 rounded-full font-semibold transition-all duration-200 flex items-center space-x-2"
-                style={{ 
-                  background: 'linear-gradient(135deg, #F59E0B 0%, #EAB308 100%)'
+                onClick={resetExercise}
+                className="flex-1 min-w-[110px] sm:min-w-[150px] text-white px-4 py-3 rounded-full font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
+                style={{
+                  background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Pause className="w-5 h-5" />
-                <span>Pause</span>
+                <RotateCcw className="w-5 h-5" />
+                <span>Reset</span>
               </motion.button>
-            )}
-            
-            <motion.button
-              onClick={stopExercise}
-              className="text-white px-8 py-3 rounded-full font-semibold transition-all duration-200 flex items-center space-x-2"
-              style={{ 
-                background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'
-              }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Square className="w-5 h-5" />
-              <span>Stop</span>
-            </motion.button>
-            
-            <motion.button
-              onClick={resetExercise}
-              className="text-white px-8 py-3 rounded-full font-semibold transition-all duration-200 flex items-center space-x-2"
-              style={{ 
-                background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
-              }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <RotateCcw className="w-5 h-5" />
-              <span>Reset</span>
-            </motion.button>
+            </motion.div>
           </motion.div>
         </motion.div>
-      </motion.div>
       </div>
     </div>
   );
