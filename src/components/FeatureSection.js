@@ -132,17 +132,17 @@ export default function FeaturesSection() {
 
   return (
     <div className="relative">
-      {/* Top Wavy Divider */}
-      <WaveDivider />
+    {/* Top Wavy Divider */}
+        <WaveDivider />
 
-      <section className="relative bg-purple-300 overflow-hidden">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div
+        <section className="relative" style={{ backgroundColor: "#D3C3F3" }}>
+          <div className="container mx-auto px-4 py-16 md:py-24">
+            <div
             ref={titleRef}
             className={`text-center mb-16 transform transition-all duration-700 ease-out ${
               titleVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
             }`}
-          >
+            >
             <Badge
               variant="secondary"
               className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors duration-300"
@@ -152,9 +152,9 @@ export default function FeaturesSection() {
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
               Discover your inner peace
             </h2>
-          </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <FeatureCard
                 key={index}
@@ -164,11 +164,11 @@ export default function FeaturesSection() {
                 delay={feature.delay}
               />
             ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Bottom Wavy Divider */}
+  
       <WaveDivider flip={true} />
     </div>
   )
