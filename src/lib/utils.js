@@ -1,108 +1,120 @@
 import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-// Generate UUID for guest users
+// Generate a unique guest ID
 export function generateGuestId() {
-  return 'guest_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+  return 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-// Local storage helpers
+// Check if localStorage is available
+export function shouldUseLocalStorage() {
+  try {
+    return typeof window !== 'undefined' && window.localStorage;
+  } catch {
+    return false;
+  }
+}
+
+// Storage abstraction
 export const storage = {
-  get: (key) => {
-    if (typeof window === 'undefined') return null;
+  getItem: (key) => {
+    if (!shouldUseLocalStorage()) return null;
     try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : null;
+      return localStorage.getItem(key);
     } catch {
       return null;
     }
   },
-  
-  set: (key, value) => {
-    if (typeof window === 'undefined') return;
+  setItem: (key, value) => {
+    if (!shouldUseLocalStorage()) return;
     try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      console.error('Local storage error:', error);
+      localStorage.setItem(key, value);
+    } catch {
+      // Silently fail
     }
   },
-  
-  remove: (key) => {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(key);
+  removeItem: (key) => {
+    if (!shouldUseLocalStorage()) return;
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Silently fail
+    }
   }
 };
 
-// Date helpers
-export function formatDate(date) {
-  return new Date(date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+// Clear all guest data from localStorage
+export function clearGuestData() {
+  if (!shouldUseLocalStorage()) return;
+  
+  try {
+    // Get the current guest ID if it exists
+    const guestId = storage.getItem('calm-connect-guest-id');
+    
+    // Clear all main localStorage keys
+    const keysToRemove = [
+      'calm-connect-app',
+      'calm-connect-moods', 
+      'calm-connect-chat',
+      'calm-connect-journal',
+      'calm-connect-exercises',
+      'calm-connect-feedback',
+      'calm-connect-habits',
+      'calm-connect-guest-id'
+    ];
+    
+    keysToRemove.forEach(key => {
+      storage.removeItem(key);
+    });
+    
+    // Clear guest-specific habit data if guest ID exists
+    if (guestId) {
+      storage.removeItem(`calm-connect-habits-guest-${guestId}`);
+    }
+    
+    console.log('Guest data cleared from localStorage');
+  } catch (error) {
+    console.error('Error clearing guest data:', error);
+  }
 }
 
+// Check if a date is today
 export function isToday(date) {
   const today = new Date();
-  const compareDate = new Date(date);
-  return today.toDateString() === compareDate.toDateString();
+  const checkDate = new Date(date);
+  return checkDate.toDateString() === today.toDateString();
 }
 
-// Mood helpers
-export const moods = [
-  { value: 1, label: 'Terrible', emoji: '😢', color: 'bg-red-500' },
-  { value: 2, label: 'Poor', emoji: '😔', color: 'bg-orange-500' },
-  { value: 3, label: 'Okay', emoji: '😐', color: 'bg-yellow-500' },
-  { value: 4, label: 'Good', emoji: '😊', color: 'bg-green-500' },
-  { value: 5, label: 'Excellent', emoji: '😄', color: 'bg-blue-500' }
-];
-
-export function getMoodData(value) {
-  return moods.find(mood => mood.value === value) || moods[2];
+// Get mood data for display
+export function getMoodData(moodValue) {
+  const moodMap = {
+    1: { label: 'Terrible', color: '#EF4444', emoji: '😞' },
+    2: { label: 'Poor', color: '#F97316', emoji: '😔' },
+    3: { label: 'Okay', color: '#EAB308', emoji: '😐' },
+    4: { label: 'Good', color: '#22C55E', emoji: '😊' },
+    5: { label: 'Excellent', color: '#3B82F6', emoji: '😄' }
+  };
+  return moodMap[moodValue] || moodMap[3];
 }
 
-// Wellness quotes
-export const wellnessQuotes = [
-  "The present moment is the only time over which we have dominion. - Thích Nhất Hạnh",
-  "You are not your thoughts, you are the awareness behind your thoughts.",
+// Random inspirational quotes
+const quotes = [
+  "Every day is a new beginning. Take a deep breath and start again.",
+  "You are stronger than you think and more capable than you imagine.",
   "Progress, not perfection, is the goal.",
-  "Be kind to yourself. You're doing the best you can.",
-  "Every small step forward is still progress.",
   "Your mental health is just as important as your physical health.",
-  "It's okay to not be okay sometimes.",
-  "Healing is not linear. Be patient with yourself.",
-  "You are stronger than you know and more capable than you realize.",
-  "Self-care is not selfish. It's essential."
+  "It's okay to not be okay sometimes. What matters is that you keep going.",
+  "Small steps every day lead to big changes over time.",
+  "You have survived 100% of your difficult days so far. You're doing great.",
+  "Be kind to yourself. You're doing the best you can.",
+  "Your feelings are valid, and seeking help is a sign of strength.",
+  "Remember: this feeling is temporary, but your strength is permanent."
 ];
 
 export function getRandomQuote() {
-  return wellnessQuotes[Math.floor(Math.random() * wellnessQuotes.length)];
-}
-
-// Clear all guest data from localStorage when user signs in
-export function clearGuestData() {
-  if (typeof window === 'undefined') return;
-  
-  const guestDataKeys = [
-    'calm-connect-app',
-    'calm-connect-moods', 
-    'calm-connect-chat',
-    'calm-connect-journal',
-    'calm-connect-exercises',
-    'calm-connect-feedback'
-  ];
-  
-  guestDataKeys.forEach(key => {
-    localStorage.removeItem(key);
-  });
-}
-
-// Check if user should use localStorage (guest) or database (authenticated)
-export function shouldUseLocalStorage(userId, guestId) {
-  return !userId && guestId;
+  return quotes[Math.floor(Math.random() * quotes.length)];
 }

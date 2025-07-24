@@ -12,6 +12,7 @@ import Image from "next/image";
 import { motion, useAnimation } from "framer-motion";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap/CardSwap";
 import FeaturesSection from "@/components/FeatureSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
 
 // Custom hook for counting animation
 function useCountUp(end, duration = 2, start = 0) {
@@ -648,9 +649,8 @@ export default function WellnessLanding() {
         </div>
       </section>
 
-      
-
-     
+      {/* Testimonials Section */}
+      <TestimonialsSection />
 
       <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
 
