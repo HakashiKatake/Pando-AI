@@ -444,6 +444,31 @@ export const useChatStore = create((set, get) => ({
 
 // Feedback store
 export const useFeedbackStore = create((set, get) => ({
+  deleteEntry: async (entryId, userId, guestId) => {
+    if (userId) {
+      // Authenticated: delete from database
+      try {
+        const response = await fetch(`/api/feedback/${entryId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (response.ok) {
+          get().loadEntriesFromAPI(userId, guestId);
+        }
+      } catch (error) {
+        console.error('Failed to delete feedback entry:', error);
+      }
+    } else {
+      // Guest: delete from localStorage
+      set(state => {
+        const newEntries = state.entries.filter(entry => entry.id !== entryId);
+        if (guestId) {
+          localStorage.setItem('calm-connect-feedback', JSON.stringify(newEntries));
+        }
+        return { entries: newEntries };
+      });
+    }
+  },
   entries: [],
   isLoading: false,
   

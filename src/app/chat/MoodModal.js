@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const moods = [
-  { value: 1, label: 'Terrible', emoji: '😢', color: 'bg-red-500' },
-  { value: 2, label: 'Poor', emoji: '😔', color: 'bg-orange-500' },
-  { value: 3, label: 'Okay', emoji: '😐', color: 'bg-yellow-500' },
-  { value: 4, label: 'Good', emoji: '😊', color: 'bg-green-500' },
-  { value: 5, label: 'Excellent', emoji: '😄', color: 'bg-blue-500' }
+{ value: 1, label: 'Terrible', img: '/asset/terrible.png', color: 'bg-red-500' },
+{ value: 2, label: 'Poor', img: '/asset/sad.png', color: 'bg-orange-500' },
+{ value: 3, label: 'Okay', img: '/asset/neutral.png', color: 'bg-yellow-500' },
+{ value: 4, label: 'Good', img: '/asset/happy.png', color: 'bg-green-500' },
+{ value: 5, label: 'Excellent', img: '/asset/excellet.png', color: 'bg-blue-500' }
 ];
 
 export default function MoodModal({ onClose, onSave }) {
@@ -53,7 +53,9 @@ export default function MoodModal({ onClose, onSave }) {
               }`}
               style={mood === moodOption.value ? { ringColor: '#8A6FBF' } : {}}
             >
-              <div className="text-2xl mb-1">{moodOption.emoji}</div>
+              <div className="mb-1 flex items-center justify-center">
+                <img src={moodOption.img} alt={moodOption.label} className="w-8 h-8" />
+              </div>
               <div className="text-xs font-medium">{moodOption.label}</div>
             </button>
           ))}
