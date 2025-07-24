@@ -11,7 +11,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useAnimation } from "framer-motion";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap/CardSwap";
-import CardSwap from "@/components/CardSwap/CardSwap";
 import FeaturesSection from "@/components/FeatureSection";
 
 // Custom hook for counting animation
