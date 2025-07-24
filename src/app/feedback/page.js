@@ -138,9 +138,17 @@ const JournalEntries = () => {
     })
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-  const moodEmojis = ["😢", "😞", "😐", "😊", "😄"];
-  const moodToEmoji = (mood) => {
-    return moodEmojis[mood - 1] || "😐";
+  // Panda images for moods
+  const moodImages = [
+    { value: 1, label: 'Terrible', img: '/asset/terrible.png' },
+    { value: 2, label: 'Poor', img: '/asset/sad.png' },
+    { value: 3, label: 'Okay', img: '/asset/neutral.png' },
+    { value: 4, label: 'Good', img: '/asset/happy.png' },
+    { value: 5, label: 'Excellent', img: '/asset/excellet.png' }
+  ];
+  const moodToImage = (mood) => {
+    const found = moodImages.find(m => m.value === mood);
+    return found ? found.img : '/asset/neutral.png';
   };
 
   const getMoodColor = (mood) => {
@@ -218,13 +226,12 @@ const JournalEntries = () => {
     const entryData = {
       type: 'journal',
       content: thoughts,
-      mood: moodEmojis.indexOf(selectedMood) + 1,
+      mood: typeof selectedMood === 'number' ? selectedMood : 3,
       gratitude: gratitude || undefined,
       goals: goals || undefined,
       tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : undefined,
       title: title || undefined
     };
-    
     handleSubmitEntry(entryData);
   };
 
@@ -247,7 +254,7 @@ const JournalEntries = () => {
     setGratitude(entry.gratitude || "");
     setGoals(entry.goals || "");
     setTags(entry.tags ? entry.tags.join(', ') : "");
-    setSelectedMood(moodToEmoji(entry.mood));
+    setSelectedMood(entry.mood || 3);
     setShowForm(true);
   };
 
@@ -661,7 +668,9 @@ const JournalEntries = () => {
                             {entry.title || 'Untitled Entry'}
                           </h3>
                           <div className="flex items-center gap-1">
-                            <span className="text-xl">{moodToEmoji(entry.mood)}</span>
+                            <span className="w-8 h-8 inline-block align-middle">
+                              <img src={moodToImage(entry.mood)} alt="Mood" className="w-8 h-8" />
+                            </span>
                             <span className="text-sm font-medium text-gray-600">{entry.mood}/5</span>
                           </div>
                           <Badge variant="outline" className="text-xs">{entry.type}</Badge>
@@ -805,19 +814,20 @@ const JournalEntries = () => {
               <div className="mb-4 sm:mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">Mood</label>
                 <div className="flex gap-2 sm:gap-3 justify-center sm:justify-start">
-                  {moodEmojis.map((emoji, index) => (
+                  {moodImages.map((moodOption) => (
                     <motion.button
-                      key={index}
+                      key={moodOption.value}
                       whileHover={{ scale: 1.2 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => setSelectedMood(emoji)}
-                      className={`text-2xl sm:text-3xl p-2 sm:p-3 rounded-lg transition-all touch-manipulation ${
-                        selectedMood === emoji 
+                      onClick={() => setSelectedMood(moodOption.value)}
+                      className={`p-2 sm:p-3 rounded-lg transition-all touch-manipulation ${
+                        selectedMood === moodOption.value 
                           ? 'bg-purple-100 ring-2 ring-purple-500' 
                           : 'hover:bg-gray-100'
                       }`}
                     >
-                      {emoji}
+                      <img src={moodOption.img} alt={moodOption.label} className="w-8 h-8 mx-auto mb-1" />
+                      <div className="text-xs font-medium text-center">{moodOption.label}</div>
                     </motion.button>
                   ))}
                 </div>
