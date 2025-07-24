@@ -182,6 +182,13 @@ export default function ChatPage() {
     setInput('');
     setLoading(true);
 
+    // Check for anxiety/related keywords and suggest features
+    const anxietyKeywords = [
+      'anxious', 'anxiety', 'panic', 'nervous', 'worried', 'stressed', 'overwhelmed', 'tense', 'fear', 'scared', 'afraid', 'restless'
+    ];
+    const lowerMsg = userMessage.toLowerCase();
+    const shouldSuggest = anxietyKeywords.some(word => lowerMsg.includes(word));
+
     try {
       if (dataInit.userId) {
         // For authenticated users, call addMessage which handles the API call
@@ -224,6 +231,16 @@ export default function ChatPage() {
         } else {
           throw new Error(data.error || 'Failed to send message');
         }
+      }
+
+      // Suggest features if anxiety detected
+      if (shouldSuggest) {
+        addMessage({
+          role: 'assistant',
+          message:
+            "I'm here for you. If you're feeling anxious or stressed, that's completely okay. Would you like to try something to help you feel calmer? You can try a breathing exercise, listen to some music, or play a relaxing game. Let me know if you'd like more support!",
+          messageType: 'calm_suggestions',
+        }, dataInit.userId, dataInit.guestId);
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -898,7 +915,7 @@ function MessageBubble({ message, isUser }) {
           />
         )}
       </motion.div>
-      
+
       <div className={`max-w-xs sm:max-w-md lg:max-w-lg ${isUser ? 'ml-auto' : ''}`}>
         <motion.div 
           className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm border-2 relative overflow-hidden ${
@@ -949,7 +966,7 @@ function MessageBubble({ message, isUser }) {
               <span className="text-xs sm:text-sm font-medium">Crisis Support Resources</span>
             </motion.div>
           )}
-          
+
           <div className={`prose prose-sm max-w-none relative z-10 ${
             isUser ? 'prose-invert' : isCrisis ? 'prose-red' : ''
           }`} style={!isUser ? { color: '#6E55A0' } : {}}>
@@ -965,8 +982,32 @@ function MessageBubble({ message, isUser }) {
               </p>
             ))}
           </div>
+
+          {/* Bubble buttons for calm_suggestions */}
+          {message.messageType === 'calm_suggestions' && !isUser && (
+            <div className="flex flex-row gap-2 mt-4 justify-center">
+              <button
+                className="px-4 py-2 rounded-full bg-[#E3DEF1] text-[#6E55A0] font-semibold shadow hover:bg-[#8A6FBF] hover:text-white transition"
+                onClick={() => window.location.href = 'exercises/breathing'}
+              >
+                Breathing Exercises
+              </button>
+              <button
+                className="px-4 py-2 rounded-full bg-[#E3DEF1] text-[#6E55A0] font-semibold shadow hover:bg-[#8A6FBF] hover:text-white transition"
+                onClick={() => window.location.href = '/mood'}
+              >
+                Mood Music
+              </button>
+              <button
+                className="px-4 py-2 rounded-full bg-[#E3DEF1] text-[#6E55A0] font-semibold shadow hover:bg-[#8A6FBF] hover:text-white transition"
+                onClick={() => window.location.href = '/games'}
+              >
+                Relaxing Games
+              </button>
+            </div>
+          )}
         </motion.div>
-        
+
         <div className={`mt-1 text-xs flex items-center ${isUser ? 'justify-end' : 'justify-between'}`} style={{ color: '#8A6FBF' }}>
           <div className="flex items-center gap-1 sm:gap-2">
             <span>{new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -974,7 +1015,7 @@ function MessageBubble({ message, isUser }) {
               <Shield className="w-2 h-2 sm:w-3 sm:h-3" />
             )}
           </div>
-          
+
           {/* Text-to-Speech button for bot messages */}
           {!isUser && (
             <motion.button

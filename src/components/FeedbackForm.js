@@ -134,7 +134,7 @@ export function FeedbackForm({
             <label className="text-sm font-medium">Tags</label>
             
             {/* Current Tags */}
-            {formData.tags.length > 0 && (
+            {(Array.isArray(formData.tags) && formData.tags.length > 0) && (
               <div className="flex flex-wrap gap-2">
                 {formData.tags.map((tag) => (
                   <Badge
