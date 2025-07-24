@@ -14,7 +14,7 @@ export const Card = forwardRef(
     <div
       ref={ref}
       {...rest}
-      className={`absolute top-1/2 left-1/2 rounded-xl border border-white [transform-style:preserve-3d] [will-change:transform] [backface-visibility:hidden] ${customClass ?? ""} ${rest.className ?? ""}`.trim()}
+      className={`absolute top-1/2 left-1/2 rounded-xl border border-white bg-black [transform-style:preserve-3d] [will-change:transform] [backface-visibility:hidden] ${customClass ?? ""} ${rest.className ?? ""}`.trim()}
     />
   )
 );
@@ -68,12 +68,12 @@ const CardSwap = ({
         returnDelay: 0.05,
       }
       : {
-        ease: "power1.inOut",
-        durDrop: 0.8,
-        durMove: 0.8,
-        durReturn: 0.8,
-        promoteOverlap: 0.45,
-        returnDelay: 0.2,
+        ease: "power2.inOut",
+        durDrop: 1.2,
+        durMove: 1.0,
+        durReturn: 1.4,
+        promoteOverlap: 0.6,
+        returnDelay: 0.3,
       };
 
   const childArr = useMemo(
@@ -112,9 +112,10 @@ const CardSwap = ({
       const tl = gsap.timeline();
       tlRef.current = tl;
 
-      // Controlled drop distance that stays within bounds
+      // Smoother drop with slight curve
       tl.to(elFront, {
-        y: "+=400", // Increased for better visibility but controlled
+        y: "+=500",
+        x: "+=30", // Add slight horizontal movement for curve
         duration: config.durDrop,
         ease: config.ease,
       });
@@ -133,7 +134,7 @@ const CardSwap = ({
             duration: config.durMove,
             ease: config.ease,
           },
-          `promote+=${i * 0.15}`
+          `promote+=${i * 0.08}` // Reduced stagger for smoother flow
         );
       });
 
@@ -151,15 +152,24 @@ const CardSwap = ({
         undefined,
         "return"
       );
-      tl.set(elFront, { x: backSlot.x, z: backSlot.z }, "return");
+      // Set position with smooth transition to back
+      tl.to(elFront, { 
+        x: backSlot.x + 50, // Start slightly offset for smoother entry
+        z: backSlot.z,
+        duration: 0.2,
+        ease: "power2.out"
+      }, "return");
+      
+      // Return with curved path and smoother easing
       tl.to(
         elFront,
         {
+          x: backSlot.x, // Move to final x position
           y: backSlot.y,
           duration: config.durReturn,
-          ease: config.ease,
+          ease: "power2.out", // Smoother easing for return
         },
-        "return"
+        "return+=0.2"
       );
 
       tl.call(() => {
@@ -208,12 +218,8 @@ const CardSwap = ({
   return (
     <div
       ref={container}
-      className="relative w-full h-full flex items-center justify-center perspective-[900px]"
-      style={{ 
-        width, 
-        height,
-        overflow: 'visible' // Allow cards to be visible during animation
-      }}
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 perspective-[900px] overflow-visible"
+      style={{ width, height }}
     >
       {rendered}
     </div>

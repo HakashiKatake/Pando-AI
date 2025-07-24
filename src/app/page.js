@@ -10,7 +10,7 @@ import {MessageCircle, Heart, Music, BookOpen, Gamepad2, Brain, ArrowRight, Menu
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useAnimation } from "framer-motion";
-import CardSwap from "@/components/CardSwap/CardSwap";
+import CardSwap, { Card as SwapCard } from "@/components/CardSwap/CardSwap";
 import FeaturesSection from "@/components/FeatureSection";
 
 // Custom hook for counting animation
@@ -98,56 +98,131 @@ function HeroCards() {
       title: "AI Chat Support",
       description: "Talk to your AI companion anytime you need support",
       icon: MessageCircle,
+      closeSymbol: "×",
+      image: "/mockup/dashboard.png",
     },
     {
       title: "Mood Tracking",
       description: "Track your emotions and see patterns over time",
       icon: Heart,
+      closeSymbol: "⊗",
+      image: "/mockup/music.png",
     },
     {
       title: "Mindfulness",
       description: "Practice breathing exercises and meditation",
       icon: Brain,
+      closeSymbol: "⊙",
+      image: "/mockup/games.png",
     },
   ];
 
   return (
-    <div className="relative h-[500px] w-full flex items-center justify-center">
-      {/* More spacious container */}
+    <div className="relative h-[510px] w-full flex items-center justify-center top-30 left-10">
+      {/* More spacious container with clipping boundary */}
       <div className="relative w-full h-full max-w-lg">
-        <CardSwap
-          width={350}
-          height={220}
-          cardDistance={45}
-          verticalDistance={35}
-          delay={4000}
-          pauseOnHover={true}
-          skewAmount={4}
-          easing="elastic"
+        {/* Clipping boundary box with background */}
+        <div 
+          className="absolute inset-0 overflow-hidden rounded-2xl shadow-lg border border-white/20"
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(227, 222, 241, 0.3) 0%, rgba(138, 111, 191, 0.1) 100%)',
+            backdropFilter: 'blur(10px)'
+          }}
         >
-          {cards.map((card, index) => (
-            <Card
-              key={index}
-              className="rounded-2xl shadow-xl border-2 border-white overflow-hidden"
-              style={{ backgroundColor: '#E3DEF1' }}
-            >
-              <div className="w-full h-full p-6 flex flex-col justify-center items-center text-center">
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <card.icon className="w-12 h-12 mb-4" style={{ color: '#6E55A0' }} />
-                </motion.div>
-                <h3 className="text-xl font-semibold mb-3" style={{ color: '#6E55A0' }}>
-                  {card.title}
-                </h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#8A6FBF' }}>
-                  {card.description}
-                </p>
-              </div>
-            </Card>
-          ))}
-        </CardSwap>
+          <CardSwap
+            width={450}
+            height={280}
+            cardDistance={60}
+            verticalDistance={50}
+            delay={4000}
+            pauseOnHover={true}
+            skewAmount={6}
+            easing="power2.out"
+          >
+            {cards.map((card, index) => (
+              <SwapCard
+                key={index}
+                className="rounded-2xl shadow-xl border-2 border-white overflow-hidden"
+                style={{ backgroundColor: '#E3DEF1' }}
+              >
+                <div className="w-full h-full relative overflow-hidden">
+                  {/* App Mockup Image - Full Coverage */}
+                  <motion.div
+                    className="absolute inset-0"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Image
+                      src={card.image}
+                      alt={card.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </motion.div>
+                  
+                  {/* macOS-style window controls */}
+                  <motion.div 
+                    className="absolute top-3 left-3 flex gap-2 z-10"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  >
+                    {/* Close button - Red */}
+                    <motion.div
+                      className="w-3 h-3 rounded-full cursor-pointer shadow-sm"
+                      style={{ backgroundColor: '#FF5F57' }}
+                      whileHover={{ 
+                        scale: 1.15,
+                        backgroundColor: '#FF3B30',
+                        boxShadow: '0 2px 8px rgba(255, 59, 48, 0.4)'
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 15
+                      }}
+                    />
+                    
+                    {/* Minimize button - Yellow */}
+                    <motion.div
+                      className="w-3 h-3 rounded-full cursor-pointer shadow-sm"
+                      style={{ backgroundColor: '#FFBD2E' }}
+                      whileHover={{ 
+                        scale: 1.15,
+                        backgroundColor: '#FF9500',
+                        boxShadow: '0 2px 8px rgba(255, 149, 0, 0.4)'
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 15
+                      }}
+                    />
+                    
+                    {/* Maximize button - Green */}
+                    <motion.div
+                      className="w-3 h-3 rounded-full cursor-pointer shadow-sm"
+                      style={{ backgroundColor: '#28CA42' }}
+                      whileHover={{ 
+                        scale: 1.15,
+                        backgroundColor: '#30D158',
+                        boxShadow: '0 2px 8px rgba(48, 209, 88, 0.4)'
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 15
+                      }}
+                    />
+                  </motion.div>
+                </div>
+              </SwapCard>
+            ))}
+          </CardSwap>
+        </div>
       </div>
     </div>
   );
@@ -379,7 +454,7 @@ export default function WellnessLanding() {
       </motion.header>
 
       {/* Hero Section - IMPROVED VISIBILITY */}
-      <section className="pt-32 pb-20 relative">
+      <section className="pt-32 pb-50 relative">
         <div className="container mx-auto px-4 lg:px-20 xl:px-32">
           <motion.div 
             className="grid lg:grid-cols-2 gap-16 items-center"
@@ -441,7 +516,7 @@ export default function WellnessLanding() {
 
             {/* Right side - Interactive Cards - BETTER POSITIONED */}
             <motion.div 
-              className="relative flex justify-center lg:justify-end min-h-[500px]"
+              className="relative flex justify-center lg:justify-end min-h-[500px] bottom-25"
               variants={itemVariants}
             >
               <HeroCards />
