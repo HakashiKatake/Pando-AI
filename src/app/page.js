@@ -12,7 +12,12 @@ import Image from "next/image";
 import { motion, useAnimation } from "framer-motion";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap/CardSwap";
 import FeaturesSection from "@/components/FeatureSection";
+<<<<<<< HEAD
 import TestimonialsSection from "@/components/TestimonialsSection";
+=======
+import WaveDivider from "@/components/WaveDivider";
+import WhyItMattersSection from "@/components/WhyItMattersSection";
+>>>>>>> 01df573dcfede6fb7bf2c650de02b68eb51674e6
 
 // Custom hook for counting animation
 function useCountUp(end, duration = 2, start = 0) {
@@ -537,8 +542,8 @@ export default function WellnessLanding() {
 
       
 
-      {/* Go Deeper Section - match lavender, no gap above */}
-      <section className="py-20 pt-0" style={{ backgroundColor: '#D3C3F3', marginTop: '-1px' }}>
+     <WaveDivider/>
+      <section className="py-10 pt-0" style={{ backgroundColor: '#D3C3F3'}}>
         <div className="container mx-auto px-4 lg:px-20 xl:px-32">
           <motion.div 
             className="grid lg:grid-cols-2 gap-16 items-center"
@@ -648,6 +653,11 @@ export default function WellnessLanding() {
           </motion.div>
         </div>
       </section>
+      <WaveDivider flip="true"/>
+      
+      <WaveDivider/>
+      <WhyItMattersSection/>
+      <WaveDivider flip="true"/>
 
       {/* Testimonials Section */}
       <TestimonialsSection />
