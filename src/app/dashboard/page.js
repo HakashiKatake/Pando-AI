@@ -48,6 +48,15 @@ import { useRouter } from 'next/navigation'
 import { getRandomQuote, getMoodData, isToday } from '../../lib/utils'
 
 const Dashboard = () => {
+  // Save mood and persist for guest
+  const handleSaveMood = (moodData) => {
+    addMood(moodData, dataInit.userId, dataInit.guestId)
+    if (!user || user.isGuest) {
+      localStorage.setItem('guestMood', JSON.stringify(moodData))
+      setGuestMood(moodData)
+    }
+    setShowMoodModal(false)
+  }
   // Animation variants for consistency
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -75,8 +84,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('habits') // Start with habits tab active
   const [localHabits, setLocalHabits] = useState([])
   const [localQuests, setLocalQuests] = useState([])
-
-  // All context hooks - must be called in same order every time
+  const [guestMood, setGuestMood] = useState(null)
   const { user } = useUser()
   const { preferences, guestId, isDarkMode } = useAppStore()
   const { moods, todaysMood, addMood, getAverageMood } = useMoodStore()
@@ -92,149 +100,79 @@ const Dashboard = () => {
   const { playTrack, setPlaylist } = useMusicStore()
   const router = useRouter()
   const dataInit = useDataInitialization()
-
   const [currentTime, setCurrentTime] = useState("")
   const [currentDate, setCurrentDate] = useState("")
-  
-    // Update time every second
-    useEffect(() => {
-      const updateTime = () => {
-        const now = new Date()
-        setCurrentTime(now.toLocaleTimeString('en-IN', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: false 
-        }))
-        
-        // Format date as "Jul 17 - Jul 31" (current date to end of month)
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-        const startDateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        const endDateStr = endOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        setCurrentDate(`${startDateStr} - ${endDateStr}`)
-      }
-  
-      updateTime()
-      const interval = setInterval(updateTime, 1000)
-      
-      return () => clearInterval(interval)
-    }, [])
 
-  // All useEffect hooks - must be called in same order every time
   useEffect(() => {
-    setTodaysQuote(getRandomQuote())
-    setIsHydrated(true)
-  }, [])
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false }));
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const startDateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const endDateStr = endOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      setCurrentDate(`${startDateStr} - ${endDateStr}`);
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Generate daily quests if they don't exist
+  useEffect(() => {
+    setTodaysQuote(getRandomQuote());
+    setIsHydrated(true);
+  }, []);
+
   useEffect(() => {
     if (isHydrated && generateDailyQuests && getTodaysQuests) {
-      const existingQuests = getTodaysQuests()
+      const existingQuests = getTodaysQuests();
       if (Object.keys(existingQuests).length === 0) {
-        generateDailyQuests()
+        generateDailyQuests();
       }
     }
-  }, [isHydrated, generateDailyQuests, getTodaysQuests])
+  }, [isHydrated, generateDailyQuests, getTodaysQuests]);
 
-  // Get today's habits and quests - after hooks
-  const todaysHabits = getTodaysHabits ? getTodaysHabits() : []
-  const todaysQuests = getTodaysQuests ? Object.values(getTodaysQuests()) : []
+  const todaysHabits = getTodaysHabits ? getTodaysHabits() : [];
+  const todaysQuests = getTodaysQuests ? Object.values(getTodaysQuests()) : [];
 
-  // Default habits if none exist
   const defaultHabits = [
-    {
-      id: 'default-1',
-      title: 'Morning run',
-      time: '07:00 am',
-      location: 'Park',
-      duration: '45min',
-      icon: '🏃‍♂️',
-      completed: false,
-      bgColor: 'bg-yellow-100'
-    },
-    {
-      id: 'default-2',
-      title: '1.5L of water daily',
-      time: 'All day',
-      location: 'Everywhere',
-      duration: null,
-      icon: '💧',
-      completed: false,
-      bgColor: 'bg-blue-100'
-    },
-    {
-      id: 'default-3',
-      title: 'Cooking mealpreps for 3 days',
-      time: '11:00 am',
-      location: 'Home',
-      duration: '2h',
-      icon: '🍳',
-      completed: false,
-      bgColor: 'bg-orange-100'
-    }
-  ]
+    { id: 'default-1', title: 'Morning run', time: '07:00 am', location: 'Park', duration: '45min', icon: '🏃‍♂️', completed: false, bgColor: 'bg-yellow-100' },
+    { id: 'default-2', title: '1.5L of water daily', time: 'All day', location: 'Everywhere', duration: null, icon: '💧', completed: false, bgColor: 'bg-blue-100' },
+    { id: 'default-3', title: 'Cooking mealpreps for 3 days', time: '11:00 am', location: 'Home', duration: '2h', icon: '🍳', completed: false, bgColor: 'bg-orange-100' }
+  ];
 
-  // Default quests if none exist
   const defaultQuests = [
-    {
-      id: 'quest-1',
-      title: 'Check in with your mood',
-      description: 'Log how you\'re feeling today',
-      type: 'mood_checkin',
-      icon: '😊',
-      completed: false,
-      points: 10,
-      progress: 0,
-      target: 1
-    },
-    {
-      id: 'quest-2',
-      title: 'Complete a breathing exercise',
-      description: 'Practice 4-7-8 breathing technique',
-      type: 'breathing',
-      icon: '🫁',
-      completed: false,
-      points: 15,
-      progress: 0,
-      target: 1
-    },
-    {
-      id: 'quest-3',
-      title: 'Write a journal entry',
-      description: 'Reflect on your day and thoughts',
-      type: 'journal',
-      icon: '📝',
-      completed: false,
-      points: 20,
-      progress: 0,
-      target: 1
-    },
-    {
-      id: 'quest-4',
-      title: 'Chat with AI assistant',
-      description: 'Have a supportive conversation',
-      type: 'chat',
-      icon: '💬',
-      completed: false,
-      points: 12,
-      progress: 0,
-      target: 1
-    }
-  ]
+    { id: 'quest-1', title: 'Check in with your mood', description: 'Log how you\'re feeling today', type: 'mood_checkin', icon: '😊', completed: false, points: 10, progress: 0, target: 1 },
+    { id: 'quest-2', title: 'Complete a breathing exercise', description: 'Practice 4-7-8 breathing technique', type: 'breathing', icon: '🫁', completed: false, points: 15, progress: 0, target: 1 },
+    { id: 'quest-3', title: 'Write a journal entry', description: 'Reflect on your day and thoughts', type: 'journal', icon: '📝', completed: false, points: 20, progress: 0, target: 1 },
+    { id: 'quest-4', title: 'Chat with AI assistant', description: 'Have a supportive conversation', type: 'chat', icon: '💬', completed: false, points: 12, progress: 0, target: 1 }
+  ];
 
-  // Initialize local state when data changes
   useEffect(() => {
-    const baseHabits = todaysHabits.length > 0 ? todaysHabits : defaultHabits
+    const baseHabits = todaysHabits.length > 0 ? todaysHabits : defaultHabits;
     if (baseHabits.length > 0 && localHabits.length === 0) {
-      setLocalHabits(baseHabits)
+      setLocalHabits(baseHabits);
     }
-  }, [todaysHabits, localHabits.length])
+  }, [todaysHabits, localHabits.length]);
 
   useEffect(() => {
-    const baseQuests = todaysQuests.length > 0 ? todaysQuests : defaultQuests
+    const baseQuests = todaysQuests.length > 0 ? todaysQuests : defaultQuests;
     if (baseQuests.length > 0 && localQuests.length === 0) {
-      setLocalQuests(baseQuests)
+      setLocalQuests(baseQuests);
     }
-  }, [todaysQuests, localQuests.length])
+  }, [todaysQuests, localQuests.length]);
+
+  useEffect(() => {
+    // On mount, load guest mood from localStorage
+    if (!user || user.isGuest) {
+      const storedMood = localStorage.getItem('guestMood');
+      if (storedMood) {
+        try {
+          setGuestMood(JSON.parse(storedMood));
+        } catch {}
+      }
+    }
+  }, [user]);
+
 
   // Early return AFTER all hooks are called
   if (!isHydrated || !dataInit.isReady) {
@@ -278,6 +216,8 @@ const Dashboard = () => {
     { time: "18.30", value: 45, color: "#F97316", emoji: "😐" },
     { time: "20.10", value: 25, color: "#EF4444", emoji: "😢" },
   ]
+
+// Ensure previous array is closed and hooks start on a new line
 
   // Dynamic activity data based on user activities
   const generateActivityData = () => {
@@ -391,21 +331,25 @@ const Dashboard = () => {
   }
 
   // Use real data or fallback to default, with local state override
-  const baseHabits = todaysHabits.length > 0 ? todaysHabits : defaultHabits
-  const baseQuests = todaysQuests.length > 0 ? todaysQuests : defaultQuests
-  
-  const displayHabits = localHabits.length > 0 ? localHabits : baseHabits
-  const displayQuests = localQuests.length > 0 ? localQuests : baseQuests
-  
+  const baseHabits = todaysHabits.length > 0 ? todaysHabits : defaultHabits;
+  const baseQuests = todaysQuests.length > 0 ? todaysQuests : defaultQuests;
+
+  const displayHabits = localHabits.length > 0 ? localHabits : baseHabits;
+  const displayQuests = localQuests.length > 0 ? localQuests : baseQuests;
+
   // Filter to show only remaining (incomplete) quests in tasks tab
-  const remainingQuests = displayQuests.filter(quest => !quest.completed)
+  const remainingQuests = displayQuests.filter(quest => !quest.completed);
+
+  
+  // Use guestMood if present and user is guest
+  const todaysMoodToShow = (!user || user.isGuest) && guestMood ? guestMood : todaysMood;
 
   // Recent activities
   const recentActivities = [
-    ...(todaysMood ? [{
+    ...(todaysMoodToShow ? [{
       type: 'mood',
-      time: new Date(todaysMood.date).toLocaleTimeString(),
-      description: `Mood check-in: ${getMoodData(todaysMood.mood).label}`,
+      time: new Date(todaysMoodToShow.date).toLocaleTimeString(),
+      description: `Mood check-in: ${getMoodData(todaysMoodToShow.mood).label}`,
       icon: <Heart className="w-4 h-4" />
     }] : []),
     ...(hasChatToday ? [{
@@ -414,7 +358,7 @@ const Dashboard = () => {
       description: 'Had a chat session',
       icon: <MessageCircle className="w-4 h-4" />
     }] : []),
-  ]
+  ];
 
   return (
     <motion.div
@@ -514,14 +458,21 @@ const Dashboard = () => {
                   <div>
                     <p className="text-white/80 text-sm mb-2 font-medium">Today's Mood</p>
                     <p className="text-3xl font-bold">
-                      {todaysMoodData ? todaysMoodData.label : 'Poor'}
+                      {todaysMoodToShow ? getMoodData(todaysMoodToShow.mood).label : 'Poor'}
                     </p>
                   </div>
                   <div className="flex-shrink-0">
-                    {todaysMoodData && todaysMoodData.emoji ? (
-                      <div className="text-4xl">{todaysMoodData.emoji}</div>
+                    {todaysMoodToShow && typeof todaysMoodToShow.mood === 'number' ? (
+                      <img src={
+                        todaysMoodToShow.mood === 1 ? '/asset/terrible.png' :
+                        todaysMoodToShow.mood === 2 ? '/asset/sad.png' :
+                        todaysMoodToShow.mood === 3 ? '/asset/neutral.png' :
+                        todaysMoodToShow.mood === 4 ? '/asset/happy.png' :
+                        todaysMoodToShow.mood === 5 ? '/asset/excellet.png' :
+                        '/asset/neutral.png'
+                      } alt={getMoodData(todaysMoodToShow.mood).label} className="w-12 h-12" />
                     ) : (
-                      <div className="text-4xl">😔</div>
+                      <img src="/asset/sad.png" alt="Sad" className="w-12 h-12" />
                     )}
                   </div>
                 </div>
@@ -599,13 +550,24 @@ const Dashboard = () => {
                 <div className="flex items-end justify-between h-full">
                   {moodChartData.map((point, index) => {
                     const height = (point.value / 100) * 120;
-                    
+                    // Use correct panda image for each mood value, fallback to guestMood if needed
+                    let moodValue = point.mood;
+                    if ((!user || user.isGuest) && guestMood && index === moodChartData.length - 1) {
+                      // For guest, last chart point should use guestMood
+                      moodValue = guestMood.mood;
+                    }
+                    const moodImg =
+                      moodValue === 1 ? '/asset/terrible.png' :
+                      moodValue === 2 ? '/asset/sad.png' :
+                      moodValue === 3 ? '/asset/neutral.png' :
+                      moodValue === 4 ? '/asset/happy.png' :
+                      moodValue === 5 ? '/asset/excellet.png' :
+                      '/asset/neutral.png';
                     return (
                       <div key={index} className="flex flex-col items-center relative">
                         <div className="w-8 h-8 bg-white rounded-full mb-2 flex items-center justify-center shadow-sm">
-                          <div className="text-sm">{point.emoji || (point.value > 60 ? '😊' : point.value > 40 ? '😐' : '😔')}</div>
+                          <img src={moodImg} alt="Mood" className="w-7 h-7" />
                         </div>
-                        
                         <div 
                           className="w-6 rounded-full"
                           style={{ 
@@ -614,7 +576,6 @@ const Dashboard = () => {
                             minHeight: '20px'
                           }}
                         />
-                        
                         <span className="text-xs mt-2 font-medium" style={{ color: '#6E55A0' }}>
                           {point.time}
                         </span>
@@ -910,10 +871,7 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <MoodModal 
             onClose={() => setShowMoodModal(false)}
-            onSave={(moodData) => {
-              addMood(moodData, dataInit.userId, dataInit.guestId);
-              setShowMoodModal(false);
-            }}
+            onSave={handleSaveMood}
           />
         </motion.div>
       )}
@@ -926,19 +884,20 @@ const Dashboard = () => {
 function MoodModal({ onClose, onSave }) {
   const [mood, setMood] = useState(3);
   const [note, setNote] = useState('');
-  
   const moods = [
-    { value: 1, label: 'Terrible', emoji: '😢', color: 'bg-red-500' },
-    { value: 2, label: 'Poor', emoji: '😔', color: 'bg-orange-500' },
-    { value: 3, label: 'Okay', emoji: '😐', color: 'bg-yellow-500' },
-    { value: 4, label: 'Good', emoji: '😊', color: 'bg-green-500' },
-    { value: 5, label: 'Excellent', emoji: '😄', color: 'bg-blue-500' }
+    { value: 1, label: 'Terrible', img: '/asset/terrible.png', color: 'bg-red-500' },
+    { value: 2, label: 'Poor', img: '/asset/sad.png', color: 'bg-orange-500' },
+    { value: 3, label: 'Okay', img: '/asset/neutral.png', color: 'bg-yellow-500' },
+    { value: 4, label: 'Good', img: '/asset/happy.png', color: 'bg-green-500' },
+    { value: 5, label: 'Excellent', img: '/asset/excellet.png', color: 'bg-blue-500' }
   ];
 
   const handleSave = () => {
+    const selectedMood = moods.find(m => m.value === mood);
     onSave({
       mood,
-      emoji: moods.find(m => m.value === mood)?.emoji || '😐',
+      img: selectedMood?.img || '/asset/neutral.png',
+      label: selectedMood?.label,
       note: note.trim(),
     });
   };
@@ -962,7 +921,6 @@ function MoodModal({ onClose, onSave }) {
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#6E55A0' }}>How are you feeling?</h2>
           <p className="text-gray-600">Track your mood to understand your patterns</p>
         </div>
-
         <div className="grid grid-cols-5 gap-2 mb-6">
           {moods.map((moodOption) => (
             <button
@@ -970,17 +928,16 @@ function MoodModal({ onClose, onSave }) {
               onClick={() => setMood(moodOption.value)}
               className={`p-3 rounded-xl text-center transition-all duration-200 ${
                 mood === moodOption.value 
-                  ? `${moodOption.color} text-white ring-2 ring-offset-2` 
+                  ? `${moodOption.color} ring-2 ring-offset-2` 
                   : 'bg-gray-100 hover:bg-gray-200'
               }`}
               style={mood === moodOption.value ? { ringColor: '#8A6FBF' } : {}}
             >
-              <div className="text-2xl mb-1">{moodOption.emoji}</div>
+              <img src={moodOption.img} alt={moodOption.label} className="w-8 h-8 mx-auto mb-1" />
               <div className="text-xs font-medium">{moodOption.label}</div>
             </button>
           ))}
         </div>
-
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             How was your day? (Optional)
@@ -994,7 +951,6 @@ function MoodModal({ onClose, onSave }) {
             rows={3}
           />
         </div>
-
         <div className="flex space-x-3">
           <button
             onClick={onClose}
@@ -1012,8 +968,6 @@ function MoodModal({ onClose, onSave }) {
             Save Mood
           </button>
         </div>
-      
-      
       </motion.div>
     </motion.div>
 
