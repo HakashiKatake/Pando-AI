@@ -406,38 +406,53 @@ export const useChatStore = create((set, get) => ({
         }));
       }
     } else {
-      // For guests, save to localStorage
+      // For guests, handle everything locally without MongoDB
       const tempMessage = {
         id: Date.now() + Math.random(),
         timestamp: new Date().toISOString(),
         ...messageData,
       };
       
-      set(state => ({
-        messages: [...state.messages, tempMessage]
-      }));
-      
-      const messages = [...get().messages];
-      localStorage.setItem('calm-connect-chat', JSON.stringify(messages));
+      // Add the message to the store first
+      set(state => {
+        const newMessages = [...state.messages, tempMessage];
+        // Save to localStorage immediately for guests
+        if (typeof window !== 'undefined' && guestId) {
+          localStorage.setItem(`calm-connect-chat-${guestId}`, JSON.stringify(newMessages));
+        }
+        return { messages: newMessages };
+      });
     }
   },
   
-  loadFromLocalStorage: () => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('calm-connect-chat');
+  loadFromLocalStorage: (guestId) => {
+    if (typeof window !== 'undefined' && guestId) {
+      const stored = localStorage.getItem(`calm-connect-chat-${guestId}`);
       if (stored) {
-        const messages = JSON.parse(stored);
-        set({ messages });
+        try {
+          const messages = JSON.parse(stored);
+          set({ messages });
+        } catch (error) {
+          console.error('Failed to parse stored messages:', error);
+          set({ messages: [] });
+        }
       }
     }
   },
   
   setLoading: (loading) => set({ isLoading: loading }),
   
-  startNewConversation: () => set({
-    messages: [],
-    currentConversationId: Date.now().toString()
-  }),
+  startNewConversation: (guestId) => {
+    set({
+      messages: [],
+      currentConversationId: Date.now().toString()
+    });
+    
+    // Clear localStorage for guests
+    if (typeof window !== 'undefined' && guestId) {
+      localStorage.removeItem(`calm-connect-chat-${guestId}`);
+    }
+  },
   
   clearData: () => set({ messages: [], currentConversationId: null }),
 }));

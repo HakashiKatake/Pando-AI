@@ -6,7 +6,7 @@ return (
         <svg
             viewBox="0 0 1200 120"
             preserveAspectRatio="none"
-            className="w-full h-6 md:h-8 lg:h-10"
+            className="w-full h-6 md:h-8 lg:h-25"
             xmlns="http://www.w3.org/2000/svg"
         >
             <path

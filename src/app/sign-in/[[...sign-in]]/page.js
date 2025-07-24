@@ -314,8 +314,9 @@ function SignInContent() {
           </div>
 
           <div className="flex-1 relative overflow-hidden flex items-center justify-center">
+            {/* Background capsule */}
             <motion.div 
-              className="w-[400px] h-[700px] rounded-full"
+              className="absolute w-[400px] h-[700px] rounded-full"
               style={{ backgroundColor: '#E3DEF1' }}
               variants={capsuleVariants}
               animate={{
@@ -327,6 +328,57 @@ function SignInContent() {
                   repeat: Infinity,
                   ease: "easeInOut"
                 }
+              }}
+            />
+            
+            {/* 3D Character Image */}
+            <motion.div
+              className="relative z-10"
+              variants={capsuleVariants}
+              animate={{
+                y: [0, -15, 0],
+              }}
+              transition={{
+                y: {
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+            >
+              <img 
+                src="/asset/login.png" 
+                alt="3D Character with Laptop" 
+                className="w-80 h-80 object-contain"
+              />
+            </motion.div>
+            
+            {/* Floating decorative elements */}
+            <motion.div
+              className="absolute w-8 h-8 rounded-full"
+              style={{ backgroundColor: '#8A6FBF', top: '20%', right: '20%' }}
+              animate={{
+                y: [0, -20, 0],
+                opacity: [0.3, 0.7, 0.3]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.div
+              className="absolute w-6 h-6 rounded-full"
+              style={{ backgroundColor: '#6E55A0', top: '70%', right: '30%' }}
+              animate={{
+                y: [0, 15, 0],
+                opacity: [0.4, 0.8, 0.4]
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1
               }}
             />
           </div>
@@ -533,10 +585,11 @@ function SignInContent() {
           </motion.div>
         </div>
 
-        {/* Right Side - Animated Capsule */}
+        {/* Right Side - 3D Character */}
         <div className="flex-1 relative overflow-hidden flex items-center justify-center">
+          {/* Background capsule */}
           <motion.div 
-            className="w-[400px] h-[700px] rounded-full"
+            className="absolute w-[400px] h-[700px] rounded-full"
             style={{ backgroundColor: '#E3DEF1' }}
             variants={capsuleVariants}
             animate={{
@@ -550,6 +603,28 @@ function SignInContent() {
               }
             }}
           />
+          
+          {/* 3D Character Image */}
+          <motion.div
+            className="relative z-10"
+            variants={capsuleVariants}
+            animate={{
+              y: [0, -15, 0],
+            }}
+            transition={{
+              y: {
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
+          >
+            <img 
+              src="/asset/login.png" 
+              alt="3D Character with Laptop" 
+              className="w-80 h-80 object-contain"
+            />
+          </motion.div>
           
           {/* Floating decorative elements */}
           <motion.div
@@ -577,6 +652,38 @@ function SignInContent() {
               repeat: Infinity,
               ease: "easeInOut",
               delay: 1
+            }}
+          />
+          
+          {/* Additional floating elements around character */}
+          <motion.div
+            className="absolute w-4 h-4 rounded-full"
+            style={{ backgroundColor: '#D3C3F3', top: '35%', left: '15%' }}
+            animate={{
+              x: [0, 10, 0],
+              y: [0, -10, 0],
+              opacity: [0.5, 0.9, 0.5]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5
+            }}
+          />
+          <motion.div
+            className="absolute w-3 h-3 rounded-full"
+            style={{ backgroundColor: '#8A6FBF', bottom: '25%', left: '25%' }}
+            animate={{
+              x: [0, -8, 0],
+              y: [0, 12, 0],
+              opacity: [0.4, 0.8, 0.4]
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.5
             }}
           />
         </div>

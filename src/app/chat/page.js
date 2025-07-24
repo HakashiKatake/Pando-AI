@@ -8,11 +8,10 @@ import { useUser } from '@clerk/nextjs';
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore, useChatStore } from '../../lib/store';
 import { useDataInitialization } from '../../lib/useDataInitialization';
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { 
   Send, Shield, ShieldOff, Bot, User, 
   AlertTriangle, Heart, RefreshCw, MoreVertical,
-  Calendar, Clock, ChevronDown, Play, Pause, Volume2, Mic, MicOff
+  Calendar, Clock, ChevronDown, Play, Pause, Volume2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 export default function ChatPage() {
@@ -52,41 +51,21 @@ export default function ChatPage() {
     }
   }, [todaysMood, dataInit.isReady, dataInit.userId, dataInit.guestId]);
 
-  // Speech Recognition setup
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition
-  } = useSpeechRecognition();
-
-  // Update input when speech recognition transcript changes
-  useEffect(() => {
-    if (transcript) {
-      setInput(transcript);
-    }
-  }, [transcript]);
-
-  const startListening = () => {
-    resetTranscript();
-    setInput('');
-    SpeechRecognition.startListening({ 
-      continuous: true,
-      language: 'en-US'
-    });
-  };
-
-  const stopListening = () => {
-    SpeechRecognition.stopListening();
-  };
-
   useEffect(() => {
     if (!conversationId) {
       const newConversationId = `conv_${Date.now()}`;
       setConversationId(newConversationId);
-      startNewConversation();
+      startNewConversation(dataInit.guestId);
     }
-  }, [conversationId, startNewConversation]);
+  }, [conversationId, startNewConversation, dataInit.guestId]);
+
+  // Load messages for guests from localStorage
+  useEffect(() => {
+    if (dataInit.isReady && !dataInit.userId && dataInit.guestId) {
+      const { loadFromLocalStorage } = useChatStore.getState();
+      loadFromLocalStorage(dataInit.guestId);
+    }
+  }, [dataInit.isReady, dataInit.userId, dataInit.guestId]);
 
   // Auto-greeting effect
   useEffect(() => {
@@ -124,7 +103,7 @@ export default function ChatPage() {
       setLoading(true);
       
       if (dataInit.userId) {
-        
+        // For authenticated users - use the existing API flow
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -147,11 +126,11 @@ export default function ChatPage() {
           }, dataInit.userId, dataInit.guestId);
         }
       } else {
-        // For guests - simulate getting a greeting response
+        // For guests - use predefined greetings to avoid API calls
         const greetingResponses = [
-          `Hi there! I'm Pando 🐼, your wellness companion. I'm here to listen and support you. What's on your mind today?`,
-          `Hello! Nice to meet you. I'm Pando, here if you want to chat about anything - how you're feeling, what's going on, or just need someone to listen. How are you doing?`,
-          `Hey! I'm Pando, and I'm glad you're here. Whether you want to talk about your day, your feelings, or anything else, I'm here for you. What would you like to chat about?`
+          `Hi ${userName}! I'm Pando 🐼, your wellness companion. I'm here to listen and support you. What's on your mind today?`,
+          `Hello ${userName}! Nice to meet you. I'm Pando, here if you want to chat about anything - how you're feeling, what's going on, or just need someone to listen. How are you doing?`,
+          `Hey ${userName}! I'm Pando, and I'm glad you're here. Whether you want to talk about your day, your feelings, or anything else, I'm here for you. What would you like to chat about?`
         ];
         
         const randomGreeting = greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
@@ -164,10 +143,10 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error('Auto-greeting error:', error);
-      // Fallback greeting
+      // Fallback greeting for both authenticated and guest users
       addMessage({
         role: 'assistant',
-        message: "Hi! I'm Pando 🐼, your wellness companion. I'm here to listen and support you. How are you feeling today?",
+        message: `Hi ${userName}! I'm Pando 🐼, your wellness companion. I'm here to listen and support you. How are you feeling today?`,
         messageType: 'greeting',
       }, dataInit.userId, dataInit.guestId);
     } finally {
@@ -198,7 +177,7 @@ export default function ChatPage() {
           privacy: privacyMode,
         }, dataInit.userId, dataInit.guestId);
       } else {
-        // For guests, manually handle the flow
+        // For guests, handle everything locally
         // First add user message locally
         addMessage({
           role: 'user',
@@ -206,30 +185,41 @@ export default function ChatPage() {
           privacy: privacyMode,
         }, dataInit.userId, dataInit.guestId);
 
-        // Then call API and add assistant response
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: userMessage,
-            guestId: dataInit.guestId,
-            conversationId,
-            privacy: privacyMode,
-          }),
-        });
+        // Then get AI response using local OpenRouter API call (no MongoDB)
+        try {
+          const response = await fetch('/api/chat/local', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: userMessage,
+              guestId: dataInit.guestId,
+              conversationId,
+              privacy: privacyMode,
+              isGuest: true // Flag to indicate local processing only
+            }),
+          });
 
-        const data = await response.json();
+          const data = await response.json();
 
-        if (data.success) {
-          // Add assistant message to store for guests
+          if (data.success && data.message) {
+            // Add assistant message to store for guests
+            addMessage({
+              role: 'assistant',
+              message: data.message,
+              messageType: data.messageType || 'response',
+              triggerAnalysis: data.triggerAnalysis,
+            }, dataInit.userId, dataInit.guestId);
+          } else {
+            throw new Error(data.error || 'Failed to get AI response');
+          }
+        } catch (apiError) {
+          console.error('Local AI API error:', apiError);
+          // Fallback response for guests
           addMessage({
             role: 'assistant',
-            message: data.data.assistantMessage.message,
-            messageType: data.data.assistantMessage.messageType,
-            triggerAnalysis: data.data.triggerAnalysis,
+            message: "I'm here to listen and support you. While I'm having trouble with my AI processing right now, I want you to know that your feelings are valid and important. Is there anything specific you'd like to talk about?",
+            messageType: 'fallback',
           }, dataInit.userId, dataInit.guestId);
-        } else {
-          throw new Error(data.error || 'Failed to send message');
         }
       }
 
@@ -264,7 +254,7 @@ export default function ChatPage() {
   const clearChat = () => {
     const newConversationId = `conv_${Date.now()}`;
     setConversationId(newConversationId);
-    startNewConversation();
+    startNewConversation(dataInit.guestId);
   };
 
   // Animation variants
@@ -562,7 +552,7 @@ export default function ChatPage() {
                     placeholder={`Hi ${preferences.name || 'friend'}! Pando is here to listen 🐼`}
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl sm:rounded-2xl focus:outline-none resize-none transition-all duration-200 bg-white text-sm sm:text-base"
                     style={{
-                      borderColor: listening ? '#8A6FBF' : '#E3DEF1',
+                      borderColor: '#E3DEF1',
                       color: '#6E55A0',
                       minHeight: '40px',
                       maxHeight: '100px'
@@ -574,31 +564,6 @@ export default function ChatPage() {
                       transition: { duration: 0.2 }
                     }}
                   />
-                  
-                  {/* Voice Input Button */}
-                  {browserSupportsSpeechRecognition && (
-                    <motion.button
-                      onClick={listening ? stopListening : startListening}
-                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-all duration-200 ${
-                        listening 
-                          ? 'text-white' 
-                          : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                      style={{
-                        backgroundColor: listening ? '#8A6FBF' : 'transparent'
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      title={listening ? 'Stop voice input' : 'Start voice input'}
-                      disabled={isLoading}
-                    >
-                      {listening ? (
-                        <MicOff className="w-4 h-4" />
-                      ) : (
-                        <Mic className="w-4 h-4" />
-                      )}
-                    </motion.button>
-                  )}
                 </div>
                 
                 <motion.button
@@ -645,21 +610,12 @@ export default function ChatPage() {
                       <span className="sm:hidden">Private</span>
                     </span>
                   )}
-                  {listening && (
-                    <span className="flex items-center space-x-1 text-purple-600">
-                      <Mic className="w-2 h-2 sm:w-3 sm:h-3 animate-pulse" />
-                      <span>Listening...</span>
-                    </span>
-                  )}
                 </span>
                 <span className="hidden sm:inline">
-                  {browserSupportsSpeechRecognition 
-                    ? "Press Enter to send, click mic for voice input" 
-                    : "Press Enter to send, Shift+Enter for new line"
-                  }
+                  Press Enter to send, Shift+Enter for new line
                 </span>
                 <span className="sm:hidden">
-                  {browserSupportsSpeechRecognition ? "Enter to send, mic for voice" : "Enter to send"}
+                  Enter to send
                 </span>
               </div>
             </motion.div>

@@ -654,7 +654,158 @@ export default function WellnessLanding() {
 
       <WaveDivider/>
       <WhyItMattersSection/>
-      <WaveDivider flip="true" />
+      <WaveDivider flip="true" color="#D3C3F3"/>
+
+      {/* How It Works Section */}
+      <section className="py-20" style={{ backgroundColor: '#F7F5FA' }}>
+        <div className="container mx-auto px-4 lg:px-20 xl:px-32">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <motion.h2 
+              className="text-4xl md:text-5xl font-bold mb-6"
+              style={{ color: '#6E55A0' }}
+            >
+              Getting Started is Simple
+            </motion.h2>
+            <motion.p 
+              className="text-xl max-w-3xl mx-auto"
+              style={{ color: '#8A6FBF' }}
+            >
+              Begin your mental wellness journey in just three easy steps. No complicated setup, no barriers—just immediate support when you need it most.
+            </motion.p>
+          </motion.div>
+
+          <motion.div 
+            className="grid md:grid-cols-3 gap-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.8, staggerChildren: 0.2 }}
+            viewport={{ once: true }}
+          >
+            {/* Step 1 */}
+            <motion.div 
+              className="text-center group"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
+            >
+              <motion.div 
+                className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-white relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)' }}
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span>1</span>
+                <motion.div 
+                  className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20"
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4" style={{ color: '#6E55A0' }}>
+                Start Your Journey
+              </h3>
+              <p className="text-lg" style={{ color: '#8A6FBF' }}>
+                Click "Start as Guest" or create an account. Answer a few quick questions to help us understand your needs better.
+              </p>
+            </motion.div>
+
+            {/* Step 2 */}
+            <motion.div 
+              className="text-center group"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
+            >
+              <motion.div 
+                className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-white relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)' }}
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span>2</span>
+                <motion.div 
+                  className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20"
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4" style={{ color: '#6E55A0' }}>
+                Chat with Pando
+              </h3>
+              <p className="text-lg" style={{ color: '#8A6FBF' }}>
+                Start talking with your AI companion. Share what's on your mind, ask questions, or explore different wellness activities.
+              </p>
+            </motion.div>
+
+            {/* Step 3 */}
+            <motion.div 
+              className="text-center group"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
+            >
+              <motion.div 
+                className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-white relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)' }}
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span>3</span>
+                <motion.div 
+                  className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20"
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-4" style={{ color: '#6E55A0' }}>
+                Track & Grow
+              </h3>
+              <p className="text-lg" style={{ color: '#8A6FBF' }}>
+                Monitor your mood, practice exercises, and watch your mental wellness improve over time with personalized insights.
+              </p>
+            </motion.div>
+          </motion.div>
+
+          {/* Call to Action */}
+          <motion.div 
+            className="text-center mt-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            <motion.div 
+              whileHover={{ scale: 1.05 }} 
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                size="lg"
+                onClick={handleStartAsGuest}
+                className="text-lg px-8 py-4 transition-all duration-200"
+                style={{ 
+                  background: 'linear-gradient(135deg, #8A6FBF 0%, #6E55A0 100%)'
+                }}
+              >
+                Start Your Wellness Journey →
+              </Button>
+            </motion.div>
+            <p className="mt-4 text-sm" style={{ color: '#8A6FBF' }}>
+              No credit card required • Completely anonymous • Available 24/7
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      <WaveDivider flip="true" color="#F7F5FA"/>
 
       {/* Testimonials Section */}
       <TestimonialsSection />

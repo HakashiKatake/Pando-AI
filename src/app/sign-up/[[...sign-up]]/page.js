@@ -202,10 +202,11 @@ function SignUpContent() {
           animate="visible"
           variants={containerVariants}
         >
-          {/* Left Side - Animated Capsule */}
+          {/* Left Side - 3D Character */}
           <div className="flex-1 relative overflow-hidden flex items-center justify-center">
+            {/* Background capsule */}
             <motion.div 
-              className="w-[400px] h-[700px] rounded-full"
+              className="absolute w-[400px] h-[700px] rounded-full"
               style={{ backgroundColor: '#E3DEF1' }}
               variants={capsuleVariants}
               animate={{
@@ -219,6 +220,28 @@ function SignUpContent() {
                 }
               }}
             />
+            
+            {/* 3D Character Image */}
+            <motion.div
+              className="relative z-10"
+              variants={capsuleVariants}
+              animate={{
+                y: [0, -15, 0],
+              }}
+              transition={{
+                y: {
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+            >
+              <img 
+                src="/asset/signup.png" 
+                alt="3D Character for Sign Up" 
+                className="w-80 h-80 object-contain"
+              />
+            </motion.div>
             
             {/* Floating decorative elements */}
             <motion.div
@@ -350,10 +373,11 @@ function SignUpContent() {
         animate="visible"
         variants={containerVariants}
       >
-        {/* Left Side - Animated Capsule */}
+        {/* Left Side - 3D Character */}
         <div className="flex-1 relative overflow-hidden flex items-center justify-center">
+          {/* Background capsule */}
           <motion.div 
-            className="w-[400px] h-[700px] rounded-full"
+            className="absolute w-[400px] h-[700px] rounded-full"
             style={{ backgroundColor: '#E3DEF1' }}
             variants={capsuleVariants}
             animate={{
@@ -367,6 +391,28 @@ function SignUpContent() {
               }
             }}
           />
+          
+          {/* 3D Character Image */}
+          <motion.div
+            className="relative z-10"
+            variants={capsuleVariants}
+            animate={{
+              y: [0, -15, 0],
+            }}
+            transition={{
+              y: {
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
+          >
+            <img 
+              src="/asset/signup.png" 
+              alt="3D Character for Sign Up" 
+              className="w-80 h-80 object-contain"
+            />
+          </motion.div>
           
           {/* Floating decorative elements */}
           <motion.div
@@ -394,6 +440,38 @@ function SignUpContent() {
               repeat: Infinity,
               ease: "easeInOut",
               delay: 1
+            }}
+          />
+          
+          {/* Additional floating elements around character */}
+          <motion.div
+            className="absolute w-4 h-4 rounded-full"
+            style={{ backgroundColor: '#D3C3F3', top: '35%', right: '15%' }}
+            animate={{
+              x: [0, -10, 0],
+              y: [0, -10, 0],
+              opacity: [0.5, 0.9, 0.5]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5
+            }}
+          />
+          <motion.div
+            className="absolute w-3 h-3 rounded-full"
+            style={{ backgroundColor: '#8A6FBF', bottom: '25%', right: '25%' }}
+            animate={{
+              x: [0, 8, 0],
+              y: [0, 12, 0],
+              opacity: [0.4, 0.8, 0.4]
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.5
             }}
           />
         </div>
