@@ -13,6 +13,7 @@ export default function MoodModal({ onClose, onSave }) {
   const [mood, setMood] = useState(3);
   const [note, setNote] = useState('');
 
+  
   const handleSave = () => {
     onSave({
       mood,
