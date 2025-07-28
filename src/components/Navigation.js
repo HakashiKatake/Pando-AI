@@ -27,7 +27,8 @@ import {
   BarChart3,
   Menu,
   X,
-  Shield
+  Shield,
+  TreePine
 } from "lucide-react"
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
@@ -36,6 +37,7 @@ import { useAppStore } from '@/lib/store'
 // Navigation items mapping from old to new
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home, label: "Dashboard" },
+  { name: 'Bamboo Garden', href: '/bamboo-garden', icon: TreePine, label: "Bamboo Garden" },
   { name: 'Chat', href: '/chat', icon: MessageCircle, label: "Chat" },
   { name: 'Exercises', href: '/exercises', icon: Target, label: "Exercises" },
   { name: 'Games', href: '/games', icon: Gamepad2, label: "Games" },

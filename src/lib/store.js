@@ -13,6 +13,7 @@ const createHabitPersist = (name) => (config) => {
       completions: state.completions,
       quests: state.quests,
       questCompletions: state.questCompletions,
+      userPoints: state.userPoints,
     })
   });
 };
@@ -224,6 +225,9 @@ export const useMoodStore = create((set, get) => ({
         });
         
         if (response.ok) {
+          // Award points for mood check-in (8 points per mood entry)
+          const habitStore = useHabitStore.getState();
+          habitStore.addUserPoints(8, 'mood_checkin');
           // Reload from database
           get().loadMoodsFromAPI(userId, guestId);
         }
@@ -255,6 +259,10 @@ export const useMoodStore = create((set, get) => ({
         if (guestId) {
           localStorage.setItem('calm-connect-moods', JSON.stringify(newMoods));
         }
+        
+        // Award points for mood check-in (8 points per mood entry)
+        const habitStore = useHabitStore.getState();
+        habitStore.addUserPoints(8, 'mood_checkin');
         
         return {
           moods: newMoods,
@@ -544,6 +552,9 @@ export const useFeedbackStore = create((set, get) => ({
         });
         
         if (response.ok) {
+          // Award points for journal entry (12 points per feedback/journal entry)
+          const habitStore = useHabitStore.getState();
+          habitStore.addUserPoints(12, 'journal_entry');
           // Reload from database
           get().loadEntriesFromAPI(userId, guestId);
         }
@@ -570,6 +581,10 @@ export const useFeedbackStore = create((set, get) => ({
           localStorage.setItem('calm-connect-feedback', JSON.stringify(newEntries));
           console.log('Saved to localStorage:', newEntries);
         }
+        
+        // Award points for journal entry (12 points per feedback/journal entry)
+        const habitStore = useHabitStore.getState();
+        habitStore.addUserPoints(12, 'journal_entry');
         
         return { entries: newEntries };
       });
@@ -673,6 +688,9 @@ export const useExerciseStore = create(
           console.log('Exercise session saved successfully:', result);
           // Add to local state immediately for UI responsiveness
           set(state => ({ sessions: [...state.sessions, newSession] }));
+          // Award points for completing an exercise (10 points per exercise)
+          const habitStore = useHabitStore.getState();
+          habitStore.addUserPoints(10, 'exercise_completion');
           // Then reload from database to ensure consistency (only for authenticated users)
           if (userId) {
             get().loadSessionsFromAPI(userId, guestId, getToken);
@@ -697,6 +715,10 @@ export const useExerciseStore = create(
         sessions: [...state.sessions, newSession]
       }));
     }
+    
+    // Award points for completing an exercise (10 points per exercise)
+    const habitStore = useHabitStore.getState();
+    habitStore.addUserPoints(10, 'exercise_completion');
   },
   
   getSessionsByType: (exerciseType) => {
@@ -926,6 +948,16 @@ export const useHabitStore = create(
             [completionKey]: newCompletionStatus
           }
         }));
+        
+        // Award points for habit completion (5 points for completing, -5 for uncompleting)
+        if (newCompletionStatus) {
+          get().addUserPoints(5, 'habit_completion');
+        } else {
+          get().deductUserPoints(5, 'habit_uncomplete');
+        }
+        
+        // Update quest progress after habit completion
+        get().updateQuestProgress(targetDate);
         
         // Force persist the state change
         if (typeof window !== 'undefined') {
@@ -1178,6 +1210,7 @@ export const useHabitStore = create(
         Object.values(updatedQuests).forEach(quest => {
           let progress = 0;
           let completed = false;
+          const wasCompleted = quest.completed; // Track previous completion status
           
           switch (quest.type) {
             case 'complete_all':
@@ -1240,6 +1273,11 @@ export const useHabitStore = create(
             progress,
             completed
           };
+          
+          // Award points for task completion (only when task becomes completed for the first time)
+          if (completed && !wasCompleted) {
+            get().addUserPoints(quest.points, 'task_completion');
+          }
         });
         
         set(state => ({
@@ -1278,6 +1316,35 @@ export const useHabitStore = create(
         });
         
         return total;
+      },
+      
+      // User Points Management
+      userPoints: 0,
+      
+      setUserPoints: (points) => set({ userPoints: points }),
+      
+      addUserPoints: (points, source = 'general') => {
+        const currentPoints = get().userPoints;
+        const newTotal = currentPoints + points;
+        console.log(`Adding ${points} points from ${source}. Total: ${currentPoints} -> ${newTotal}`);
+        set({ userPoints: newTotal });
+        return newTotal;
+      },
+      
+      deductUserPoints: (points, source = 'general') => {
+        const currentPoints = get().userPoints;
+        const newTotal = Math.max(0, currentPoints - points);
+        console.log(`Deducting ${points} points for ${source}. Total: ${currentPoints} -> ${newTotal}`);
+        set({ userPoints: newTotal });
+        return newTotal;
+      },
+      
+      calculateTotalUserPoints: () => {
+        // This function can be used to recalculate points from scratch if needed
+        // For now, we'll just return the current userPoints since points are awarded in real-time
+        const currentPoints = get().userPoints;
+        console.log(`Total user points: ${currentPoints}`);
+        return currentPoints;
       },
       
       getMonthlyCalendar: (year = null, month = null) => {
