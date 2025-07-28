@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from "@/components/ui/Card"
@@ -22,7 +22,27 @@ import {
   Info
 } from "lucide-react"
 
-const BambooDetail = () => {
+// Loading component for Suspense fallback
+const BambooDetailLoading = () => (
+  <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+    <Header />
+    <div className="pt-20 pb-12">
+      <main className="px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+              <p className="text-lg" style={{ color: '#6E55A0' }}>Loading bamboo details...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+)
+
+// Component that uses useSearchParams
+const BambooDetailContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const bambooId = searchParams.get('id')
@@ -376,6 +396,15 @@ const BambooDetail = () => {
       </motion.div>
 
     </div>
+  )
+}
+
+// Main component that wraps the content in Suspense
+const BambooDetail = () => {
+  return (
+    <Suspense fallback={<BambooDetailLoading />}>
+      <BambooDetailContent />
+    </Suspense>
   )
 }
 
