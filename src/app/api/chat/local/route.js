@@ -19,10 +19,9 @@ export async function POST(request) {
       );
     }
 
-    // For guests, we'll do a simple AI response without storing anything in MongoDB
+    
     try {
-      // Get conversation history from localStorage would be handled client-side
-      // For now, we'll just process the current message
+      
       const context = {
         userPreferences: {
           communicationStyle: 'supportive'

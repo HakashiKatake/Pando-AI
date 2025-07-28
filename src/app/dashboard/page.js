@@ -187,7 +187,7 @@ const Dashboard = () => {
   }
 
   // Current user and time data - Updated to match your current timestamp
-  const userName = preferences.name || user?.firstName || "HakashiKatake"
+  const userName = preferences.name || user?.firstName || "User"
   
 
   // Data calculations

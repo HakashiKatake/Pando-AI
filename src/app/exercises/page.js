@@ -280,6 +280,20 @@ export default function ExercisesPage() {
         >
           {/* Title Section */}
           <motion.div variants={itemVariants} className="text-center mb-12">
+            {/* Panda Focus Image */}
+            <motion.div 
+              className="mb-6"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <img 
+                src="/asset/panda-focus.png" 
+                alt="Panda Focusing and Meditating"
+                className="w-24 h-24 mx-auto object-contain"
+              />
+            </motion.div>
+            
             <h1 className="text-4xl font-bold mb-4" style={{ color: '#6E55A0' }}>
               Wellness Exercises
             </h1>

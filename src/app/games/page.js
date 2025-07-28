@@ -235,18 +235,23 @@ const WellnessGames = () => {
             variants={itemVariants}
             className="text-center mb-8 sm:mb-12"
           >
-            {/* Game Controller Icon */}
-            <motion.div
-              className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gray-800 rounded-2xl flex items-center justify-center"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ duration: 0.3 }}
+            {/* Panda Game Image */}
+            <motion.div 
+              className="mb-6"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              <img 
+                src="/asset/panda-game.png" 
+                alt="Panda Playing Games"
+                className="w-24 h-24 mx-auto object-contain"
+              />
             </motion.div>
 
             <motion.h1 
               className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4"
-              style={{ color: '#1F2937' }}
+              style={{ color: '#6E55A0' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
@@ -256,7 +261,7 @@ const WellnessGames = () => {
             
             <motion.p 
               className="text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed"
-              style={{ color: '#6B7280' }}
+              style={{ color: '#6E55A0' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}

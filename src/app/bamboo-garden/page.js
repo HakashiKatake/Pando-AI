@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent } from "@/components/ui/Card"
+import { motion } from 'framer-motion'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
 import { useHabitStore } from "@/lib/store"
+import Header from '@/components/Header'
 import { 
   TreePine, 
   Leaf, 
@@ -25,7 +27,8 @@ const BambooGarden = () => {
   const [isPlayingVideo, setIsPlayingVideo] = useState(false)
   const [videoForBamboo, setVideoForBamboo] = useState(null)
   
-  // Use centralized points system from store
+ 
+  
   const { 
     userPoints, 
     addUserPoints, 
@@ -33,7 +36,7 @@ const BambooGarden = () => {
     calculateTotalUserPoints 
   } = useHabitStore()
   
-  // Initialize points calculation on component mount
+
   useEffect(() => {
     // Initialize with a starting amount for new users if they have no points
     const initializePoints = async () => {
@@ -104,6 +107,31 @@ const BambooGarden = () => {
     if (growth < 33) return 'sprout'
     if (growth < 66) return 'young'
     return 'mature'
+  }
+
+  // Get pot image based on growth stage and watering count
+  const getPotImage = (growth, totalWaterings = 0) => {
+    // If never watered, show empty pot
+    if (totalWaterings === 0) return '/asset/empty-pot.png'
+    
+    // After first watering, show sprout
+    if (totalWaterings >= 1 && growth < 25) return '/asset/sprout-pot.png'
+    
+    // After more watering and growth, show plant
+    if (growth >= 25 && growth < 50) return '/asset/plant-pot.png'
+    
+    // Developing bamboo
+    if (growth >= 50 && growth < 100) return '/asset/half-bamboo-pot.png'
+    
+    // Fully grown bamboo
+    if (growth >= 100) return '/asset/bamboo-pot.png'
+    
+    // Default fallback based on growth only
+    if (growth === 0) return '/asset/empty-pot.png'
+    if (growth < 25) return '/asset/sprout-pot.png'
+    if (growth < 50) return '/asset/plant-pot.png'
+    if (growth < 100) return '/asset/half-bamboo-pot.png'
+    return '/asset/bamboo-pot.png'
   }
 
   // Update bamboo growth on component mount and when bamboo changes
@@ -264,7 +292,7 @@ const BambooGarden = () => {
       })
     )
     
-    // Award points after state update is complete, but only if watering was successful
+
     if (wateringSuccessful) {
       setTimeout(() => {
         addUserPoints(2, 'bamboo_watering')
@@ -302,176 +330,209 @@ const BambooGarden = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-green-100 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <TreePine className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Bamboo Garden</h1>
-                <p className="text-gray-600">Grow your mindfulness through virtual bamboo</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                <Coins className="w-4 h-4 mr-1" />
-                {userPoints} Points
-              </Badge>
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                <Sparkles className="w-4 h-4 mr-1" />
-                Level 5 Gardener
-              </Badge>
-              {!canPlantNewBamboo() && (
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
-                  <Clock className="w-4 h-4 mr-1" />
-                  Next plant in {getDaysUntilNextPlant()} days
-                </Badge>
-              )}
-              <Button 
-                onClick={() => setPlantingMode(!plantingMode)}
-                className={`${
-                  canPlantNewBamboo() 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-gray-400 cursor-not-allowed'
-                }`}
-                disabled={!canPlantNewBamboo()}
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+      <Header />
+      
+      <motion.div 
+        className="pt-20 pb-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        {/* Page Header */}
+        <main className="px-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Title Section */}
+            <motion.div 
+              className="text-center mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              {/* Panda Water Image */}
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
               >
-                <Leaf className="w-4 h-4 mr-2" />
-                {canPlantNewBamboo() ? 'Plant New Bamboo' : 'Planting Locked'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Points Earning Guide */}
-        <Card className="border-blue-200 bg-blue-50">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Coins className="w-5 h-5 text-blue-600" />
-              How to Earn Points
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-              <div className="text-center">
-                <div className="w-15 h-15 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-green-600 font-bold">5</span>
-                </div>
-                <p className="font-medium text-gray-700">Habit Completion</p>
-                <p className="text-gray-500 text-xs">Complete daily habits</p>
-              </div>
-              <div className="text-center">
-                <div className="w-15 h-15 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-purple-600 font-bold">15-50</span>
-                </div>
-                <p className="font-medium text-gray-700">Task Completion</p>
-                <p className="text-gray-500 text-xs">Complete daily tasks</p>
-              </div>
-              <div className="text-center">
-                <div className="w-15 h-15 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-blue-600 font-bold">10</span>
-                </div>
-                <p className="font-medium text-gray-700">Exercise/Games</p>
-                <p className="text-gray-500 text-xs">Complete exercises</p>
-              </div>
-              <div className="text-center">
-                <div className="w-15 h-15 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-orange-600 font-bold">8-12</span>
-                </div>
-                <p className="font-medium text-gray-700">Mood & Journal</p>
-                <p className="text-gray-500 text-xs">Track mood & write</p>
-              </div>
-            </div>
-            <div className="mt-4 p-3 bg-white rounded-lg">
-              <p className="text-sm text-gray-600 text-center">
-                <strong>Bamboo Garden:</strong> Water bamboo (+2 points) • Plant new bamboo (costs 10-50 points)
+                <img 
+                  src="/asset/panda-water.png" 
+                  alt="Panda Watering Plants"
+                  className="w-24 h-24 mx-auto object-contain"
+                />
+              </motion.div>
+              
+              <h1 className="text-4xl font-bold mb-4" style={{ color: '#6E55A0' }}>
+                Bamboo Garden
+              </h1>
+              <p className="text-lg max-w-2xl mx-auto" style={{ color: '#6E55A0' }}>
+                Grow your mindfulness through virtual bamboo. Water your plants daily and watch them flourish as you build healthy habits.
               </p>
-            </div>
-          </CardContent>
-        </Card>
+            </motion.div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <TreePine className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-gray-900">{bambooGarden.length}</p>
-              <p className="text-sm text-gray-600">Total Bamboo</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Sun className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-gray-900">{(() => {
-                // Calculate gardening streak (consecutive days with at least one watering)
-                const today = new Date()
-                let streak = 0
-                for (let i = 0; i < 365; i++) {
-                  const checkDate = new Date(today)
-                  checkDate.setDate(today.getDate() - i)
-                  const dateStr = checkDate.toISOString().split('T')[0]
-                  
-                  // Check if any bamboo was watered on this date
-                  const hasWateredToday = bambooGarden.some(bamboo => {
-                    return bamboo.lastWateredDate === dateStr || 
-                           (bamboo.totalWaterings > 0 && new Date(bamboo.planted) <= checkDate)
-                  })
-                  
-                  if (hasWateredToday || i === 0) { // Include today even if not watered yet
-                    streak++
-                  } else {
-                    break
+            {/* Action Header */}
+            <motion.div 
+              className="flex items-center justify-center mb-8"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="flex items-center space-x-2 sm:space-x-4 flex-wrap gap-2">
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs sm:text-sm">
+                  <Coins className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  {userPoints} Points
+                </Badge>
+                <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs sm:text-sm hidden sm:flex">
+                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  Level 5 Gardener
+                </Badge>
+                {!canPlantNewBamboo() && (
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300 text-xs sm:text-sm">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    Next plant in {getDaysUntilNextPlant()} days
+                  </Badge>
+                )}
+                <motion.button
+                  onClick={() => setPlantingMode(!plantingMode)}
+                  className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 text-white ${
+                    canPlantNewBamboo() 
+                      ? 'cursor-pointer' 
+                      : 'cursor-not-allowed opacity-60'
+                  }`}
+                  style={{ backgroundColor: canPlantNewBamboo() ? '#8A6FBF' : '#9CA3AF' }}
+                  disabled={!canPlantNewBamboo()}
+                  whileHover={canPlantNewBamboo() ? { scale: 1.05 } : {}}
+                  whileTap={canPlantNewBamboo() ? { scale: 0.95 } : {}}
+                >
+                  <Leaf className="w-4 h-4 mr-2 inline" />
+                  <span className="hidden sm:inline">{canPlantNewBamboo() ? 'Plant New Bamboo' : 'Planting Locked'}</span>
+                  <span className="sm:hidden">{canPlantNewBamboo() ? 'Plant' : 'Locked'}</span>
+                </motion.button>
+              </div>
+            </motion.div>
+
+
+
+            {/* Stats Cards */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              {/* Total Bamboo */}
+              <motion.div
+                className="bg-gradient-to-r from-green-400 to-green-500 rounded-2xl p-6 text-white relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="absolute -top-2 -right-2 text-2xl opacity-20">🎋</div>
+                <div className="absolute -bottom-2 -left-2 text-2xl opacity-20">🎋</div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-white/80 text-sm font-medium">Total Bamboo</p>
+                  <TreePine className="w-6 h-6" />
+                </div>
+                <p className="text-3xl font-bold">{bambooGarden.length}</p>
+              </motion.div>
+
+              {/* Days Streak */}
+              <motion.div
+                className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl p-6 text-white relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="absolute -top-2 -right-2 text-2xl opacity-20">🔥</div>
+                <div className="absolute -bottom-2 -left-2 text-2xl opacity-20">🔥</div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-white/80 text-sm font-medium">Days Streak</p>
+                  <Sun className="w-6 h-6" />
+                </div>
+                <p className="text-3xl font-bold">{(() => {
+                  // Calculate gardening streak (consecutive days with at least one watering)
+                  const today = new Date()
+                  let streak = 0
+                  for (let i = 0; i < 365; i++) {
+                    const checkDate = new Date(today)
+                    checkDate.setDate(today.getDate() - i)
+                    const dateStr = checkDate.toISOString().split('T')[0]
+                    
+                    // Check if any bamboo was watered on this date
+                    const hasWateredToday = bambooGarden.some(bamboo => {
+                      return bamboo.lastWateredDate === dateStr || 
+                             (bamboo.totalWaterings > 0 && new Date(bamboo.planted) <= checkDate)
+                    })
+                    
+                    if (hasWateredToday || i === 0) { // Include today even if not watered yet
+                      streak++
+                    } else {
+                      break
+                    }
                   }
-                }
-                return streak
-              })()}</p>
-              <p className="text-sm text-gray-600">Days Streak</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Droplets className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-gray-900">{(() => {
-                // Calculate total times watered across all bamboo
-                return bambooGarden.reduce((total, bamboo) => {
-                  return total + (bamboo.totalWaterings || 0)
-                }, 0)
-              })()}</p>
-              <p className="text-sm text-gray-600">Times Watered</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Award className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-gray-900">{(() => {
-                // Calculate achievements: mature bamboos + perfect days + milestones
-                let achievements = 0
-                
-                // Mature bamboos (1 achievement each)
-                achievements += bambooGarden.filter(bamboo => bamboo.growth === 100).length
-                
-                // Milestone achievements
-                const totalWaterings = bambooGarden.reduce((total, bamboo) => total + (bamboo.totalWaterings || 0), 0)
-                if (totalWaterings >= 100) achievements += 1 // Watering master
-                if (totalWaterings >= 50) achievements += 1 // Dedicated gardener
-                if (totalWaterings >= 20) achievements += 1 // Green thumb
-                if (bambooGarden.length >= 3) achievements += 1 // Garden expander
-                if (bambooGarden.length >= 1) achievements += 1 // First bamboo
-                
-                return achievements
-              })()}</p>
-              <p className="text-sm text-gray-600">Achievements</p>
-            </CardContent>
-          </Card>
-        </div>
+                  return streak
+                })()}</p>
+              </motion.div>
 
-        {/* Planting Mode */}
-        {plantingMode && canPlantNewBamboo() && (
-          <Card className="border-green-200 bg-green-50">
+              {/* Times Watered */}
+              <motion.div
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="absolute -top-2 -right-2 text-2xl opacity-20">💧</div>
+                <div className="absolute -bottom-2 -left-2 text-2xl opacity-20">💧</div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-white/80 text-sm font-medium">Times Watered</p>
+                  <Droplets className="w-6 h-6" />
+                </div>
+                <p className="text-3xl font-bold">{(() => {
+                  // Calculate total times watered across all bamboo
+                  return bambooGarden.reduce((total, bamboo) => {
+                    return total + (bamboo.totalWaterings || 0)
+                  }, 0)
+                })()}</p>
+              </motion.div>
+
+              {/* Achievements */}
+              <motion.div
+                className="bg-gradient-to-r from-pink-400 to-pink-500 rounded-2xl p-6 text-white relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="absolute -top-2 -right-2 text-2xl opacity-20">🏆</div>
+                <div className="absolute -bottom-2 -left-2 text-2xl opacity-20">🏆</div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-white/80 text-sm font-medium">Achievements</p>
+                  <Award className="w-6 h-6" />
+                </div>
+                <p className="text-3xl font-bold">{(() => {
+                  // Calculate achievements: mature bamboos + perfect days + milestones
+                  let achievements = 0
+                  
+                  // Mature bamboos (1 achievement each)
+                  achievements += bambooGarden.filter(bamboo => bamboo.growth === 100).length
+                  
+                  // Milestone achievements
+                  const totalWaterings = bambooGarden.reduce((total, bamboo) => total + (bamboo.totalWaterings || 0), 0)
+                  if (totalWaterings >= 100) achievements += 1 // Watering master
+                  if (totalWaterings >= 50) achievements += 1 // Dedicated gardener
+                  if (totalWaterings >= 20) achievements += 1 // Green thumb
+                  if (bambooGarden.length >= 3) achievements += 1 // Garden expander
+                  if (bambooGarden.length >= 1) achievements += 1 // First bamboo
+                  
+                  return achievements
+                })()}</p>
+              </motion.div>
+            </motion.div>
+
+            {/* Planting Mode */}
+            {plantingMode && canPlantNewBamboo() && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+              >
+                <Card className="border-green-200 bg-green-50">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Bamboo</h3>
               <p className="text-sm text-gray-600 mb-4">
@@ -516,13 +577,19 @@ const BambooGarden = () => {
                   )
                 })}
               </div>
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
-        {/* Planting Restriction Message */}
-        {plantingMode && !canPlantNewBamboo() && (
-          <Card className="border-yellow-200 bg-yellow-50">
+            {/* Planting Restriction Message */}
+            {plantingMode && !canPlantNewBamboo() && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+              >
+                <Card className="border-yellow-200 bg-yellow-50">
             <CardContent className="p-6 text-center">
               <Clock className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Planting Cooldown Active</h3>
@@ -532,12 +599,18 @@ const BambooGarden = () => {
               <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
                 Next planting available in {getDaysUntilNextPlant()} days
               </Badge>
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
-        {/* Garden Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Garden Grid */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
           {bambooGarden.map((bamboo) => {
             const bambooType = bambooTypes.find(t => t.type === bamboo.type)
             return (
@@ -573,12 +646,15 @@ const BambooGarden = () => {
                         </div>
                       )}
                       
-                      {/* Bamboo Image */}
-                      <img 
-                        src="/asset/bamboo.png" 
-                        alt="Bamboo Plant"
-                        className="w-60 h-60 object-fill rounded-lg"
-
+                      {/* Progressive Pot Image */}
+                      <motion.img 
+                        key={`${bamboo.id}-${getPotImage(bamboo.growth, bamboo.totalWaterings)}`}
+                        src={getPotImage(bamboo.growth, bamboo.totalWaterings)} 
+                        alt={`Bamboo Plant - ${bamboo.growth}% grown`}
+                        className="w-60 h-60 object-contain rounded-lg"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
                       />
                     </div>
                     <h3 className="font-semibold text-gray-900">{bamboo.name}</h3>
@@ -592,6 +668,18 @@ const BambooGarden = () => {
                       </p>
                       <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-300">
                         {getRemainingWaters(bamboo)}/3 waters left
+                      </Badge>
+                    </div>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                        {(() => {
+                          const totalWaterings = bamboo.totalWaterings || 0
+                          if (totalWaterings === 0) return '🪴 Empty Pot'
+                          if (bamboo.growth < 25) return '🌱 Sprouting'
+                          if (bamboo.growth < 50) return '🌿 Growing Plant'
+                          if (bamboo.growth < 100) return '🎋 Young Bamboo'
+                          return '🎍 Mature Bamboo'
+                        })()}
                       </Badge>
                     </div>
                     <div className="mt-1">
@@ -682,20 +770,63 @@ const BambooGarden = () => {
                 </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
+              ))}
+            </motion.div>
 
-        {/* Garden Background */}
-        <div 
-          className="fixed inset-0 -z-10 opacity-10"
-          style={{
-            backgroundImage: 'url(/asset/bamboo.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
-      </div>
+            {/* Points Earning Guide - Moved to End */}
+            <motion.div
+              className="mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <Card className="bg-white border-0 shadow-sm">
+                <CardContent className="p-8">
+                  <h3 className="text-xl font-bold mb-6 flex items-center gap-3" style={{ color: '#6E55A0' }}>
+                    <Coins className="w-6 h-6" style={{ color: '#8A6FBF' }} />
+                    How to Earn Points
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-green-600 font-bold text-lg">5</span>
+                      </div>
+                      <p className="font-semibold mb-1" style={{ color: '#6E55A0' }}>Habit Completion</p>
+                      <p className="text-gray-500 text-sm">Complete daily habits</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-purple-600 font-bold text-lg">15-50</span>
+                      </div>
+                      <p className="font-semibold mb-1" style={{ color: '#6E55A0' }}>Task Completion</p>
+                      <p className="text-gray-500 text-sm">Complete daily tasks</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-blue-600 font-bold text-lg">10</span>
+                      </div>
+                      <p className="font-semibold mb-1" style={{ color: '#6E55A0' }}>Exercise/Games</p>
+                      <p className="text-gray-500 text-sm">Complete exercises</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-orange-600 font-bold text-lg">8-12</span>
+                      </div>
+                      <p className="font-semibold mb-1" style={{ color: '#6E55A0' }}>Mood & Journal</p>
+                      <p className="text-gray-500 text-sm">Track mood & write</p>
+                    </div>
+                  </div>
+                  <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <p className="text-sm text-center" style={{ color: '#6E55A0' }}>
+                      <strong>Bamboo Garden:</strong> Water bamboo (+2 points) • Plant new bamboo (costs 10-50 points)
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </main>
+      </motion.div>
     </div>
   )
 }
