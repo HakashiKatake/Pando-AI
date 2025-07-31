@@ -12,7 +12,7 @@ export default function BreathingExercisePage() {
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [count, setCount] = useState(0);
   const [cycle, setCycle] = useState(0);
-  const [selectedTechnique, setSelectedTechnique] = useState('4-7-8');
+  const [selectedTechnique, setSelectedTechnique] = useState('2-1-2');
   const [startTime, setStartTime] = useState(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
 
@@ -25,14 +25,14 @@ export default function BreathingExercisePage() {
   const techniques = {
     '2-1-2': {
       name: '2-1-2 Breathing',
-      description: 'Inhale for 4, hold for 7, exhale for 8. Great for relaxation and sleep.',
+      description: 'Inhale for 2, hold for 1, exhale for 8. Great for relaxation and sleep.',
       phases: {
         inhale: 2,
         hold: 1,
         exhale: 2
       },
       cycles: 4,
-      pattern: '4-7-8 pattern'
+      pattern: '2-1-2 pattern'
     },
     'box': {
       name: 'Box Breathing',
@@ -69,7 +69,7 @@ export default function BreathingExercisePage() {
     }
   };
 
-  const currentTechnique = techniques[selectedTechnique];
+  const currentTechnique = techniques[selectedTechnique] || techniques['2-1-2'];
   const phaseNames = Object.keys(currentTechnique.phases);
   const currentPhaseName = phaseNames[phaseIndex];
   const currentPhaseCount = currentTechnique.phases[currentPhaseName];
