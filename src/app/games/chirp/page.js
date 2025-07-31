@@ -854,7 +854,7 @@ export default function ChirpJumpGame() {
               <div className="relative w-full mb-6" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
                 <iframe
                   className="absolute top-0 left-0 w-full h-full rounded-xl"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=example"
+                  src="/tutorial.mp4"
                   title="Chirp Jump Tutorial"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
