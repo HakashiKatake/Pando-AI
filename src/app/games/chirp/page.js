@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mic, MicOff, Trophy, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Trophy, AlertCircle, Play, X, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useExerciseStore } from '../../../lib/store';
 import { useDataInitialization } from '../../../lib/useDataInitialization';
@@ -20,6 +20,9 @@ export default function ChirpJumpGame() {
   const [isListening, setIsListening] = useState(false);
   const [voiceLevel, setVoiceLevel] = useState(0);
   const [micError, setMicError] = useState('');
+  
+  // Tutorial modal state
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Refs
   const canvasRef = useRef(null);
@@ -585,9 +588,22 @@ export default function ChirpJumpGame() {
             </Link>
             
             <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2" style={{ color: '#6E55A0' }}>
-                🐔 Chirp Jump 🐔
-              </h1>
+              <div className="flex items-center justify-center gap-4 mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: '#6E55A0' }}>
+                  🐔 Chirp Jump 🐔
+                </h1>
+                <motion.button
+                  onClick={() => setShowTutorial(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white shadow-sm"
+                  style={{ background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)' }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Watch Tutorial"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Tutorial</span>
+                </motion.button>
+              </div>
               <p className="text-sm sm:text-base" style={{ color: '#8A6FBF' }}>
                 Voice-controlled jumping adventure
               </p>
@@ -809,6 +825,98 @@ export default function ChirpJumpGame() {
           </motion.div>
         </motion.div>
       </main>
+
+      {/* Tutorial Modal */}
+      {showTutorial && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(247, 245, 250, 0.3)' }}>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold" style={{ color: '#6E55A0' }}>
+                🐔 Chirp Jump Tutorial
+              </h2>
+              <button
+                onClick={() => setShowTutorial(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-6 h-6" style={{ color: '#8A6FBF' }} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {/* Video Container */}
+              <div className="relative w-full mb-6" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full rounded-xl"
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=example"
+                  title="Chirp Jump Tutorial"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+
+              {/* Tutorial Text */}
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4">
+                  <h3 className="font-semibold mb-2" style={{ color: '#6E55A0' }}>
+                    🎤 Voice Controls
+                  </h3>
+                  <p className="text-sm" style={{ color: '#8A6FBF' }}>
+                    Speak clearly and moderately loud to make your chicken jump. The louder you speak, the higher the jump!
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-4">
+                  <h3 className="font-semibold mb-2" style={{ color: '#F59E0B' }}>
+                    🥚 Collect Eggs
+                  </h3>
+                  <p className="text-sm" style={{ color: '#8A6FBF' }}>
+                    Golden eggs give you 100 bonus points each. Time your jumps to collect them while staying on platforms!
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-4">
+                  <h3 className="font-semibold mb-2" style={{ color: '#EF4444' }}>
+                    ⚠️ Stay in Bounds
+                  </h3>
+                  <p className="text-sm" style={{ color: '#8A6FBF' }}>
+                    Don't jump too high or fall too low! There's a top boundary and falling below the screen ends the game.
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-4">
+                  <h3 className="font-semibold mb-2" style={{ color: '#10B981' }}>
+                    🎮 Backup Controls
+                  </h3>
+                  <p className="text-sm" style={{ color: '#8A6FBF' }}>
+                    If voice control isn't working, you can press the Space bar to jump as a backup option.
+                  </p>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-center mt-6">
+                <motion.button
+                  onClick={() => setShowTutorial(false)}
+                  className="px-6 py-3 rounded-xl font-semibold text-white"
+                  style={{ background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)' }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Got it! Let's Play 🐔
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
