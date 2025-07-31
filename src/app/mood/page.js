@@ -86,7 +86,7 @@ const MoodMusic = () => {
   // Focus
   {
     id: 1,
-    title: "Deep Concentration",
+    title: "Calm Down",
     artist: "Ambient Flow",
     category: "Focus",
     bgColor: "bg-blue-900",
