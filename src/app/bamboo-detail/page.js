@@ -391,6 +391,8 @@ const BambooDetailContent = () => {
                 </motion.div>
               </div>
             </motion.div>
+
+
           </div>
         </main>
       </motion.div>

@@ -7,11 +7,14 @@ import { auth } from '@clerk/nextjs/server';
 
 export async function POST(request) {
   try {
-    await connectToDatabase();
-    
     const { userId } = await auth();
     const body = await request.json();
-    const { message, guestId, conversationId, privacy = false, isAutoGreeting = false } = body;
+    const { message, guestId, conversationId, privacy = false, isAutoGreeting = false, conversationHistory = [] } = body;
+    
+    // Only connect to database for authenticated users
+    if (userId) {
+      await connectToDatabase();
+    }
     
     // Validate required fields
     if (!message?.trim()) {
@@ -38,9 +41,10 @@ export async function POST(request) {
     // Detect triggers in the message (skip for auto-greetings)
     const triggerAnalysis = isAutoGreeting ? { level: 'low', crisis: false, concern: false } : detectTriggers(message);
     
-    // Save user message (skip for auto-greetings)
+    // Save user message (skip for auto-greetings and guests)
     let userMessage = null;
-    if (!isAutoGreeting) {
+    if (!isAutoGreeting && userId) {
+      // Only save to database for authenticated users
       userMessage = await ChatMessage.create({
         ...userIdentifier,
         conversationId: currentConversationId,
@@ -54,6 +58,16 @@ export async function POST(request) {
           requiresIntervention: triggerAnalysis.crisis,
         },
       });
+    } else if (!isAutoGreeting && guestId) {
+      // For guests, create a mock user message object for response structure
+      userMessage = {
+        id: `guest_${Date.now()}`,
+        message: message.trim(),
+        role: 'user',
+        timestamp: new Date().toISOString(),
+        guestId,
+        conversationId: currentConversationId,
+      };
     }
     
     let assistantResponse;
@@ -61,36 +75,63 @@ export async function POST(request) {
     
     // Handle crisis situations
     if (triggerAnalysis.crisis) {
-      const crisisResponse = getCrisisResponse();
-      assistantResponse = `${crisisResponse.message} Please reach out to someone who can help - you can call 988 (Suicide Prevention Lifeline) or text HOME to 741741 (Crisis Text Line) anytime. You matter and you're not alone in this.`;
+      const detectedLang = triggerAnalysis.detectedLanguage || 'english';
+      const crisisResponse = getCrisisResponse(detectedLang);
+      
+      const additionalHelp = {
+        english: "Please reach out to someone who can help - you can call 988 (Suicide Prevention Lifeline) or text HOME to 741741 (Crisis Text Line) anytime. You matter and you're not alone in this.",
+        hinglish: "Please kisi se help lene ke liye reach out karo - aap 988 (Suicide Prevention Lifeline) call kar sakte ho ya HOME text kar sakte ho 741741 (Crisis Text Line) par anytime. Aap matter karte ho aur aap is mein akele nahi ho.",
+        spanish: "Por favor contacta a alguien que pueda ayudarte - puedes llamar al 988 (Línea de Prevención del Suicidio) o enviar un texto con HOME al 741741 (Línea de Crisis por Texto) en cualquier momento. Importas y no estás solo en esto.",
+        french: "S'il te plaît, contacte quelqu'un qui peut t'aider - tu peux appeler le 988 (Ligne de Prévention du Suicide) ou envoyer HOME par texto au 741741 (Ligne de Crise par Texto) à tout moment. Tu comptes et tu n'es pas seul dans ça.",
+        german: "Bitte wende dich an jemanden, der helfen kann - du kannst 988 (Suizidpräventions-Hotline) anrufen oder HOME an 741741 (Krisen-Textlinie) senden, jederzeit. Du bist wichtig und nicht allein damit."
+      };
+      
+      assistantResponse = `${crisisResponse.message} ${additionalHelp[detectedLang] || additionalHelp.english}`;
       responseType = 'crisis_support';
     }
     // Handle concern situations
     else if (triggerAnalysis.concern) {
-      const concernResponse = getConcernResponse();
-      assistantResponse = `${concernResponse.message} Sometimes it helps to try some deep breathing or talk to someone you trust. If these feelings keep happening, maybe consider talking to a counselor - they're really good at helping with this stuff.`;
+      const detectedLang = triggerAnalysis.detectedLanguage || 'english';
+      const concernResponse = getConcernResponse(detectedLang);
+      
+      const additionalSupport = {
+        english: "Sometimes it helps to try some deep breathing or talk to someone you trust. If these feelings keep happening, maybe consider talking to a counselor - they're really good at helping with this stuff.",
+        hinglish: "Kabhi kabhi deep breathing try karna ya kisi trusted person se baat karna help karta hai. Agar ye feelings continue rahe to counselor se baat karna consider karo - woh is type ki cheezein handle karne mein bahut ache hote hain.",
+        spanish: "A veces ayuda probar respiración profunda o hablar con alguien en quien confías. Si estos sentimientos continúan, tal vez considera hablar con un consejero - son muy buenos ayudando con este tipo de cosas.",
+        french: "Parfois ça aide d'essayer la respiration profonde ou de parler à quelqu'un en qui tu as confiance. Si ces sentiments continuent, peut-être considère parler à un conseiller - ils sont très bons pour aider avec ce genre de choses.",
+        german: "Manchmal hilft es, tiefes Atmen zu versuchen oder mit jemandem zu sprechen, dem du vertraust. Wenn diese Gefühle anhalten, erwäge vielleicht, mit einem Berater zu sprechen - sie sind sehr gut darin, bei solchen Sachen zu helfen."
+      };
+      
+      assistantResponse = `${concernResponse.message} ${additionalSupport[detectedLang] || additionalSupport.english}`;
       responseType = 'guided';
     }
     // Regular AI response
     else {
       try {
-        // Get conversation context (last 8 messages for better context)
-        const contextMessages = await ChatMessage.find({
-          ...userIdentifier,
-          conversationId: currentConversationId,
-        })
-        .sort({ createdAt: -1 })
-        .limit(8);
+        // Get conversation context
+        let contextHistory = [];
         
-        // Build context for AI - only include actual conversation messages
-        const conversationHistory = contextMessages.reverse().map(msg => ({
-          role: msg.role,
-          content: msg.message,
-        }));
+        if (userId) {
+          // For authenticated users, get from database
+          const contextMessages = await ChatMessage.find({
+            ...userIdentifier,
+            conversationId: currentConversationId,
+          })
+          .sort({ createdAt: -1 })
+          .limit(8);
+          
+          contextHistory = contextMessages.reverse().map(msg => ({
+            role: msg.role,
+            content: msg.message,
+          }));
+        } else if (guestId && conversationHistory) {
+          // For guests, use the conversation history passed from frontend
+          contextHistory = conversationHistory.slice(-8); // Last 8 messages
+        }
         
         // Get user context - including preferences and recent mood
         let userContext = {
-          conversationLength: contextMessages.length,
+          conversationLength: contextHistory.length,
           triggerLevel: triggerAnalysis.level,
         };
 
@@ -127,7 +168,7 @@ export async function POST(request) {
           userContext.communicationStyle = 'supportive';
         }
         
-        const messages = buildWellnessPrompt(message, userContext, conversationHistory);
+        const messages = buildWellnessPrompt(message, userContext, contextHistory);
         assistantResponse = await sendChatMessage(messages);
       } catch (aiError) {
         console.error('AI API error:', aiError);
@@ -135,19 +176,37 @@ export async function POST(request) {
       }
     }
     
-    // Save assistant message
-    const assistantMessage = await ChatMessage.create({
-      ...userIdentifier,
-      conversationId: currentConversationId,
-      message: assistantResponse,
-      role: 'assistant',
-      messageType: responseType,
-      privacy,
-      triggerDetection: {
-        level: triggerAnalysis.level,
-        requiresIntervention: triggerAnalysis.crisis,
-      },
-    });
+    // Save assistant message (only for authenticated users)
+    let assistantMessage = null;
+    if (userId) {
+      assistantMessage = await ChatMessage.create({
+        ...userIdentifier,
+        conversationId: currentConversationId,
+        message: assistantResponse,
+        role: 'assistant',
+        messageType: responseType,
+        privacy,
+        triggerDetection: {
+          level: triggerAnalysis.level,
+          requiresIntervention: triggerAnalysis.crisis,
+        },
+      });
+    } else if (guestId) {
+      // For guests, create a mock assistant message object for response structure
+      assistantMessage = {
+        id: `guest_ai_${Date.now()}`,
+        message: assistantResponse,
+        role: 'assistant',
+        messageType: responseType,
+        timestamp: new Date().toISOString(),
+        guestId,
+        conversationId: currentConversationId,
+        triggerDetection: {
+          level: triggerAnalysis.level,
+          requiresIntervention: triggerAnalysis.crisis,
+        },
+      };
+    }
     
     return NextResponse.json({
       success: true,

@@ -287,20 +287,39 @@ export const useChatStore = create((set, get) => ({
     if (userId) {
       // For authenticated users, save to database
       try {
+        // Prepare conversation history for context (last 8 messages)
+        const conversationHistory = get().messages.slice(-8).map(msg => ({
+          role: msg.role,
+          content: msg.message
+        }));
+
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...messageData, guestId }),
+          body: JSON.stringify({ 
+            ...messageData, 
+            guestId,
+            conversationHistory // Pass conversation history for context
+          }),
         });
         
         if (response.ok) {
           const result = await response.json();
-          // Update with server response
-          set(state => ({
-            messages: state.messages.map(msg => 
-              msg.id === tempMessage.id ? result.userMessage : msg
-            ).concat(result.aiResponse ? [result.aiResponse] : [])
-          }));
+          // Add AI response if available
+          if (result.data?.assistantMessage) {
+            const aiMessage = {
+              id: Date.now() + 1,
+              timestamp: new Date().toISOString(),
+              role: 'assistant',
+              message: result.data.assistantMessage.message,
+              messageType: result.data.assistantMessage.messageType || 'response',
+              triggerAnalysis: result.data.triggerAnalysis,
+            };
+            
+            set(state => ({
+              messages: [...state.messages, aiMessage]
+            }));
+          }
         }
       } catch (error) {
         console.error('Failed to save message:', error);

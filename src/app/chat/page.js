@@ -177,7 +177,7 @@ export default function ChatPage() {
           privacy: privacyMode,
         }, dataInit.userId, dataInit.guestId);
       } else {
-        // For guests, handle everything locally
+        // For guests, use the same API route but pass conversation history
         // First add user message locally
         addMessage({
           role: 'user',
@@ -185,9 +185,15 @@ export default function ChatPage() {
           privacy: privacyMode,
         }, dataInit.userId, dataInit.guestId);
 
-        // Then get AI response using local OpenRouter API call (no MongoDB)
+        // Prepare conversation history for context (last 8 messages)
+        const conversationHistory = messages.slice(-8).map(msg => ({
+          role: msg.role,
+          content: msg.message
+        }));
+
+        // Then get AI response using the main chat API
         try {
-          const response = await fetch('/api/chat/local', {
+          const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -195,19 +201,19 @@ export default function ChatPage() {
               guestId: dataInit.guestId,
               conversationId,
               privacy: privacyMode,
-              isGuest: true // Flag to indicate local processing only
+              conversationHistory // Pass conversation history for context
             }),
           });
 
           const data = await response.json();
 
-          if (data.success && data.message) {
+          if (data.success && data.data?.assistantMessage) {
             // Add assistant message to store for guests
             addMessage({
               role: 'assistant',
-              message: data.message,
-              messageType: data.messageType || 'response',
-              triggerAnalysis: data.triggerAnalysis,
+              message: data.data.assistantMessage.message,
+              messageType: data.data.assistantMessage.messageType || 'response',
+              triggerAnalysis: data.data.triggerAnalysis,
             }, dataInit.userId, dataInit.guestId);
           } else {
             throw new Error(data.error || 'Failed to get AI response');
@@ -739,6 +745,7 @@ function MessageBubble({ message, isUser }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const speechRef = useRef(null);
+  const lastClickRef = useRef(0);
 
   useEffect(() => {
     // Check if speech synthesis is supported
@@ -749,16 +756,23 @@ function MessageBubble({ message, isUser }) {
     setSpeechSupported(isSupported);
     
     if (isSupported) {
-      console.log('Speech synthesis is supported');
+      // Force voices to load by creating a dummy utterance
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length === 0) {
+          // Create a dummy utterance to trigger voice loading
+          const dummy = new SpeechSynthesisUtterance('');
+          window.speechSynthesis.speak(dummy);
+          window.speechSynthesis.cancel();
+        }
+      };
       
-      // Try to load voices immediately
-      const voices = window.speechSynthesis.getVoices();
-      console.log('Initial voices loaded:', voices.length);
+      loadVoices();
       
       // Listen for voices to be loaded (Chrome requires this)
       const handleVoicesChanged = () => {
         const updatedVoices = window.speechSynthesis.getVoices();
-        console.log('Voices updated:', updatedVoices.length);
+        console.log('Voices loaded:', updatedVoices.length);
       };
       
       window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
@@ -766,32 +780,77 @@ function MessageBubble({ message, isUser }) {
       // Cleanup function
       return () => {
         window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+        // Cancel any speech from this component
         if (speechRef.current) {
           window.speechSynthesis.cancel();
+          speechRef.current = null;
         }
+        setIsPlaying(false);
       };
-    } else {
-      console.log('Speech synthesis not supported');
     }
   }, []);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (speechRef.current) {
+        window.speechSynthesis.cancel();
+        speechRef.current = null;
+      }
+      setIsPlaying(false);
+    };
+  }, []);
+
   const handleTextToSpeech = () => {
+    const now = Date.now();
+    
+    // Debounce rapid clicks (prevent clicks within 500ms)
+    if (now - lastClickRef.current < 500) {
+      return;
+    }
+    lastClickRef.current = now;
+    
+    console.log('🔊 TTS clicked - speechSupported:', speechSupported, 'isPlaying:', isPlaying);
+    
     if (!speechSupported) {
       alert('Text-to-speech is not supported in this browser');
       return;
     }
 
     if (isPlaying) {
-      // Stop current speech - simple like breathing page
+      // Stop current speech
+      console.log('🛑 Stopping current speech');
       window.speechSynthesis.cancel();
       setIsPlaying(false);
       speechRef.current = null;
       return;
     }
 
-    // Cancel any ongoing speech first
-    window.speechSynthesis.cancel();
+    // Check synthesis state
+    console.log('🔍 Synthesis state:', {
+      speaking: window.speechSynthesis.speaking,
+      pending: window.speechSynthesis.pending,
+      paused: window.speechSynthesis.paused
+    });
 
+    // Only cancel if there's actually something playing
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      console.log('⏹️ Canceling existing speech');
+      window.speechSynthesis.cancel();
+      // Wait a bit for the cancel to take effect
+      setTimeout(() => {
+        startSpeech();
+      }, 300);
+    } else {
+      // Start immediately if nothing is playing
+      console.log('▶️ Starting speech immediately');
+      startSpeech();
+    }
+  };
+
+  const startSpeech = () => {
+    console.log('🎤 startSpeech called');
+    
     // Clean the message text
     const textToSpeak = message.message
       .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
@@ -802,30 +861,91 @@ function MessageBubble({ message, isUser }) {
       .replace(/\s+/g, ' ') // Clean up spaces
       .trim();
 
+    console.log('📝 Text to speak:', textToSpeak, 'Length:', textToSpeak.length);
+
     if (!textToSpeak || textToSpeak.length < 3) {
-      console.log('Text too short after cleaning');
+      console.log('❌ Text too short, aborting');
       return;
     }
 
-    // Create utterance - exactly like breathing page approach
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
-    utterance.volume = 0.7;
-    
-    // Simple event handlers
-    utterance.onstart = () => setIsPlaying(true);
-    utterance.onend = () => {
-      setIsPlaying(false);
-      speechRef.current = null;
-    };
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      speechRef.current = null;
-    };
+    try {
+      console.log('🔧 Creating utterance...');
+      
+      // Create utterance
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.rate = 0.8;
+      utterance.pitch = 1;
+      utterance.volume = 0.7;
+      
+      console.log('🎵 Utterance created:', {
+        text: utterance.text.substring(0, 50) + '...',
+        rate: utterance.rate,
+        volume: utterance.volume
+      });
+      
+      // Set voice if available
+      const voices = window.speechSynthesis.getVoices();
+      console.log('🎤 Available voices:', voices.length);
+      
+      if (voices.length > 0) {
+        const englishVoice = voices.find(voice => 
+          voice.lang.startsWith('en') && !voice.name.includes('Google')
+        ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+        
+        if (englishVoice) {
+          utterance.voice = englishVoice;
+          console.log('🎤 Selected voice:', englishVoice.name, englishVoice.lang);
+        }
+      }
+      
+      // Event handlers
+      utterance.onstart = () => {
+        console.log('✅ Speech started successfully');
+        setIsPlaying(true);
+      };
+      
+      utterance.onend = () => {
+        console.log('✅ Speech ended successfully');
+        setIsPlaying(false);
+        speechRef.current = null;
+      };
+      
+      utterance.onerror = (event) => {
+        // Handle specific error types silently (these are normal)
+        if (event.error === 'interrupted' || event.error === 'canceled') {
+          setIsPlaying(false);
+          speechRef.current = null;
+          return;
+        }
+        
+        // Only log unexpected errors
+        console.error('🚨 Unexpected speech error:', {
+          error: event.error,
+          type: event.type
+        });
+        
+        setIsPlaying(false);
+        speechRef.current = null;
+      };
 
-    speechRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+      speechRef.current = utterance;
+      
+      console.log('🚀 Calling speechSynthesis.speak()...');
+      
+      // Start speaking (we already handled cancellation in handleTextToSpeech)
+      window.speechSynthesis.speak(utterance);
+      
+      console.log('📢 speechSynthesis.speak() called. Current state:', {
+        speaking: window.speechSynthesis.speaking,
+        pending: window.speechSynthesis.pending,
+        paused: window.speechSynthesis.paused
+      });
+      
+    } catch (error) {
+      console.error('🚨 TTS Error:', error);
+      setIsPlaying(false);
+      speechRef.current = null;
+    }
   };
 
   return (

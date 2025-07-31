@@ -52,7 +52,7 @@ const BambooGarden = () => {
     initializePoints()
   }, [calculateTotalUserPoints, addUserPoints]) // Removed userPoints dependency
   
-  // For a new user, start with an empty garden. This example shows day 2 for testing
+  // For a new user, start with an empty garden. This example shows multiple plants for testing
   const [bambooGarden, setBambooGarden] = useState([
     { 
       id: 1, 
@@ -64,6 +64,28 @@ const BambooGarden = () => {
       dailyWaterCount: 0, // 3 waters remaining today
       lastWateredDate: '2025-07-27', // Date when last watered
       totalWaterings: 3 // Day 1: 3 waterings completed
+    },
+    { 
+      id: 2, 
+      type: 'young', 
+      growth: 0, // Will be calculated based on days since planting
+      planted: '2025-07-20', // Day 8 for testing (planted 7 days ago)
+      name: 'Growing Strong', 
+      lastWatered: '2025-07-27',
+      dailyWaterCount: 1, // 2 waters remaining today
+      lastWateredDate: '2025-07-27', // Date when last watered
+      totalWaterings: 18 // 7 days * 3 waterings - 3 missed = 18 waterings
+    },
+    { 
+      id: 3, 
+      type: 'mature', 
+      growth: 0, // Will be calculated based on days since planting
+      planted: '2025-07-12', // Day 16 for testing (planted 15 days ago)
+      name: 'Zen Master', 
+      lastWatered: '2025-07-27',
+      dailyWaterCount: 2, // 1 water remaining today
+      lastWateredDate: '2025-07-27', // Date when last watered
+      totalWaterings: 42 // 15 days * 3 waterings - 3 missed = 42 waterings
     },
   ])
   

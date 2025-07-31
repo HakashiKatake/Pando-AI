@@ -23,13 +23,13 @@ export default function BreathingExercisePage() {
   const dataInit = useDataInitialization();
 
   const techniques = {
-    '4-7-8': {
-      name: '4-7-8 Breathing',
+    '2-1-2': {
+      name: '2-1-2 Breathing',
       description: 'Inhale for 4, hold for 7, exhale for 8. Great for relaxation and sleep.',
       phases: {
-        inhale: 4,
-        hold: 7,
-        exhale: 8
+        inhale: 2,
+        hold: 1,
+        exhale: 2
       },
       cycles: 4,
       pattern: '4-7-8 pattern'
