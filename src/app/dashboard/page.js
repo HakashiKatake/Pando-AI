@@ -315,7 +315,7 @@ const Dashboard = () => {
       artist: "Positive thinking",
       category: "Chill",
       bgColor: "bg-purple-300",
-      audioUrl: "/music/1.mp3",
+      audioUrl: "/music/1.wav",
       bgImage: "/music_bg/img1.jpeg",
       duration: 1620, // 27 minutes
     }
