@@ -31,7 +31,7 @@ export default function MoodModal({ onClose, onSave }) {
       exit={{ opacity: 0 }}
     >
       <motion.div 
-        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl"
+        className="bg-card rounded-2xl p-6 w-full max-w-md shadow-xl"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
@@ -39,7 +39,7 @@ export default function MoodModal({ onClose, onSave }) {
       >
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#6E55A0' }}>How are you feeling?</h2>
-          <p className="text-gray-600">Check in your mood before chatting</p>
+          <p className="text-muted-foreground">Check in your mood before chatting</p>
         </div>
 
         <div className="grid grid-cols-5 gap-2 mb-6">
@@ -50,7 +50,7 @@ export default function MoodModal({ onClose, onSave }) {
               className={`p-3 rounded-xl text-center transition-all duration-200 ${
                 mood === moodOption.value 
                   ? `${moodOption.color} text-white ring-2 ring-offset-2` 
-                  : 'bg-gray-100 hover:bg-gray-200'
+                  : 'bg-muted hover:bg-accent'
               }`}
               style={mood === moodOption.value ? { ringColor: '#8A6FBF' } : {}}
             >
@@ -70,7 +70,7 @@ export default function MoodModal({ onClose, onSave }) {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="What made you feel this way?"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
             style={{ focusRingColor: '#8A6FBF' }}
             rows={3}
           />
@@ -79,7 +79,7 @@ export default function MoodModal({ onClose, onSave }) {
         <div className="flex space-x-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-accent transition-colors"
           >
             Cancel
           </button>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 
+
 import { 
   Shield, 
   AlertTriangle, 
@@ -28,6 +29,27 @@ export default function AnonymousReportPage() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
+
+  // Animation variants for consistency
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -149,41 +171,50 @@ export default function AnonymousReportPage() {
 
   if (!user || user.unsafeMetadata?.userType !== 'student') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="p-8 text-center max-w-md">
-          <CardContent className="p-0">
-            <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Access Restricted</h2>
-            <p className="text-gray-600 mb-4">
-              Anonymous reporting is only available to students who are part of a classroom.
-            </p>
-            <Button onClick={() => router.push('/dashboard')} className="w-full">
-              Go to Dashboard
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-app-light">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="bg-card rounded-2xl sm:rounded-3xl p-8 text-center max-w-md shadow-sm"
+        >
+          <Shield className="w-16 h-16 mx-auto mb-4 text-app-purple-light" />
+          <h2 className="text-xl font-bold mb-2 text-app-purple">Access Restricted</h2>
+          <p className="mb-4 text-app-purple-light">
+            Anonymous reporting is only available to students who are part of a classroom.
+          </p>
+          <motion.button
+            onClick={() => router.push('/dashboard')}
+            className="w-full px-6 py-3 rounded-xl font-semibold text-white"
+            style={{ background: 'linear-gradient(45deg, #6E55A0, #8A6FBF)' }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Go to Dashboard
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl">
-          <CardContent className="p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-app-light">
+        <div className="w-full max-w-2xl bg-card rounded-2xl sm:rounded-3xl shadow-sm">
+          <div className="p-8 text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6 }}
               className="space-y-6"
             >
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6" style={{ background: 'linear-gradient(45deg, #22C55E, #16A34A)' }}>
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
               
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-gray-900">Report Submitted</h1>
-                <p className="text-gray-600">
+                <h1 className="text-3xl font-bold" style={{ color: '#6E55A0' }}>Report Submitted</h1>
+                <p style={{ color: '#8A6FBF' }}>
                   Your anonymous report has been successfully submitted to your teacher/organization.
                 </p>
               </div>
@@ -221,8 +252,7 @@ export default function AnonymousReportPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  variant="outline"
+                <motion.button
                   onClick={() => {
                     setSubmitted(false);
                     setFormData({
@@ -236,71 +266,93 @@ export default function AnonymousReportPage() {
                       isRecurring: false,
                     });
                   }}
-                  className="flex-1"
+                  className="flex-1 px-6 py-3 rounded-xl font-semibold border-2 transition-colors"
+                  style={{ borderColor: '#8A6FBF', color: '#6E55A0' }}
+                  whileHover={{ scale: 1.02, backgroundColor: '#F7F5FA' }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   Submit Another Report
-                </Button>
-                <Button
+                </motion.button>
+                <motion.button
                   onClick={() => router.push('/dashboard')}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                  className="flex-1 px-6 py-3 rounded-xl font-semibold text-white"
+                  style={{ background: 'linear-gradient(45deg, #6E55A0, #8A6FBF)' }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   Back to Dashboard
-                </Button>
+                </motion.button>
               </div>
             </motion.div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
+    <div className="space-y-6">
+      {/* Main Content */}
+      <div className="px-4 sm:px-6 pb-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="max-w-4xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
         >
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Shield className="w-8 h-8 text-purple-600" />
-            <h1 className="text-4xl font-bold text-gray-900">
-              Anonymous{' '}
-              <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Reporting
-              </span>
-            </h1>
-          </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Report issues safely and anonymously. Your identity will never be revealed, and your concerns will be addressed by your teacher/organization.
-          </p>
-          
-          {classroomInfo && (
-            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full">
-              <Users className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-900">
-                Reporting to: {classroomInfo.name}
-              </span>
+          {/* Header */}
+          <motion.div variants={itemVariants} className="text-center mb-8 sm:mb-12">
+            {/* Panda Security Image */}
+            <motion.div 
+              className="mx-auto mb-6 flex items-center justify-center"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <motion.img 
+                src="/asset/panda-security.png" 
+                alt="Panda Security - Safe Reporting"
+                className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain"
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 2, -2, 0]
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+              />
+            </motion.div>
+            
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Shield className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#6E55A0' }} />
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold" style={{ color: '#6E55A0' }}>
+                Anonymous Reporting
+              </h1>
             </div>
-          )}
-        </motion.div>
+            <p className="text-base sm:text-lg max-w-2xl mx-auto mb-6" style={{ color: '#8A6FBF' }}>
+              Report issues safely and anonymously. Your identity will never be revealed, and your concerns will be addressed by your teacher/organization.
+            </p>
+            
+            {classroomInfo && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: '#E3DEF1' }}>
+                <Users className="w-4 h-4" style={{ color: '#6E55A0' }} />
+                <span className="text-sm font-medium" style={{ color: '#6E55A0' }}>
+                  Reporting to: {classroomInfo.name}
+                </span>
+              </div>
+            )}
+          </motion.div>
 
-        {/* Privacy Notice */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8"
-        >
-          <Card className="border-green-200 bg-green-50">
-            <CardContent className="p-6">
+          {/* Privacy Notice */}
+          <motion.div variants={itemVariants} className="mb-8">
+            <div className="bg-card rounded-2xl sm:rounded-3xl p-6 shadow-sm border-2 border-green-500" style={{ backgroundColor: '#F0FDF4' }}>
               <div className="flex items-start gap-3">
-                <Lock className="w-6 h-6 text-green-600 mt-1" />
+                <Lock className="w-6 h-6 mt-1" style={{ color: '#16A34A' }} />
                 <div>
-                  <h3 className="font-semibold text-green-900 mb-2">Your Privacy is Protected</h3>
-                  <ul className="text-sm text-green-700 space-y-1">
+                  <h3 className="font-semibold mb-2" style={{ color: '#15803D' }}>Your Privacy is Protected</h3>
+                  <ul className="text-sm space-y-1" style={{ color: '#166534' }}>
                     <li>• Your identity remains completely anonymous</li>
                     <li>• No personal information is stored with your report</li>
                     <li>• Only authorized teachers/staff can view reports</li>
@@ -308,24 +360,19 @@ export default function AnonymousReportPage() {
                   </ul>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            </div>
+          </motion.div>
 
-        {/* Report Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Submit a Report
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* Report Form */}
+          <motion.div variants={itemVariants}>
+            <div className="bg-card rounded-2xl sm:rounded-3xl shadow-sm">
+              <div className="p-6 border-b border-border">
+                <h2 className="flex items-center gap-2 text-xl font-bold" style={{ color: '#6E55A0' }}>
+                  <MessageSquare className="w-5 h-5" />
+                  Submit a Report
+                </h2>
+              </div>
+              <div className="p-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
@@ -336,25 +383,29 @@ export default function AnonymousReportPage() {
 
                 {/* Report Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium mb-3" style={{ color: '#6E55A0' }}>
                     What type of issue are you reporting? *
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {reportTypes.map((type) => (
                       <div
                         key={type.value}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
                           formData.reportType === type.value
                             ? 'border-purple-500 bg-purple-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
+                        style={formData.reportType === type.value ? 
+                          { borderColor: '#6E55A0', backgroundColor: '#E3DEF1' } : 
+                          { borderColor: '#E5E7EB' }
+                        }
                         onClick={() => handleInputChange('reportType', type.value)}
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{type.icon}</span>
                           <div>
-                            <h4 className="font-medium text-gray-900">{type.label}</h4>
-                            <p className="text-xs text-gray-500">{type.description}</p>
+                            <h4 className="font-medium" style={{ color: formData.reportType === type.value ? '#6E55A0' : '#374151' }}>{type.label}</h4>
+                            <p className="text-xs" style={{ color: formData.reportType === type.value ? '#8A6FBF' : '#6B7280' }}>{type.description}</p>
                           </div>
                         </div>
                       </div>
@@ -364,7 +415,7 @@ export default function AnonymousReportPage() {
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                     Brief Title *
                   </label>
                   <Input
@@ -373,17 +424,20 @@ export default function AnonymousReportPage() {
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     maxLength={100}
                     required
+                    className="rounded-xl border-2 focus:border-purple-500"
+                    style={{ borderColor: '#E5E7EB' }}
                   />
-                  <p className="text-xs text-gray-500 mt-1">{formData.title.length}/100 characters</p>
+                  <p className="text-xs mt-1" style={{ color: '#8A6FBF' }}>{formData.title.length}/100 characters</p>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                     Detailed Description *
                   </label>
                   <textarea
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    className="w-full p-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    style={{ borderColor: '#E5E7EB' }}
                     rows={5}
                     placeholder="Please describe what happened, when it occurred, and any other relevant details. The more information you provide, the better we can help."
                     value={formData.description}
@@ -391,23 +445,27 @@ export default function AnonymousReportPage() {
                     maxLength={1000}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">{formData.description.length}/1000 characters</p>
+                  <p className="text-xs mt-1" style={{ color: '#8A6FBF' }}>{formData.description.length}/1000 characters</p>
                 </div>
 
                 {/* Severity */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium mb-3" style={{ color: '#6E55A0' }}>
                     How serious is this issue?
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {severityLevels.map((level) => (
                       <div
                         key={level.value}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                        className={`p-3 border-2 rounded-xl cursor-pointer transition-all ${
                           formData.severity === level.value
                             ? 'border-purple-500 bg-purple-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
+                        style={formData.severity === level.value ? 
+                          { borderColor: '#6E55A0', backgroundColor: '#E3DEF1' } : 
+                          { borderColor: '#E5E7EB' }
+                        }
                         onClick={() => handleInputChange('severity', level.value)}
                       >
                         <div className="text-center">
@@ -422,7 +480,7 @@ export default function AnonymousReportPage() {
                 {/* Additional Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                       <MapPin className="w-4 h-4 inline mr-1" />
                       Location (optional)
                     </label>
@@ -431,11 +489,13 @@ export default function AnonymousReportPage() {
                       value={formData.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
                       maxLength={100}
+                      className="rounded-xl border-2"
+                      style={{ borderColor: '#E5E7EB' }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                       <Calendar className="w-4 h-4 inline mr-1" />
                       When did this happen? (optional)
                     </label>
@@ -444,13 +504,15 @@ export default function AnonymousReportPage() {
                       value={formData.incidentDate}
                       onChange={(e) => handleInputChange('incidentDate', e.target.value)}
                       max={new Date().toISOString().split('T')[0]}
+                      className="rounded-xl border-2"
+                      style={{ borderColor: '#E5E7EB' }}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#6E55A0' }}>
                       <Eye className="w-4 h-4 inline mr-1" />
                       Number of witnesses (optional)
                     </label>
@@ -461,6 +523,8 @@ export default function AnonymousReportPage() {
                       placeholder="0"
                       value={formData.witnessCount}
                       onChange={(e) => handleInputChange('witnessCount', e.target.value)}
+                      className="rounded-xl border-2"
+                      style={{ borderColor: '#E5E7EB' }}
                     />
                   </div>
 
@@ -472,7 +536,7 @@ export default function AnonymousReportPage() {
                       onChange={(e) => handleInputChange('isRecurring', e.target.checked)}
                       className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                     />
-                    <label htmlFor="isRecurring" className="text-sm text-gray-700">
+                    <label htmlFor="isRecurring" className="text-sm" style={{ color: '#6E55A0' }}>
                       This is a recurring/ongoing issue
                     </label>
                   </div>
@@ -480,36 +544,42 @@ export default function AnonymousReportPage() {
 
                 {/* Submit Button */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                  <Button
+                  <motion.button
                     type="button"
-                    variant="outline"
                     onClick={() => router.push('/dashboard')}
-                    className="flex-1"
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold border-2 transition-colors"
+                    style={{ borderColor: '#8A6FBF', color: '#6E55A0' }}
+                    whileHover={{ scale: 1.02, backgroundColor: '#F7F5FA' }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4" />
                     Cancel
-                  </Button>
-                  <Button
+                  </motion.button>
+                  <motion.button
                     type="submit"
                     disabled={isSubmitting || !formData.reportType || !formData.title.trim() || !formData.description.trim()}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white disabled:opacity-50"
+                    style={{ background: 'linear-gradient(45deg, #6E55A0, #8A6FBF)' }}
+                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                   >
                     {isSubmitting ? (
-                      <div className="flex items-center justify-center gap-2">
+                      <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                         Submitting...
-                      </div>
+                      </>
                     ) : (
                       <>
-                        <Send className="w-4 h-4 mr-2" />
+                        <Send className="w-4 h-4" />
                         Submit Report Anonymously
                       </>
                     )}
-                  </Button>
+                  </motion.button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     </div>

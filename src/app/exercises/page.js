@@ -225,7 +225,7 @@ export default function ExercisesPage() {
   // Prevent hydration errors by not rendering dynamic content until client-side
   if (!isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+      <div className="min-h-screen flex items-center justify-center bg-app-light">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#8A6FBF' }}></div>
           <p style={{ color: '#6E55A0' }}>Loading your exercises...</p>
@@ -267,7 +267,7 @@ export default function ExercisesPage() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+    <div className="min-h-screen bg-app-light">
       <Header />
 
       {/* Main Content */}

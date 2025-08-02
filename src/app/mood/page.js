@@ -13,7 +13,7 @@ import {
 
 import Link from "next/link";
 
-import Header from '@/components/Header';
+
 import { useMusicStore } from '@/lib/store';
 
 
@@ -401,7 +401,7 @@ const MoodMusic = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden" style={{ background: "linear-gradient(135deg, #F7F5FA 0%, #E3DEF1 100%)" }}>
+    <div className="space-y-6">
       {/* Decorative floating notes */}
       <div className="absolute top-0 left-0 w-full h-0 pointer-events-none z-0">
         <MusicNoteSVG className="absolute left-12 top-8 animate-bounce" />
@@ -412,10 +412,8 @@ const MoodMusic = () => {
       {/* Hidden audio element */}
       {/* <audio ref={audioRef} /> */}
 
-      <Header/>
-
       {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center pt-24 pb-12 mb-8">
+      <section className="relative flex flex-col items-center justify-center pt-8 pb-12 mb-8">
         <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
           <div className="absolute left-0 right-0 top-0 h-64 bg-gradient-to-br from-purple-100 via-blue-100 to-transparent opacity-60" />
         </div>
@@ -480,7 +478,7 @@ const MoodMusic = () => {
                 key={track.id}
                 variants={cardVariants}
                 whileHover="hover"
-                className="bg-white/70 backdrop-blur-xl rounded-3xl overflow-hidden shadow-lg border border-gray-100 relative transition-all duration-300"
+                className="bg-card/70 backdrop-blur-xl rounded-3xl overflow-hidden shadow-lg border border-border relative transition-all duration-300"
                 style={{ boxShadow: '0 4px 32px #E3DEF1', border: '2px solid #E3DEF1' }}
               >
                 <div
@@ -588,8 +586,6 @@ const MoodMusic = () => {
             </motion.div>
           )}
     </div>
-  
-      
   );
 };
 

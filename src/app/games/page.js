@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { useExerciseStore } from '@/lib/store'
 import { useDataInitialization } from '@/lib/useDataInitialization'
-import Header from '@/components/Header';
+
 
 const WellnessGames = () => {
   const router = useRouter()
@@ -209,7 +209,7 @@ const WellnessGames = () => {
   // Prevent hydration errors
   if (!isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+      <div className="min-h-screen flex items-center justify-center bg-app-light">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#8A6FBF' }}></div>
           <p style={{ color: '#6E55A0' }}>Loading your games...</p>
@@ -219,11 +219,9 @@ const WellnessGames = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-      <Header/>
-
+    <div className="space-y-6">
       {/* Main Content */}
-      <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">
+      <div className="px-4 sm:px-6 pb-12">
         <motion.div
           className="max-w-6xl mx-auto"
           variants={containerVariants}
@@ -614,7 +612,7 @@ const WellnessGames = () => {
             </motion.div>
           </motion.div>
         </motion.div>
-      </main>
+      </div>
     </div>
   )
 }

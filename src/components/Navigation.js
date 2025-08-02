@@ -109,7 +109,7 @@ const Navigation = () => {
           variant="outline"
           size="icon"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg"
+          className="bg-card/80 backdrop-blur-sm border-border shadow-lg"
           style={{ color: '#6E55A0' }}
         >
           {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -118,7 +118,7 @@ const Navigation = () => {
 
       {/* Sidebar */}
       <div className={cn(
-        'fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-40 bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0',
         isCollapsed ? 'w-16 sm:w-20' : 'w-64 sm:w-72 lg:w-64',
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}>
@@ -127,7 +127,7 @@ const Navigation = () => {
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:flex absolute -right-3 top-6 z-10 w-6 h-6 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50"
+          className="hidden lg:flex absolute -right-3 top-6 z-10 w-6 h-6 rounded-full bg-card border border-border shadow-sm hover:bg-accent"
           style={{ color: '#6E55A0' }}
         >
           {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
@@ -135,12 +135,12 @@ const Navigation = () => {
 
         {/* Logo and Header */}
         <div className={cn(
-          'flex-shrink-0 border-b border-gray-100',
+          'flex-shrink-0 border-b border-border',
           isCollapsed ? 'p-3 sm:p-4' : 'p-4 sm:p-6'
         )}>
           {!isCollapsed ? (
             <Link href="/dashboard" className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0">
+              <div className="w-8 h-8 bg-card rounded-lg flex items-center justify-center border border-border flex-shrink-0">
                 <img src="/logo.svg" alt="Logo" className="w-7 h-7" />
               </div>
               <h1 className="text-lg sm:text-xl font-semibold truncate" style={{ color: '#6E55A0' }}>
@@ -149,7 +149,7 @@ const Navigation = () => {
             </Link>
           ) : (
             <Link href="/dashboard" className="flex justify-center">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <div className="w-8 h-8 bg-card rounded-lg flex items-center justify-center border border-border">
                 <img src="/logo.svg" alt="Logo" className="w-7 h-7" />
               </div>
             </Link>
@@ -158,8 +158,8 @@ const Navigation = () => {
 
         {/* User Profile Section */}
         {!isCollapsed && (
-          <div className="flex-shrink-0 px-3 sm:px-4 pb-4 border-b border-gray-100">
-            <div className="flex items-center space-x-3 p-3 rounded-lg" style={{ backgroundColor: '#F7F5FA' }}>
+          <div className="flex-shrink-0 px-3 sm:px-4 pb-4 border-b border-border">
+            <div className="flex items-center space-x-3 p-3 rounded-lg bg-app-light">
               <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                 <AvatarImage src={user?.imageUrl} />
                 <AvatarFallback style={{ backgroundColor: '#8A6FBF', color: 'white' }}>
@@ -229,7 +229,7 @@ const Navigation = () => {
             </div>
 
             {/* Bottom Navigation Items */}
-            <div className="mt-6 sm:mt-8 space-y-1 sm:space-y-2 border-t border-gray-100 pt-4 sm:pt-6">
+            <div className="mt-6 sm:mt-8 space-y-1 sm:space-y-2 border-t border-border pt-4 sm:pt-6">
               {bottomSidebarItems.map((item, index) => {
                 const IconComponent = item.icon
                 const isActive = pathname === item.href
@@ -269,7 +269,7 @@ const Navigation = () => {
 
         {/* Bottom Profile & Sign Out - Fixed at bottom */}
         <div className={cn(
-          'flex-shrink-0 border-t border-gray-100 space-y-2',
+          'flex-shrink-0 border-t border-border space-y-2',
           isCollapsed ? 'p-2 sm:p-3' : 'p-3 sm:p-4'
         )}>
           {/* Sign Out Button */}
@@ -346,7 +346,7 @@ export function PageLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+    <div className="min-h-screen bg-app-light">
       <Navigation />
       <main className={cn(
         'transition-all duration-300 ease-in-out',

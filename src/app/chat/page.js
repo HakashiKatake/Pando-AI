@@ -1,6 +1,6 @@
 
 'use client';
-import Header from '@/components/Header';
+
 
 import { useState, useEffect, useRef } from 'react';
 import MoodModal from './MoodModal';
@@ -285,7 +285,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+    <div className="space-y-6">
       {/* Mood Check-in Modal */}
       {showMoodModal && (
         <MoodModal
@@ -345,11 +345,8 @@ export default function ChatPage() {
         />
       </div>
 
-      {/* Header */}
-      <Header />
-
       {/* Main Content Area - Mobile responsive */}
-      <main className="pt-16 sm:pt-20 px-3 sm:px-6 pb-3 sm:pb-12">
+      <div className="px-3 sm:px-6 pb-3 sm:pb-12">
         <motion.div
           className="max-w-7xl mx-auto"
           variants={containerVariants}
@@ -409,7 +406,7 @@ export default function ChatPage() {
                   className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                     privacyMode 
                       ? 'text-white' 
-                      : 'bg-white hover:text-white'
+                      : 'bg-card hover:text-white'
                   }`}
                   style={
                     privacyMode
@@ -440,7 +437,7 @@ export default function ChatPage() {
 
                 <motion.button
                   onClick={clearChat}
-                  className="p-1 sm:p-2 rounded-full hover:bg-white transition-colors"
+                  className="p-1 sm:p-2 rounded-full hover:bg-card transition-colors"
                   whileHover={{ scale: 1.05, rotate: 180 }}
                   whileTap={{ scale: 0.95 }}
                   title="Start new conversation"
@@ -452,7 +449,7 @@ export default function ChatPage() {
           </motion.div>
 
           {/* Chat Container - Mobile responsive */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
+          <div className="bg-card rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
             {/* Messages Area - Mobile responsive */}
             <div 
               className="overflow-y-auto px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-6" 
@@ -512,7 +509,7 @@ export default function ChatPage() {
                       }}
                     />
                   </motion.div>
-                  <div className="bg-gray-50 rounded-2xl rounded-tl-sm p-3 sm:p-4 shadow-sm border max-w-48 sm:max-w-md">
+                  <div className="bg-muted rounded-2xl rounded-tl-sm p-3 sm:p-4 shadow-sm border max-w-48 sm:max-w-md">
                     <div className="flex space-x-1">
                       <motion.div 
                         className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full"
@@ -556,7 +553,7 @@ export default function ChatPage() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder={`Hi ${preferences.name || 'friend'}! Pando is here to listen 🐼`}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl sm:rounded-2xl focus:outline-none resize-none transition-all duration-200 bg-white text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl sm:rounded-2xl focus:outline-none resize-none transition-all duration-200 bg-card text-sm sm:text-base"
                     style={{
                       borderColor: '#E3DEF1',
                       color: '#6E55A0',
@@ -627,7 +624,7 @@ export default function ChatPage() {
             </motion.div>
           </div>
         </motion.div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -716,7 +713,7 @@ function WelcomeMessage({ userName }) {
                 input.focus();
               }
             }}
-            className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl text-left transition-all border-2 touch-manipulation"
+            className="p-2 sm:p-3 bg-card rounded-lg sm:rounded-xl text-left transition-all border-2 touch-manipulation"
             style={{ 
               borderColor: '#E3DEF1',
               color: '#6E55A0'
@@ -1001,7 +998,7 @@ function MessageBubble({ message, isUser }) {
                 ? 'bg-red-50 border-red-200 rounded-tl-sm'
                 : isConcern
                   ? 'bg-yellow-50 border-yellow-200 rounded-tl-sm'
-                  : 'bg-gray-50 rounded-tl-sm'
+                  : 'bg-muted rounded-tl-sm'
           }`}
           style={
             isUser 
@@ -1098,7 +1095,7 @@ function MessageBubble({ message, isUser }) {
               onClick={handleTextToSpeech}
               className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all duration-200 flex-shrink-0 ${
                 speechSupported 
-                  ? 'hover:bg-gray-200 cursor-pointer' 
+                  ? 'hover:bg-accent cursor-pointer' 
                   : 'opacity-50 cursor-not-allowed'
               }`}
               style={{ 

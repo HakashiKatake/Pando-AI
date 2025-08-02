@@ -177,7 +177,7 @@ const Dashboard = () => {
   // Early return AFTER all hooks are called
   if (!isHydrated || !dataInit.isReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5FA' }}>
+      <div className="min-h-screen flex items-center justify-center bg-app-light">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#8A6FBF' }}></div>
           <p style={{ color: '#6E55A0' }}>Loading your dashboard...</p>
@@ -362,62 +362,16 @@ const Dashboard = () => {
 
   return (
     <motion.div
-      className="min-h-screen"
-      style={{ backgroundColor: '#F7F5FA' }}
+      className="space-y-6"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Header - Fixed at top */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-              <span className="text-lg">🐼</span>
-            </div>
-           
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Calendar className="w-4 h-4" />
-              <span>{currentDate}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Clock className="w-4 h-4" />
-              <span>{currentTime}</span>
-              <ChevronDown className="w-4 h-4" />
-            </div>
-            {/* Anonymous Report Button for Students */}
-            {user?.unsafeMetadata?.userType === 'student' && user?.unsafeMetadata?.classroomId && (
-              <Link href="/report">
-                <Button 
-                  variant="outline" 
-                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
-                  title="Report an issue anonymously"
-                >
-                  🛡️ Report
-                </Button>
-              </Link>
-            )}
-            <Link href="/emergency">
-              <Button className="bg-red-500 hover:bg-red-600 text-white">
-                SOS
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content - No sidebar, starts below header */}
-      <main className="pt-20 p-6 space-y-6">
         {/* Welcome Section */}
         <motion.div variants={itemVariants}>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-gray-500 text-sm">Dashboard</p>
+              <p className="text-muted-foreground text-sm">Dashboard</p>
               <motion.h1 
                 className="text-3xl font-bold" 
                 style={{ color: '#6E55A0' }}
@@ -534,10 +488,10 @@ const Dashboard = () => {
         {/* Charts Section */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Mood Chart */}
-          <Card className="bg-white border border-gray-200">
+          <Card className="bg-card border border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg" style={{ color: '#6E55A0' }}>Today's check-in</CardTitle>
-              <Button variant="ghost" size="icon" style={{ color: '#8A6FBF' }} className="hover:bg-gray-100">
+              <Button variant="ghost" size="icon" style={{ color: '#8A6FBF' }} className="hover:bg-accent">
                 <Smile className="w-4 h-4" />
               </Button>
             </CardHeader>
@@ -565,7 +519,7 @@ const Dashboard = () => {
                       '/asset/neutral.png';
                     return (
                       <div key={index} className="flex flex-col items-center relative">
-                        <div className="w-8 h-8 bg-white rounded-full mb-2 flex items-center justify-center shadow-sm">
+                        <div className="w-8 h-8 bg-card rounded-full mb-2 flex items-center justify-center shadow-sm">
                           <img src={moodImg} alt="Mood" className="w-7 h-7" />
                         </div>
                         <div 
@@ -588,10 +542,10 @@ const Dashboard = () => {
           </Card>
 
           {/* Activity Growth - DYNAMIC DATA */}
-          <Card className="bg-white border border-gray-200">
+          <Card className="bg-card border border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg" style={{ color: '#6E55A0' }}>Activity Growth</CardTitle>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <span>Jul 2025</span>
                 <ChevronDown className="w-4 h-4" />
               </div>
@@ -628,10 +582,10 @@ const Dashboard = () => {
         {/* Bottom Section */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Meditation */}
-          <Card className="bg-white border border-gray-200" style={{ backgroundColor: '#E3DEF1' }}>
+          <Card className="bg-card border border-border bg-app-purple-light">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-lg" style={{ color: '#6E55A0' }}>Meditation</CardTitle>
-              <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-white hover:bg-opacity-50">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-accent">
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </CardHeader>
@@ -667,7 +621,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Enhanced Habit Tracker with Functional Tabs */}
-          <Card className="bg-white border border-gray-200">
+          <Card className="bg-card border border-border">
             <CardHeader>
               <div className="flex items-center justify-between mb-4">
                 <CardTitle className="text-lg" style={{ color: '#6E55A0' }}>Habit tracker</CardTitle>
@@ -817,7 +771,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Quick Actions - NEW SECTION REPLACING DAILY PROGRESS */}
-          <Card className="bg-white border border-gray-200">
+          <Card className="bg-card border border-border">
             <CardHeader>
               <CardTitle className="text-lg" style={{ color: '#6E55A0' }}>Quick Actions</CardTitle>
             </CardHeader>
@@ -864,7 +818,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </motion.div>
-      </main>
 
       {/* Mood Modal */}
       {showMoodModal && (
@@ -911,7 +864,7 @@ function MoodModal({ onClose, onSave }) {
       exit={{ opacity: 0 }}
     >
       <motion.div 
-        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl"
+        className="bg-card rounded-2xl p-6 w-full max-w-md shadow-xl"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import Header from '@/components/Header';
+
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -345,11 +345,9 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-      <Header/>
-
+    <div className="space-y-6">
       {/* Main Content */}
-      <main className="pt-20 px-6 pb-12">
+      <div className="px-6 pb-12">
         <motion.div
           className="max-w-7xl mx-auto"
           variants={containerVariants}
@@ -921,7 +919,7 @@ export default function InsightsPage() {
             </motion.div>
           </motion.div>
         </motion.div>
-      </main>
+      </div>
     </div>
   );
 }

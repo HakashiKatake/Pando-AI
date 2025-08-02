@@ -295,3 +295,63 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+/* App-specific background colors */
+.bg-app-light {
+  background-color: #F7F5FA;
+}
+
+.dark .bg-app-light {
+  background-color: var(--background);
+}
+
+/* App-specific purple colors that adapt to theme */
+.text-app-purple {
+  color: #6E55A0;
+}
+
+.dark .text-app-purple {
+  color: #A78BFA;
+}
+
+.text-app-purple-light {
+  color: #8A6FBF;
+}
+
+.dark .text-app-purple-light {
+  color: #C4B5FD;
+}
+
+.bg-app-purple-light {
+  background-color: #E3DEF1;
+}
+
+.dark .bg-app-purple-light {
+  background-color: rgba(167, 139, 250, 0.1);
+}
+
+.border-app-purple {
+  border-color: #6E55A0;
+}
+
+.dark .border-app-purple {
+  border-color: #A78BFA;
+}
+
+/* Card backgrounds that adapt to theme */
+.bg-card-light {
+  background-color: #FFFFFF;
+}
+
+.dark .bg-card-light {
+  background-color: var(--card);
+}
+
+/* Text colors that adapt to theme */
+.text-muted-app {
+  color: #6B7280;
+}
+
+.dark .text-muted-app {
+  color: var(--muted-foreground);
+}

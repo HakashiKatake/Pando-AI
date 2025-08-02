@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
 import { useHabitStore } from "@/lib/store"
-import Header from '@/components/Header'
+
 import { 
   TreePine, 
   Leaf, 
@@ -352,17 +352,15 @@ const BambooGarden = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-      <Header />
-      
+    <div className="space-y-6">
       <motion.div 
-        className="pt-20 pb-12"
+        className="pb-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         {/* Page Header */}
-        <main className="px-6">
+        <div className="px-6">
           <div className="max-w-7xl mx-auto">
             {/* Title Section */}
             <motion.div 
@@ -767,15 +765,15 @@ const BambooGarden = () => {
               key={`empty-${index}`}
               className={`border-dashed border-2 transition-colors ${
                 canPlantNewBamboo() 
-                  ? 'border-gray-300 cursor-pointer hover:border-green-400' 
-                  : 'border-gray-200 cursor-not-allowed opacity-50'
+                  ? 'border-border cursor-pointer hover:border-green-400' 
+                  : 'border-muted cursor-not-allowed opacity-50'
               }`}
               onClick={() => canPlantNewBamboo() && setPlantingMode(true)}
             >
               <CardContent className="p-6 text-center">
                 <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
                   <div className={`w-12 h-12 border-2 border-dashed rounded-full flex items-center justify-center ${
-                    canPlantNewBamboo() ? 'border-gray-400' : 'border-gray-300'
+                    canPlantNewBamboo() ? 'border-muted-foreground' : 'border-muted'
                   }`}>
                     {canPlantNewBamboo() ? (
                       <Leaf className="w-6 h-6 text-gray-400" />
@@ -802,7 +800,7 @@ const BambooGarden = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
-              <Card className="bg-white border-0 shadow-sm">
+              <Card className="bg-card border-0 shadow-sm">
                 <CardContent className="p-8">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-3" style={{ color: '#6E55A0' }}>
                     <Coins className="w-6 h-6" style={{ color: '#8A6FBF' }} />
@@ -838,7 +836,7 @@ const BambooGarden = () => {
                       <p className="text-gray-500 text-sm">Track mood & write</p>
                     </div>
                   </div>
-                  <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="mt-6 p-4 bg-muted rounded-xl border border-border">
                     <p className="text-sm text-center" style={{ color: '#6E55A0' }}>
                       <strong>Bamboo Garden:</strong> Water bamboo (+2 points) • Plant new bamboo (costs 10-50 points)
                     </p>
@@ -847,7 +845,7 @@ const BambooGarden = () => {
               </Card>
             </motion.div>
           </div>
-        </main>
+        </div>
       </motion.div>
     </div>
   )

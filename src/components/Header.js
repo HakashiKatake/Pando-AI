@@ -34,7 +34,7 @@ const Header = () => {
 
   return (
     <motion.header 
-      className="bg-white border-b border-gray-200 px-3 sm:px-6 py-2 sm:py-4 fixed top-0 left-0 right-0 z-30"
+      className="bg-background border-b border-border px-3 sm:px-6 py-2 sm:py-4 fixed top-0 left-0 right-0 z-30"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
@@ -42,7 +42,7 @@ const Header = () => {
       <div className="flex items-center justify-between max-w-full">
         {/* Logo */}
         <div className="flex items-center flex-shrink-0">
-          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-card rounded-lg flex items-center justify-center border border-border">
             <span className="text-sm sm:text-lg">🐼</span>
           </div>
         </div>
@@ -50,13 +50,13 @@ const Header = () => {
         {/* Right side content */}
         <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 flex-shrink-0 min-w-0">
           {/* Date - hidden on mobile and tablet, visible on large screens only */}
-          <div className="hidden xl:flex items-center space-x-1 text-sm text-gray-500">
+          <div className="hidden xl:flex items-center space-x-1 text-sm text-muted-foreground">
             <span className="truncate">{currentDate}</span>
             <ChevronDown className="w-4 h-4 flex-shrink-0" />
           </div>
           
           {/* Time */}
-          <div className="flex items-center space-x-1 text-xs sm:text-sm text-gray-500">
+          <div className="flex items-center space-x-1 text-xs sm:text-sm text-muted-foreground">
             <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
             <span className="whitespace-nowrap font-medium">{currentTime}</span>
             <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 hidden sm:block" />

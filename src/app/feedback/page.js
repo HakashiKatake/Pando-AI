@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FeedbackForm } from '@/components/FeedbackForm';
 import { useFeedbackStore } from '@/lib/store';
 import { useDataInitialization } from '@/lib/useDataInitialization';
-import Header from '@/components/Header';
+
 
 const JournalEntries = () => {
   const { user } = useUser();
@@ -271,10 +271,8 @@ const JournalEntries = () => {
   // Show detailed form view
   if (showForm) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-       <Header />
-
-        <div className="pt-20 px-4 py-8 max-w-2xl mx-auto">
+      <div className="space-y-6">
+        <div className="px-4 py-8 max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold" style={{ color: '#6E55A0' }}>
               {editingEntry ? 'Edit Entry' : 'New Entry'}
@@ -298,17 +296,17 @@ const JournalEntries = () => {
   // Show detailed entry view
   if (selectedEntry) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+      <div className="space-y-6">
         {/* Header */}
         <motion.header 
-          className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30"
+          className="bg-card border-b border-border px-6 py-4 fixed top-0 left-0 right-0 z-30"
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <div className="w-8 h-8 bg-card rounded-lg flex items-center justify-center border border-border">
                 <span className="text-lg">🐼</span>
               </div>
               <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>PandoAI</h1>
@@ -422,17 +420,17 @@ const JournalEntries = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
+    <div className="space-y-6">
       {/* Header */}
       <motion.header 
-        className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-30"
+        className="bg-card border-b border-border px-6 py-4 fixed top-0 left-0 right-0 z-30"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+            <div className="w-8 h-8 bg-card rounded-lg flex items-center justify-center border border-border">
               <span className="text-lg">🐼</span>
             </div>
             <h1 className="text-xl font-semibold" style={{ color: '#6E55A0' }}>PandoAI</h1>
@@ -489,7 +487,7 @@ const JournalEntries = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
             >
-              <div className="bg-white rounded-xl p-4 shadow-sm">
+              <div className="bg-card rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg" style={{ backgroundColor: '#E3DEF1' }}>
                     <BookOpen className="h-5 w-5" style={{ color: '#8A6FBF' }} />
@@ -503,7 +501,7 @@ const JournalEntries = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-4 shadow-sm">
+              <div className="bg-card rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg" style={{ backgroundColor: '#E3DEF1' }}>
                     <Heart className="h-5 w-5" style={{ color: '#8A6FBF' }} />
@@ -517,7 +515,7 @@ const JournalEntries = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-4 shadow-sm">
+              <div className="bg-card rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg" style={{ backgroundColor: '#E3DEF1' }}>
                     <Calendar className="h-5 w-5" style={{ color: '#8A6FBF' }} />
@@ -537,7 +535,7 @@ const JournalEntries = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-xl p-4 sm:p-6 mb-6 shadow-sm"
+              className="bg-card rounded-xl p-4 sm:p-6 mb-6 shadow-sm"
             >
               {/* Type Filter Buttons */}
               <div className="mb-4">

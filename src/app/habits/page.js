@@ -28,7 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useHabitStore, useAppStore } from '@/lib/store'
 import { useDataInitialization } from '@/lib/useDataInitialization'
 import { DailyQuests } from '@/components/DailyQuests'
-import Header from '@/components/Header'
+
 
 const HABIT_CATEGORIES = [
   { id: 'health', name: 'Health & Fitness', icon: '💪', color: 'bg-green-100 text-green-800' },
@@ -482,12 +482,9 @@ const HabitTracker = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5FA' }}>
-      {/* Header */}
-      <Header />
-
+    <div className="space-y-6">
       {/* Main Content */}
-      <main className="pt-16 sm:pt-20 px-4 sm:px-6 pb-12">
+      <div className="px-4 sm:px-6 pb-12">
         <motion.div
           className="max-w-7xl mx-auto"
           variants={containerVariants}
@@ -900,7 +897,7 @@ const HabitTracker = () => {
             </div>
           </motion.div>
         </motion.div>
-      </main>
+      </div>
     </div>
   )
 }
