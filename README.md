@@ -1,4 +1,4 @@
-# CalmConnect - AI-Powered Mental Wellness Platform
+# PandoAI - AI-Powered Mental Wellness Platform
 
 A comprehensive mental wellness web application built with Next.js 14, featuring AI-powered conversations, mood tracking, mindfulness exercises, and personalized insights.
 
